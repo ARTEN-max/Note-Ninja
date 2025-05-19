@@ -1,0 +1,176 @@
+import { useEffect, useState, useRef } from 'react'
+import { useParams } from 'react-router-dom'
+import Navbar from '../components/Navbar'
+import { db } from '../lib/firebase'
+import { collection, query, where, orderBy, getDocs, doc, setDoc, serverTimestamp, increment, updateDoc, collectionGroup, query as firestoreQuery, where as firestoreWhere, getDocs as getDocsGroup, addDoc, getDoc } from 'firebase/firestore'
+import { GlobalWorkerOptions, getDocument, version as pdfjsVersion } from 'pdfjs-dist'
+import { useAuth } from '../contexts/AuthContext'
+
+interface Note {
+  id: string
+  title: string
+  uploaderId: string
+  fileUrl: string
+  createdAt: { seconds: number, nanoseconds: number } | null
+  courseCode: string
+}
+
+GlobalWorkerOptions.workerSrc = `${window.location.origin}/pdf.worker.min.js`
+
+function formatDate(ts: Note['createdAt']) {
+  if (!ts) return ''
+  const date = new Date(ts.seconds * 1000)
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function NoteCard({ note }: { note: Note }) {
+  const { user } = useAuth();
+  const isPdf = note.fileUrl.toLowerCase().split('?')[0].endsWith('.pdf')
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    if (isPdf && canvasRef.current) {
+      const renderPdf = async () => {
+        try {
+          const loadingTask = getDocument(note.fileUrl)
+          const pdf = await loadingTask.promise
+          const page = await pdf.getPage(1)
+          const viewport = page.getViewport({ scale: 1.5 })
+          const canvas = canvasRef.current
+          if (!canvas) return
+          const context = canvas.getContext('2d')
+          if (!context) return
+          canvas.width = viewport.width
+          canvas.height = viewport.height
+          await page.render({ canvasContext: context, viewport }).promise
+        } catch (e) {
+          // Optionally set a state to show a fallback image
+        }
+      }
+      renderPdf()
+    }
+  }, [isPdf, note.fileUrl])
+
+  // Download logging handler
+  const handleDownload = async (e: React.MouseEvent) => {
+    let userName = '';
+    if (user) {
+      // Try to get the user's name from Firestore if available
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          userName = userDoc.data().name || '';
+        }
+      } catch {}
+    }
+    try {
+      await addDoc(collection(db, 'downloads'), {
+        noteId: note.id,
+        courseCode: note.courseCode,
+        userId: user ? user.uid : 'anonymous',
+        userName,
+        timestamp: serverTimestamp(),
+      });
+      // Download will proceed
+    } catch (err) {
+      // Optionally handle logging error, but don't block download
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transform hover:-translate-y-1 transition flex flex-col">
+      <div className="mb-4 flex justify-center">
+        {isPdf ? (
+          <canvas
+            ref={canvasRef}
+            width={120}
+            height={160}
+            className="w-24 h-32 object-contain rounded shadow border bg-gray-50"
+            style={{ background: '#f8fafc' }}
+          />
+        ) : (
+          <img src="/docx-icon.png" alt="DOCX" className="w-24 h-32 object-contain rounded shadow border bg-gray-50" />
+        )}
+      </div>
+      <div className="text-lg font-semibold text-gray-800 mb-2">{note.title}</div>
+      <a
+        href={note.fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full w-fit"
+        onClick={handleDownload}
+      >
+        Download
+      </a>
+    </div>
+  )
+}
+
+export default function CourseNotes() {
+  const { courseCode } = useParams<{ courseCode: string }>()
+  const [notes, setNotes] = useState<Note[]>([])
+  const [loading, setLoading] = useState(true)
+  const [downloadCount, setDownloadCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    async function fetchNotes() {
+      setLoading(true)
+      const q = query(
+        collection(db, 'notes'),
+        where('courseCode', '==', courseCode),
+        orderBy('createdAt', 'desc')
+      )
+      const snap = await getDocs(q)
+      setNotes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Note)))
+      setLoading(false)
+    }
+    fetchNotes()
+  }, [courseCode])
+
+  useEffect(() => {
+    async function fetchDownloadCount() {
+      if (!courseCode) return;
+      const q = firestoreQuery(
+        collectionGroup(db, 'downloads'),
+        firestoreWhere('courseCode', '==', courseCode)
+      );
+      const snap = await getDocsGroup(q);
+      setDownloadCount(snap.size);
+    }
+    fetchDownloadCount();
+  }, [courseCode]);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 font-sans text-gray-800">
+      {/* Header Gradient */}
+      <div className="w-full bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300">
+        <Navbar />
+      </div>
+      <div className="flex-1 max-w-4xl mx-auto px-4 md:px-8 py-12 w-full">
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">
+          Notes for {courseCode}
+        </h1>
+        {downloadCount !== null && (
+          <div className="text-center text-gray-600 mb-4">
+            Total downloads for this course: <span className="font-bold">{downloadCount}</span>
+          </div>
+        )}
+        {loading ? (
+          <div className="text-center text-gray-500">Loading notes...</div>
+        ) : notes.length === 0 ? (
+          <div className="text-center text-gray-500">No notes found for this course.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-wrap">
+            {notes.map(note => (
+              <NoteCard key={note.id} note={note} />
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Footer with Gradient */}
+      <footer className="w-full bg-gradient-to-t from-blue-100 via-blue-50 to-white mt-auto text-center py-6 text-gray-400 text-sm">
+        © 2025 Note Ninja. Built with 💻 for students, by students.
+      </footer>
+    </div>
+  )
+} 

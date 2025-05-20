@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { db } from '../lib/firebase'
-import { collection, query, where, orderBy, getDocs, doc, setDoc, serverTimestamp, increment, updateDoc, collectionGroup, query as firestoreQuery, where as firestoreWhere, getDocs as getDocsGroup, addDoc, getDoc } from 'firebase/firestore'
+import { collection, query, where, orderBy, getDocs, doc, serverTimestamp, increment, updateDoc, collectionGroup, query as firestoreQuery, where as firestoreWhere, getDocs as getDocsGroup, addDoc, getDoc } from 'firebase/firestore'
 import { GlobalWorkerOptions, getDocument, version as pdfjsVersion } from 'pdfjs-dist'
 import { useAuth } from '../contexts/AuthContext'
 import { FileText } from 'lucide-react'

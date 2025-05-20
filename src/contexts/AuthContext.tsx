@@ -11,7 +11,7 @@ import { auth } from '../lib/firebase'
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signUp: (email: string, password: string, name?: string) => Promise<any>
+  signUp: (email: string, password: string) => Promise<any>
   signIn: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return unsubscribe
   }, [])
 
-  const signUp = async (email: string, password: string, name?: string) => {
+  const signUp = async (email: string, password: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       return userCredential;

@@ -12,7 +12,6 @@ interface Note {
 export default function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>()
   const navigate = useNavigate()
-  const [note, setNote] = useState<Note | null>(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
@@ -27,7 +26,6 @@ export default function NoteEditor() {
       content: '',
       updatedAt: new Date(),
     }
-    setNote(mockNote)
     setTitle(mockNote.title)
     setContent(mockNote.content)
     setLoading(false)

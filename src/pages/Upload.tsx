@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { db, storage } from '../lib/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
@@ -7,7 +6,6 @@ import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/fires
 import toast from 'react-hot-toast'
 
 export default function Upload() {
-  const navigate = useNavigate()
   const { user } = useAuth()
   const [course, setCourse] = useState('')
   const [title, setTitle] = useState('')

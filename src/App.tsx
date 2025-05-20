@@ -8,6 +8,9 @@ import Upload from './pages/Upload'
 import CourseNotes from './pages/CourseNotes'
 import Courses from './pages/Courses'
 import RequestCourse from './pages/RequestCourse'
+import { Toaster } from 'react-hot-toast'
+import { useState, useEffect } from 'react'
+import Navbar from './components/Navbar'
 
 // Protected route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -28,10 +31,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function AppRoutes() {
+function AppRoutes({ isDark, toggleTheme }: { isDark: boolean, toggleTheme: () => void }) {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Home isDark={isDark} toggleTheme={toggleTheme} />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
@@ -58,9 +61,29 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    setIsDark((prev) => !prev);
+  };
+
   return (
     <AuthProvider>
-      <AppRoutes />
+      <Navbar />
+      <Toaster position="top-center" />
+      <AppRoutes isDark={isDark} toggleTheme={toggleTheme} />
     </AuthProvider>
   )
 } 

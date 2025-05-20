@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import Navbar from '../components/Navbar'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -18,7 +17,7 @@ export default function Login() {
     
     try {
       await signIn(email, password)
-      navigate('/dashboard')
+      navigate('/')
     } catch (err) {
       setError('Failed to login. Please check your credentials.')
       setLoading(false)
@@ -29,7 +28,6 @@ export default function Login() {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 font-sans text-gray-800">
       {/* Header Gradient */}
       <div className="w-full bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300">
-        <Navbar />
       </div>
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Make sure the user is authenticated
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow notes to be read by anyone, but only authenticated users can create them
+    match /notes/{noteId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Allow downloads subcollection under notes
+    match /notes/{noteId}/downloads/{downloadId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Allow collection group queries on 'downloads'
+    match /{path=**}/downloads/{downloadId} {
+      allow read: if true;
+    }
+
+    // Allow pendingNotes collection for uploads
+    match /pendingNotes/{noteId} {
+      allow read: if request.auth != null && resource.data.uploaderId == request.auth.uid;
+      allow write: if request.auth != null;
+    }
+  }
+} 

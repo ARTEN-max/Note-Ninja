@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import Navbar from '../components/Navbar'
 import { db } from '../lib/firebase'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
@@ -44,35 +43,33 @@ export default function RequestCourse() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 font-sans text-gray-800">
-      <div className="w-full bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300">
-        <Navbar />
-      </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 font-sans text-gray-800 dark:text-gray-100">
+      <div className="w-full bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800"></div>
       <div className="flex-1 flex items-center justify-center">
         <form
           onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-xl shadow-md max-w-xl w-full mx-auto"
+          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md max-w-xl w-full mx-auto"
         >
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-6 text-center">Request a Course</h1>
-          {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
-          {success && <div className="mb-4 text-green-600 text-sm">{success}</div>}
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 text-center">Request a Course</h1>
+          {error && <div className="mb-4 text-red-600 dark:text-red-400 text-sm">{error}</div>}
+          {success && <div className="mb-4 text-green-600 dark:text-green-400 text-sm">{success}</div>}
           <div className="mb-4">
-            <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-1">Course Code or Name</label>
+            <label htmlFor="course" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Course Code or Name</label>
             <input
               id="course"
               type="text"
               required
-              className="input w-full"
+              className="input w-full dark:bg-gray-900 dark:text-gray-100"
               placeholder="e.g., CS246, Linear Algebra, etc."
               value={course}
               onChange={e => setCourse(e.target.value)}
             />
           </div>
           <div className="mb-6">
-            <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details (optional)</label>
+            <label htmlFor="details" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Details (optional)</label>
             <textarea
               id="details"
-              className="input w-full"
+              className="input w-full dark:bg-gray-900 dark:text-gray-100"
               placeholder="Why do you need this course? Any specific topics?"
               value={details}
               onChange={e => setDetails(e.target.value)}
@@ -82,13 +79,13 @@ export default function RequestCourse() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-semibold transition-colors duration-200"
+            className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white px-6 py-2 rounded-full font-semibold transition-colors duration-200"
           >
             {submitting ? 'Submitting...' : 'Submit Request'}
           </button>
         </form>
       </div>
-      <footer className="w-full bg-gradient-to-t from-blue-100 via-blue-50 to-white mt-auto text-center py-6 text-gray-400 text-sm">
+      <footer className="w-full bg-gradient-to-t from-blue-100 via-blue-50 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 mt-auto text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
         © 2025 Note Ninja. Built with 💻 for students, by students.
       </footer>
     </div>

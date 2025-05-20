@@ -63,7 +63,7 @@ export default function Home({ isDark, toggleTheme }: { isDark: boolean, toggleT
     if (!query.trim()) return
     const searchCode = query.trim().toUpperCase()
     // Check if any notes exist for this courseCode (case-insensitive)
-    const notesSnap = await getDocs(queryCollectionByCourse(searchCode))
+    const notesSnap = await getDocs(queryCollectionByCourse())
     if (!notesSnap.empty) {
       navigate(`/courses/${searchCode}`)
     } else {
@@ -71,7 +71,7 @@ export default function Home({ isDark, toggleTheme }: { isDark: boolean, toggleT
     }
   }
 
-  function queryCollectionByCourse(courseCode: string) {
+  function queryCollectionByCourse() {
     // Query for courseCode in uppercase (case-insensitive search)
     return query(collection(db, 'notes'), orderBy('courseCode'), orderBy('createdAt', 'desc'))
   }

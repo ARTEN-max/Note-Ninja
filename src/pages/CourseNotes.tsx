@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { db } from '../lib/firebase'
-import { collection, query, where, orderBy, getDocs, doc, serverTimestamp, increment, updateDoc, collectionGroup, query as firestoreQuery, where as firestoreWhere, getDocs as getDocsGroup, addDoc, getDoc } from 'firebase/firestore'
-import { GlobalWorkerOptions, getDocument, version as pdfjsVersion } from 'pdfjs-dist'
+import { collection, query, where, orderBy, getDocs, doc, serverTimestamp, increment, updateDoc, addDoc, getDoc } from 'firebase/firestore'
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist'
 import { useAuth } from '../contexts/AuthContext'
 import { FileText } from 'lucide-react'
 
@@ -17,12 +17,6 @@ interface Note {
 }
 
 GlobalWorkerOptions.workerSrc = `${window.location.origin}/pdf.worker.min.js`
-
-function formatDate(ts: Note['createdAt']) {
-  if (!ts) return ''
-  const date = new Date(ts.seconds * 1000)
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
 
 function NoteCard({ note }: { note: Note }) {
   const { user } = useAuth();
@@ -143,7 +137,6 @@ export default function CourseNotes() {
   const { courseCode } = useParams<{ courseCode: string }>()
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
-  const [downloadCount, setDownloadCount] = useState<number | null>(null)
 
   useEffect(() => {
     async function fetchNotes() {
@@ -159,19 +152,6 @@ export default function CourseNotes() {
     }
     fetchNotes()
   }, [courseCode])
-
-  useEffect(() => {
-    async function fetchDownloadCount() {
-      if (!courseCode) return;
-      const q = firestoreQuery(
-        collectionGroup(db, 'downloads'),
-        firestoreWhere('courseCode', '==', courseCode)
-      );
-      const snap = await getDocsGroup(q);
-      setDownloadCount(snap.size);
-    }
-    fetchDownloadCount();
-  }, [courseCode]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 font-sans text-gray-800 dark:text-gray-100">

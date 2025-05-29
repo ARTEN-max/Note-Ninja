@@ -1,9 +1,11 @@
 import React from "react";
+import AlbumNotesPage from "./components/AlbumNotesPage";
 
-const DeepDivePage = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-pink-200 to-pink-300">
-    <h1 className="text-4xl font-bold text-pink-800 mb-4">Welcome to Deep Dive!</h1>
-  </div>
-);
-
-export default DeepDivePage; 
+export default function DeepDivePage() {
+  return (
+    <AlbumNotesPage
+      type="deepDive"
+      welcomeMessage="Welcome to Deep Dive!"
+    />
+  );
+} 

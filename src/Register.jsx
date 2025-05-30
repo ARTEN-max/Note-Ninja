@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "./firebase";
 import "./Register.css";
 
 const Register = () => {
@@ -87,9 +89,19 @@ const Register = () => {
     setError("");
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // Optionally save name to Firestore here
-      navigate("/signin");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Save the user's name to Firestore
+      await setDoc(doc(db, "students", user.uid), {
+        name,
+        email: user.email,
+        uid: user.uid,
+        // We'll let them fill in faculty and year in the student info page
+      });
+
+      // Redirect directly to student info page
+      navigate("/student-info");
     } catch (err) {
       setError(err.message.replace("Firebase:", "").replace("(auth/", "").replace(")", "").trim());
     }

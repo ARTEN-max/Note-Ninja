@@ -102,7 +102,7 @@ const MyNotesPage = () => {
                   style={{ minWidth: 0, transform: `perspective(1000px) rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`, transformStyle: 'preserve-3d' }}
                   onMouseMove={e => handleMouseMove(e, note.id)}
                   onMouseLeave={handleMouseLeave}
-                  onClick={() => navigate(`/choose-mode/${note.id}`)}
+                  onClick={() => navigate(`/download/${note.id}`)}
                   role="button"
                   tabIndex={0}
                 >

@@ -53,7 +53,7 @@ function ProtectedRoute({ children }) {
 
 function AppContent() {
   const location = useLocation();
-  const showSidebar = !['/signin', '/register'].includes(location.pathname);
+  const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
   return (
     <div style={{ display: "flex", minHeight: "100vh", width: "100vw", background: "linear-gradient(to bottom, rgb(251, 207, 232), rgb(249, 168, 212))" }}>

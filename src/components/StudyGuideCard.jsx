@@ -15,26 +15,54 @@ const StudyGuideCard = ({
 
   return (
     <div
-      className="relative flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
-      style={{ width: 232, height: 300 }}
+      className="relative flex flex-col items-center cursor-pointer transition-all duration-300"
+      style={{ 
+        width: 232, 
+        height: 300,
+        borderRadius: '16px',
+        boxShadow: hovered
+          ? '0 0 20px 4px #f9a8d4, 0 4px 16px rgba(136, 14, 79, 0.1)'
+          : '0 4px 16px rgba(136, 14, 79, 0.1)',
+        border: '2px solid #f9a8d4',
+        background: '#fff',
+        transition: 'all 0.3s cubic-bezier(.4,2,.6,1)',
+        overflow: 'hidden',
+        padding: 0,
+        transform: hovered ? 'scale(1.05)' : 'scale(1)',
+      }}
       onClick={onClick}
       role="button"
       tabIndex={0}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      id={`card-${courseCode}`}
     >
-      <div className="relative w-[232px] h-[232px]">
+      <div className="relative" style={{ width: '100%', height: 232 }}>
         <img
           src={imageUrl}
           alt={`${courseCode} study guide`}
-          className="rounded-xl object-cover w-full h-full"
+          className="object-cover"
+          style={{ width: '100%', height: '100%', borderTopLeftRadius: 16, borderTopRightRadius: 16, display: 'block' }}
         />
-        <div className="absolute top-2 left-2 bg-pink-100 text-pink-700 font-bold px-3 py-1 rounded-lg text-sm shadow">{courseCode}</div>
+        <div 
+          className="absolute top-2 left-2 bg-pink-100 text-pink-700 font-bold px-3 py-1 rounded-lg text-sm shadow"
+          style={{ 
+            backdropFilter: 'blur(4px)',
+            backgroundColor: 'rgba(249, 168, 212, 0.9)'
+          }}
+        >
+          {courseCode}
+        </div>
         <div className="absolute top-2 right-2">
           <button
             type="button"
             onClick={e => { e.stopPropagation(); onLike(); }}
-            className={`px-4 py-1 rounded-2xl font-bold text-base transition-colors ${liked ? 'bg-pink-200 text-pink-700' : 'bg-gray-200 text-black'}`}
+            className={`px-4 py-1 rounded-2xl font-bold text-base transition-all duration-300 ${
+              liked 
+                ? 'bg-pink-200 text-pink-700 shadow-[0_0_10px_rgba(249,168,212,0.5)]' 
+                : 'bg-gray-200 text-black hover:bg-gray-300'
+            }`}
+            style={{ backdropFilter: 'blur(4px)' }}
           >
             {liked ? 'Liked' : 'Like'}
           </button>
@@ -53,8 +81,8 @@ const StudyGuideCard = ({
                 height: 56,
                 borderRadius: '50%',
                 background: '#880E4F',
-                boxShadow: '0 4px 16px 0 rgba(136, 14, 79, 0.18)',
-                transition: 'transform 0.15s, box-shadow 0.15s',
+                boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.2), 0 4px 16px rgba(136, 14, 79, 0.3)',
+                transition: 'all 0.3s ease-in-out',
                 border: 'none',
                 cursor: 'pointer',
                 touchAction: 'manipulation',
@@ -62,7 +90,10 @@ const StudyGuideCard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
-              whileHover={{ scale: 1.05, boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.4), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
+              whileHover={{ 
+                scale: 1.05, 
+                boxShadow: '0 0 0 12px rgba(136, 14, 79, 0.3), 0 4px 16px rgba(136, 14, 79, 0.4)'
+              }}
               whileTap={{ scale: 0.97 }}
               onClick={e => { e.stopPropagation(); onClick(); }}
               tabIndex={-1}
@@ -75,7 +106,16 @@ const StudyGuideCard = ({
           )}
         </AnimatePresence>
       </div>
-      <div className="flex flex-col items-center mt-4 px-2">
+      <div 
+        className="flex flex-col items-center mt-0 px-0 w-full"
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0.97), rgba(255,255,255,1))',
+          borderBottomLeftRadius: '16px',
+          borderBottomRightRadius: '16px',
+          padding: '12px 0 12px 0',
+          width: '100%'
+        }}
+      >
         <div className="font-bold text-lg text-gray-800 text-center">{title}</div>
         <div className="text-sm text-gray-500 text-center mt-1">{description}</div>
       </div>

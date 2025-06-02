@@ -92,7 +92,12 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.1, ease: 'easeOut' }}
+      className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
+    >
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -222,7 +227,7 @@ const UploadPage = () => {
           </form>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

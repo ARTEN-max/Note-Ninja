@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils';
+import { motion } from "framer-motion";
 
 const csImages = [
   'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80',
@@ -82,7 +83,12 @@ const MyNotesPage = () => {
   };
 
   return (
-    <main className="p-6 bg-gradient-to-b from-pink-200 to-pink-300 min-h-screen flex flex-col items-center">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.1, ease: 'easeOut' }}
+      className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
+    >
       <div className="w-full max-w-6xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold font-inknut text-red-800 mb-6 text-center" style={{ fontFamily: 'Inknut Antiqua, serif' }}>
           My Notes
@@ -148,7 +154,7 @@ const MyNotesPage = () => {
           )}
         </div>
       </div>
-    </main>
+    </motion.div>
   );
 };
 

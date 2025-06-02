@@ -154,10 +154,10 @@ const BrowsePage = () => {
 
   return (
     <motion.main
-      initial="hidden"
-      animate="visible"
-      variants={fadeIn}
-      className="p-6 bg-gradient-to-b from-pink-200 to-pink-300 min-h-screen flex flex-col items-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.1, ease: 'easeOut' }}
+      className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
     >
       {/* Search Section */}
       <div className="w-full max-w-2xl flex flex-col items-center mt-8 mb-10">

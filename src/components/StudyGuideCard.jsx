@@ -17,8 +17,8 @@ const StudyGuideCard = ({
     <div
       className="relative flex flex-col items-center cursor-pointer transition-all duration-300"
       style={{ 
-        width: 232, 
-        height: 300,
+        width: '14.5rem',
+        height: '18.75rem',
         borderRadius: '16px',
         boxShadow: hovered
           ? '0 0 20px 4px #f9a8d4, 0 4px 16px rgba(136, 14, 79, 0.1)'
@@ -37,7 +37,7 @@ const StudyGuideCard = ({
       onMouseLeave={() => setHovered(false)}
       id={`card-${courseCode}`}
     >
-      <div className="relative" style={{ width: '100%', height: 232 }}>
+      <div className="relative" style={{ width: '100%', height: '14.5rem' }}>
         <img
           src={imageUrl}
           alt={`${courseCode} study guide`}

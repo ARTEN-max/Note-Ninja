@@ -58,7 +58,7 @@ function AppContent() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", width: "100vw", background: "linear-gradient(to bottom, rgb(251, 207, 232), rgb(249, 168, 212))" }}>
       {showSidebar && <Sidebar showMinimize={showMinimize} />}
-      <div className="w-full md:ml-[240px]" style={{ width: '100%' }}>
+      <div className={showSidebar ? 'w-full md:ml-[240px]' : 'w-full'} style={{ width: '100%' }}>
         <Routes>
           <Route path="/signin" element={<SignIn />} />
           <Route path="/register" element={<Register />} />

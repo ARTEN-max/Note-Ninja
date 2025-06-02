@@ -162,7 +162,7 @@ const NoteDashboard = () => {
         href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;600;700&family=Inria+Sans:wght@400;700&family=Inter:wght@400;500&display=swap"
       />
       <div className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 flex flex-col items-center justify-center">
-        <div className="w-full max-w-7xl mx-auto px-4 -mt-16" style={{ transform: 'scale(1.08)' }}>
+        <div className="w-full max-w-7xl mx-auto px-4 md:-mt-16">
           <div className="w-full flex justify-center">
             <h1
               className="text-4xl font-bold mb-1 font-inknut text-red-800 pl-0"
@@ -174,7 +174,7 @@ const NoteDashboard = () => {
           <h2 className="text-2xl font-bold mb-1 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Dashboard</h2>
           <div className="text-lg mb-6 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Today's top study guides...</div>
           <motion.div
-            className="grid grid-cols-4 gap-x-6 gap-y-8"
+            className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
             variants={containerVariants}
             initial="hidden"
             animate="show"

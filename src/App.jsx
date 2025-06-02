@@ -20,6 +20,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import MobileNav from "./components/MobileNav";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -115,6 +116,7 @@ function AppContent() {
           />
         </Routes>
       </div>
+      <MobileNav />
     </div>
   );
 }

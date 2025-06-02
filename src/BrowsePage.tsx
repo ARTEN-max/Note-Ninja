@@ -160,8 +160,8 @@ const BrowsePage = () => {
       className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
     >
       {/* Search Section */}
-      <div className="w-full max-w-2xl flex flex-col items-center mt-8 mb-10">
-        <div className="relative w-full">
+      <div className="w-full flex justify-center items-center mt-8 mb-10">
+        <div className="relative w-full max-w-lg mx-auto">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 text-2xl">
             <FiSearch />
           </span>

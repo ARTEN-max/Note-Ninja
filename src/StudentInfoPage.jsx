@@ -4,6 +4,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./Register.css"; // Reuse the same styles
+import { motion } from "framer-motion";
 
 const StudentInfoPage = () => {
   const [name, setName] = useState("");
@@ -136,7 +137,8 @@ const StudentInfoPage = () => {
       minHeight: '100vh', 
       width: '100vw',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      background: 'linear-gradient(to bottom, rgb(251, 207, 232), rgb(249, 168, 212))'
     }}>
       <div 
         ref={vantaRef} 
@@ -161,94 +163,101 @@ const StudentInfoPage = () => {
         width: '100%',
         padding: '1rem'
       }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '800',
-          color: '#880E4F',
-          marginBottom: '1rem',
-          textAlign: 'center',
-          fontFamily: 'Inknut Antiqua, serif',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          Welcome to Note Ninja
-        </h1>
-        <div className="form_area" style={{ 
-          backgroundColor: 'rgba(237, 220, 217, 0.95)',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-          width: '100%',
-          maxWidth: '400px',
-          padding: '1.5rem',
-          borderRadius: '20px'
-        }}>
-          <p className="title" style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>Complete Your Profile</p>
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-              <label className="sub_title" htmlFor="name" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Name</label>
-              <input
-                placeholder="Enter your full name"
-                className="form_style"
-                type="text"
-                id="name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.1, ease: 'easeOut' }}
+          style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        >
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            color: '#880E4F',
+            marginBottom: '1rem',
+            textAlign: 'center',
+            fontFamily: 'Inknut Antiqua, serif',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            Welcome to Note Ninja
+          </h1>
+          <div className="form_area" style={{ 
+            backgroundColor: 'rgba(237, 220, 217, 0.95)',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+            width: '100%',
+            maxWidth: '25rem',
+            padding: '1.5rem',
+            borderRadius: '20px'
+          }}>
+            <p className="title" style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>Complete Your Profile</p>
+            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
+                <label className="sub_title" htmlFor="name" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Name</label>
+                <input
+                  placeholder="Enter your full name"
+                  className="form_style"
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                  disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                />
+              </div>
+              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
+                <label className="sub_title" htmlFor="faculty" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Faculty</label>
+                <select
+                  id="faculty"
+                  className="form_style"
+                  value={faculty}
+                  onChange={e => setFaculty(e.target.value)}
+                  required
+                  disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                >
+                  <option value="" disabled>Select your faculty</option>
+                  <option value="Arts">Arts</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Science">Science</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Environment">Environment</option>
+                  <option value="Health">Health</option>
+                </select>
+              </div>
+              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
+                <label className="sub_title" htmlFor="year" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Year of Study</label>
+                <input
+                  placeholder="e.g. 1, 2, 3, 4"
+                  className="form_style"
+                  type="text"
+                  id="year"
+                  value={year}
+                  onChange={e => setYear(e.target.value)}
+                  required
+                  disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                />
+              </div>
+              <button 
+                className="btn" 
+                type="submit" 
                 disabled={loading}
-                style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
-              />
-            </div>
-            <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-              <label className="sub_title" htmlFor="faculty" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Faculty</label>
-              <select
-                id="faculty"
-                className="form_style"
-                value={faculty}
-                onChange={e => setFaculty(e.target.value)}
-                required
-                disabled={loading}
-                style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                style={{ 
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '1rem',
+                  marginTop: '0.5rem',
+                  marginBottom: '0.75rem'
+                }}
               >
-                <option value="" disabled>Select your faculty</option>
-                <option value="Arts">Arts</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Science">Science</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Environment">Environment</option>
-                <option value="Health">Health</option>
-              </select>
-            </div>
-            <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-              <label className="sub_title" htmlFor="year" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Year of Study</label>
-              <input
-                placeholder="e.g. 1, 2, 3, 4"
-                className="form_style"
-                type="text"
-                id="year"
-                value={year}
-                onChange={e => setYear(e.target.value)}
-                required
-                disabled={loading}
-                style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
-              />
-            </div>
-            <button 
-              className="btn" 
-              type="submit" 
-              disabled={loading}
-              style={{ 
-                width: '100%',
-                padding: '0.75rem',
-                fontSize: '1rem',
-                marginTop: '0.5rem',
-                marginBottom: '0.75rem'
-              }}
-            >
-              {loading ? "Saving..." : "Save & Continue"}
-            </button>
-            {error && <div style={{ color: "red", marginBottom: '0.5rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
-            {success && <div style={{ color: "green", marginBottom: '0.5rem', textAlign: 'center', fontSize: '0.9rem' }}>Saved! Redirecting...</div>}
-          </form>
-        </div>
+                {loading ? "Saving..." : "Save & Continue"}
+              </button>
+              {error && <div style={{ color: "red", marginBottom: '0.5rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
+              {success && <div style={{ color: "green", marginBottom: '0.5rem', textAlign: 'center', fontSize: '0.9rem' }}>Saved! Redirecting...</div>}
+            </form>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

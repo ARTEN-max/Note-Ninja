@@ -99,7 +99,8 @@ const SignIn = () => {
       minHeight: '100vh', 
       width: '100vw',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      background: 'linear-gradient(to bottom, rgb(251, 207, 232), rgb(249, 168, 212))'
     }}>
       <div 
         ref={vantaRef} 
@@ -124,98 +125,105 @@ const SignIn = () => {
         width: '100%',
         padding: '1rem'
       }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '800',
-          color: '#880E4F',
-          marginBottom: '1rem',
-          textAlign: 'center',
-          fontFamily: 'Inknut Antiqua, serif',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          Welcome to Note Ninja
-        </h1>
-        <div className="form_area" style={{ 
-          backgroundColor: 'rgba(237, 220, 217, 0.95)',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-          width: '100%',
-          maxWidth: '400px',
-          padding: '1.5rem',
-          borderRadius: '20px'
-        }}>
-          <p className="title" style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>SIGN IN</p>
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-              <label className="sub_title" htmlFor="email" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Email</label>
-              <input
-                placeholder="Enter your email"
-                className="form_style"
-                type="email"
-                id="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
-              />
-            </div>
-            <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-              <label className="sub_title" htmlFor="password" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Password</label>
-              <input
-                placeholder="Enter your password"
-                className="form_style"
-                type="password"
-                id="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
-              />
-            </div>
-            <button 
-              className="btn" 
-              type="submit" 
-              disabled={loading}
-              style={{ 
-                width: '100%',
-                padding: '0.75rem',
-                fontSize: '1rem',
-                marginTop: '0.5rem',
-                marginBottom: '0.75rem'
-              }}
-            >
-              {loading ? "Signing In..." : "SIGN IN"}
-            </button>
-            {error && <div style={{ color: "red", marginBottom: '0.5rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
-            <div style={{ textAlign: 'center', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-              <span 
-                onClick={() => navigate("/forgot")} 
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.1, ease: 'easeOut' }}
+          style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        >
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            color: '#880E4F',
+            marginBottom: '1rem',
+            textAlign: 'center',
+            fontFamily: 'Inknut Antiqua, serif',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            Welcome to Note Ninja
+          </h1>
+          <div className="form_area" style={{ 
+            backgroundColor: 'rgba(237, 220, 217, 0.95)',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+            width: '100%',
+            maxWidth: '25rem',
+            padding: '1.5rem',
+            borderRadius: '20px'
+          }}>
+            <p className="title" style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>SIGN IN</p>
+            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
+                <label className="sub_title" htmlFor="email" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Email</label>
+                <input
+                  placeholder="Enter your email"
+                  className="form_style"
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                />
+              </div>
+              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
+                <label className="sub_title" htmlFor="password" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Password</label>
+                <input
+                  placeholder="Enter your password"
+                  className="form_style"
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                />
+              </div>
+              <button 
+                className="btn" 
+                type="submit" 
+                disabled={loading}
                 style={{ 
-                  color: '#880E4F',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '1rem',
+                  marginTop: '0.5rem',
+                  marginBottom: '0.75rem'
                 }}
               >
-                Forgot Password?
-              </span>
-            </div>
-            <p style={{ textAlign: 'center', fontSize: '0.9rem', margin: 0 }}>
-              Don't have an account?{" "}
-              <span 
-                onClick={() => navigate("/register")} 
-                style={{ 
-                  color: '#880E4F',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
-                }}
-              >
-                Sign Up Here!
-              </span>
-            </p>
-          </form>
-        </div>
+                {loading ? "Signing In..." : "SIGN IN"}
+              </button>
+              {error && <div style={{ color: "red", marginBottom: '0.5rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
+              <div style={{ textAlign: 'center', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                <span 
+                  onClick={() => navigate("/forgot")}
+                  style={{ 
+                    color: '#880E4F',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Forgot Password?
+                </span>
+              </div>
+              <p style={{ textAlign: 'center', fontSize: '0.9rem', margin: 0 }}>
+                Don't have an account?{" "}
+                <span 
+                  onClick={() => navigate("/register")}
+                  style={{ 
+                    color: '#880E4F',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Sign Up Here!
+                </span>
+              </p>
+            </form>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

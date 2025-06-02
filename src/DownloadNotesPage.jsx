@@ -264,9 +264,14 @@ const DownloadNotesPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.1, ease: 'easeOut' }}
+        className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 flex items-center justify-center"
+      >
         <div className="text-2xl font-bold text-[#880E4F]">Loading...</div>
-      </div>
+      </motion.div>
     );
   }
 

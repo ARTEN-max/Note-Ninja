@@ -162,44 +162,42 @@ const NoteDashboard = () => {
         href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;600;700&family=Inria+Sans:wght@400;700&family=Inter:wght@400;500&display=swap"
       />
       <div className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 flex flex-col items-center justify-center">
-        <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-8 -mt-8">
+        <div className="w-full max-w-7xl mx-auto px-4 -mt-16" style={{ transform: 'scale(1.08)' }}>
           <div className="w-full flex justify-center">
             <h1
-              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 font-inknut text-red-800 pl-0"
+              className="text-4xl font-bold mb-1 font-inknut text-red-800 pl-0"
               style={{ fontFamily: "'Inknut Antiqua', serif" }}
             >
               NOTE NINJA
             </h1>
           </div>
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Dashboard</h2>
-          <div className="text-base sm:text-lg mb-6 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Today's top study guides...</div>
-          <div className="w-full">
-            <motion.div
-              className="flex gap-x-4 gap-y-8 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-x-6 sm:gap-y-8 sm:overflow-x-visible"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {studyGuides.map((guide) => (
-                <motion.div
-                  key={guide.id}
-                  variants={cardVariants}
-                  className="flex justify-center mb-2 min-w-[16rem] max-w-xs w-full sm:min-w-0"
-                >
-                  <StudyGuideCard
-                    courseCode={guide.courseCode}
-                    title={guide.title}
-                    description={guide.description}
-                    imageUrl={guide.imageUrl}
-                    liked={!!liked[guide.id]}
-                    onLike={() => handleLikeClick(guide.id, guide.courseCode)}
-                    likeCount={likeCounts[guide.courseCode] || 0}
-                    onClick={() => handleStudyGuideClick(guide.id)}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+          <h2 className="text-2xl font-bold mb-1 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Dashboard</h2>
+          <div className="text-lg mb-6 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Today's top study guides...</div>
+          <motion.div
+            className="grid grid-cols-4 gap-x-6 gap-y-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+          >
+            {studyGuides.map((guide) => (
+              <motion.div
+                key={guide.id}
+                variants={cardVariants}
+                className="flex justify-center mb-2"
+              >
+                <StudyGuideCard
+                  courseCode={guide.courseCode}
+                  title={guide.title}
+                  description={guide.description}
+                  imageUrl={guide.imageUrl}
+                  liked={!!liked[guide.id]}
+                  onLike={() => handleLikeClick(guide.id, guide.courseCode)}
+                  likeCount={likeCounts[guide.courseCode] || 0}
+                  onClick={() => handleStudyGuideClick(guide.id)}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-10">
             {albums.map((album, idx) => (
               <AlbumItem

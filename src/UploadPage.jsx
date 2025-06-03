@@ -7,31 +7,18 @@ import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/fires
 import { useAuth } from './contexts/AuthContext';
 
 const UploadPage = () => {
-  const [file, setFile] = useState(null);
   const [courseCode, setCourseCode] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [type, setType] = useState('studyGuides');
+  const [courseName, setCourseName] = useState('');
+  const [reason, setReason] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile && selectedFile.type === 'application/pdf') {
-      setFile(selectedFile);
-      setError('');
-    } else {
-      setError('Please select a PDF file');
-      setFile(null);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !courseCode || !title) {
+    if (!courseCode || !courseName) {
       setError('Please fill in all required fields');
       return;
     }
@@ -41,42 +28,31 @@ const UploadPage = () => {
       setError('');
       setSuccess('');
 
-      // Fetch uploader name from Firestore (students collection)
-      let uploaderName = 'Anonymous';
+      // Fetch requester name from Firestore (students collection)
+      let requesterName = 'Anonymous';
+      let requesterId = '';
       if (currentUser && currentUser.uid) {
+        requesterId = currentUser.uid;
         const userDoc = await getDoc(doc(db, 'students', currentUser.uid));
         if (userDoc.exists()) {
-          uploaderName = userDoc.data().name || 'Anonymous';
+          requesterName = userDoc.data().name || 'Anonymous';
         }
       }
 
-      // Upload file to Firebase Storage
-      const storageRef = ref(storage, `study-materials/${courseCode}/${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-
-      // Add document to Firestore
-      const docRef = await addDoc(collection(db, 'pendingNotes'), {
+      // Add request to Firestore
+      await addDoc(collection(db, 'courseRequests'), {
         courseCode,
-        title,
-        description,
-        type,
-        fileUrl: downloadURL,
-        fileName: file.name,
-        fileSize: file.size,
-        uploaderId: currentUser.uid,
-        uploaderName,
-        uploadDate: serverTimestamp(),
-        likes: 0,
-        downloads: 0
+        courseName,
+        reason,
+        requesterId,
+        requesterName,
+        requestDate: serverTimestamp(),
       });
 
-      setSuccess('Study material uploaded successfully!');
-      setFile(null);
+      setSuccess('Course request submitted successfully!');
       setCourseCode('');
-      setTitle('');
-      setDescription('');
-      setType('studyGuides');
+      setCourseName('');
+      setReason('');
 
       // Redirect to the browse page after 2 seconds
       setTimeout(() => {
@@ -84,8 +60,8 @@ const UploadPage = () => {
       }, 2000);
 
     } catch (err) {
-      setError('Failed to upload study material. Please try again.');
-      console.error('Upload error:', err);
+      setError('Failed to submit course request. Please try again.');
+      console.error('Request error:', err);
     } finally {
       setUploading(false);
     }
@@ -105,31 +81,10 @@ const UploadPage = () => {
           className="bg-white rounded-3xl shadow-xl p-8"
         >
           <h1 className="text-3xl font-bold text-[#880E4F] mb-6 font-inknut text-center">
-            Upload Study Material
+            Request a Course
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* File Upload */}
-            <div className="space-y-2">
-              <label className="block text-gray-700 font-medium">
-                PDF File <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-dashed border-pink-200 focus:outline-none focus:border-pink-400 transition-colors cursor-pointer"
-                  disabled={uploading}
-                />
-                {file && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    Selected: {file.name}
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Course Code */}
             <div className="space-y-2">
               <label className="block text-gray-700 font-medium">
@@ -146,53 +101,34 @@ const UploadPage = () => {
               />
             </div>
 
-            {/* Title */}
+            {/* Course Name */}
             <div className="space-y-2">
               <label className="block text-gray-700 font-medium">
-                Title <span className="text-red-500">*</span>
+                Course Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Midterm Review Notes"
+                value={courseName}
+                onChange={(e) => setCourseName(e.target.value)}
+                placeholder="e.g., Algorithms and Data Structures"
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-colors"
                 disabled={uploading}
                 required
               />
             </div>
 
-            {/* Description */}
+            {/* Reason */}
             <div className="space-y-2">
               <label className="block text-gray-700 font-medium">
-                Description
+                Why do you want this course? (optional)
               </label>
               <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your study material..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Let us know why this course is important to you..."
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-colors resize-none h-32"
                 disabled={uploading}
               />
-            </div>
-
-            {/* Type Selection */}
-            <div className="space-y-2">
-              <label className="block text-gray-700 font-medium">
-                Material Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-colors"
-                disabled={uploading}
-                required
-              >
-                <option value="studyGuides">Study Guide</option>
-                <option value="midtermFinal">Midterm/Final Review</option>
-                <option value="quizzes">Quiz Solutions</option>
-                <option value="deepDive">Deep Dive</option>
-              </select>
             </div>
 
             {/* Error and Success Messages */}
@@ -202,27 +138,17 @@ const UploadPage = () => {
               </div>
             )}
             {success && (
-              <div className="p-4 rounded-xl bg-green-50 text-green-600 border border-green-200">
+              <div className="p-4 rounded-xl bg-green-50 text-green-700 border border-green-200">
                 {success}
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
+              className="w-full py-3 rounded-xl bg-pink-500 text-white font-bold text-lg shadow-md hover:bg-pink-600 transition-colors disabled:opacity-60"
               disabled={uploading}
-              className={`w-full py-4 rounded-2xl font-bold text-lg text-white shadow-lg transition-all
-                ${uploading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-[#880E4F] hover:scale-105 focus:scale-105 focus:outline-none'
-                }`}
-              style={{ 
-                boxShadow: uploading 
-                  ? 'none' 
-                  : '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)'
-              }}
             >
-              {uploading ? 'Uploading...' : 'Upload Study Material'}
+              {uploading ? 'Submitting...' : 'Request'}
             </button>
           </form>
         </motion.div>

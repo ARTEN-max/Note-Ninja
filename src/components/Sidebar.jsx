@@ -16,7 +16,7 @@ const navItems = [
       <span style={{ width: 4.35, height: 4.35, left: 16.65, top: 16.65, position: 'absolute', outline: '2px black solid', outlineOffset: '-1px' }} />
     </span>
   ) },
-  { label: "Upload", to: "/upload", icon: (
+  { label: "Request", to: "/upload", icon: (
     <span style={{ width: 24, height: 24, display: 'inline-block', position: 'relative' }}>
       <span style={{ width: 16, height: 16, left: 4, top: 4, position: 'absolute', outline: '2px black solid', outlineOffset: '-1px' }} />
       <span style={{ width: 8, height: 2, left: 8, top: 11, position: 'absolute', outline: '2px black solid', outlineOffset: '-1px' }} />

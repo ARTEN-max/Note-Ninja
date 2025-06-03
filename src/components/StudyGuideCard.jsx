@@ -10,11 +10,13 @@ const StudyGuideCard = ({
   liked = false,
   onLike = () => {},
   likeCount,
+  ...props
 }) => {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      {...props}
       className="relative flex flex-col items-center cursor-pointer transition-all duration-300"
       style={{ 
         width: '14.5rem',
@@ -44,15 +46,6 @@ const StudyGuideCard = ({
           className="object-cover"
           style={{ width: '100%', height: '100%', borderTopLeftRadius: 16, borderTopRightRadius: 16, display: 'block' }}
         />
-        <div 
-          className="absolute top-2 left-2 bg-pink-100 text-pink-700 font-bold px-3 py-1 rounded-lg text-sm shadow"
-          style={{ 
-            backdropFilter: 'blur(4px)',
-            backgroundColor: 'rgba(249, 168, 212, 0.9)'
-          }}
-        >
-          {courseCode}
-        </div>
         <div className="absolute top-2 right-2">
           <button
             type="button"
@@ -116,7 +109,7 @@ const StudyGuideCard = ({
           width: '100%'
         }}
       >
-        <div className="font-bold text-lg text-gray-800 text-center">{title}</div>
+        <div className="font-bold text-lg text-gray-800 text-center">{courseCode}</div>
         <div className="text-sm text-gray-500 text-center mt-1">{description}</div>
       </div>
     </div>

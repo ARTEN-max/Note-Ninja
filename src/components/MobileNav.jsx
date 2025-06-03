@@ -5,7 +5,7 @@ import { HomeIcon, BookOpenIcon, ArrowUpOnSquareIcon, UserIcon } from "@heroicon
 const navItems = [
   { label: "Home", to: "/", icon: <HomeIcon className="w-6 h-6" /> },
   { label: "Browse", to: "/browse", icon: <BookOpenIcon className="w-6 h-6" /> },
-  { label: "Upload", to: "/upload", icon: <ArrowUpOnSquareIcon className="w-6 h-6" /> },
+  { label: "Request", to: "/upload", icon: <ArrowUpOnSquareIcon className="w-6 h-6" /> },
   { label: "My Notes", to: "/my-notes", icon: <UserIcon className="w-6 h-6" /> },
 ];
 

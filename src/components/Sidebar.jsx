@@ -53,12 +53,13 @@ function Sidebar() {
   const navigate = useNavigate();
   return (
     <div
-      className="hidden md:flex flex-col justify-between w-[240px] h-screen fixed left-0 top-0 bg-white overflow-hidden border-r border-gray-200 z-[100] font-inter font-medium text-base"
+      className="flex flex-col justify-between w-[240px] h-screen fixed left-0 top-0 bg-white overflow-hidden border-r border-gray-200 z-[100] font-inter font-medium text-base"
       style={{ minWidth: 240 }}
     >
       <div>
         <div className="absolute left-6 top-6 flex flex-col justify-center">
           <span className="font-semibold text-xl leading-[30px]">Study app</span>
+          <hr className="w-32 border-t-2 border-black mt-2 mb-2" />
         </div>
         <div className="w-[240px] absolute left-2 top-[78px] flex flex-col gap-1 items-start">
           <span className="mt-8 mb-2 font-bold">Discover</span>

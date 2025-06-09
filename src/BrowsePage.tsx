@@ -317,7 +317,7 @@ const BrowsePage = () => {
 
       {/* Personalized Study Guides Section */}
       <div className="w-full max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold font-inknut text-red-800 mb-6" style={{ fontFamily: 'Inknut Antiqua, serif' }}>
+        <h2 className="text-2xl md:text-3xl font-bold font-inknut text-red-800 mb-6 text-center md:text-left" style={{ fontFamily: 'Inknut Antiqua, serif' }}>
           {recommendedGuides === studyGuides ? "Popular Study Guides" : "Recommended for You"}
         </h2>
         {loadingRecs ? (

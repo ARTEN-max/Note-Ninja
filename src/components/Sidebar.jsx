@@ -103,16 +103,17 @@ function Sidebar() {
       >
         <span className="text-xl">🚪</span> Logout
       </button>
-      {/* Mobile-only floating logout button */}
+      {/* Small mobile-only logout button, top right */}
       <button
         onClick={async () => {
           await signOut(auth);
           navigate('/signin');
         }}
-        className="fixed bottom-6 right-6 md:hidden bg-[#880E4F] text-white rounded-full p-4 shadow-lg z-[200] flex items-center justify-center"
-        style={{ boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
+        className="fixed top-4 right-4 md:hidden bg-[#880E4F] text-white rounded-full p-2 shadow-lg z-[200] flex items-center justify-center text-sm"
+        style={{ boxShadow: '0 0 0 4px rgba(136, 14, 79, 0.12), 0 2px 8px 0 rgba(136, 14, 79, 0.18)' }}
+        aria-label="Logout"
       >
-        <span className="text-xl">🚪</span>
+        <span className="text-lg">🚪</span>
       </button>
     </div>
   );

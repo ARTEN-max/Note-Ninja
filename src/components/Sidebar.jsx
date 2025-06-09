@@ -53,7 +53,7 @@ function Sidebar() {
   const navigate = useNavigate();
   return (
     <div
-      className="flex flex-col justify-between w-[240px] h-screen fixed left-0 top-0 bg-white overflow-hidden border-r border-gray-200 z-[100] font-inter font-medium text-base"
+      className="hidden md:flex flex-col justify-between w-[240px] h-screen fixed left-0 top-0 bg-white overflow-hidden border-r border-gray-200 z-[100] font-inter font-medium text-base"
       style={{ minWidth: 240 }}
     >
       <div>
@@ -92,16 +92,27 @@ function Sidebar() {
           ))}
         </div>
       </div>
-      {/* Logout Button at the bottom */}
+      {/* Logout Button at the bottom for desktop/tablet */}
       <button
         onClick={async () => {
           await signOut(auth);
           navigate('/signin');
         }}
-        className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-lg bg-[#880E4F] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none"
+        className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-lg bg-[#880E4F] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
         style={{ boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
       >
         <span className="text-xl">🚪</span> Logout
+      </button>
+      {/* Mobile-only floating logout button */}
+      <button
+        onClick={async () => {
+          await signOut(auth);
+          navigate('/signin');
+        }}
+        className="fixed bottom-6 right-6 md:hidden bg-[#880E4F] text-white rounded-full p-4 shadow-lg z-[200] flex items-center justify-center"
+        style={{ boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
+      >
+        <span className="text-xl">🚪</span>
       </button>
     </div>
   );

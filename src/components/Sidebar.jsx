@@ -52,72 +52,58 @@ const libraryItems = [
 function Sidebar() {
   const navigate = useNavigate();
   return (
-    <>
-      {/* Small mobile-only logout button, top right */}
+    <div
+      className="hidden md:flex flex-col justify-between w-[240px] h-screen fixed left-0 top-0 bg-white overflow-hidden border-r border-gray-200 z-[100] font-inter font-medium text-base"
+      style={{ minWidth: 240 }}
+    >
+      <div>
+        <div className="absolute left-6 top-6 flex flex-col justify-center">
+          <span className="font-semibold text-xl leading-[30px]">Study app</span>
+          <hr className="w-32 border-t-2 border-black mt-2 mb-2" />
+        </div>
+        <div className="w-[240px] absolute left-2 top-[78px] flex flex-col gap-1 items-start">
+          <span className="mt-8 mb-2 font-bold">Discover</span>
+          {navItems.map(item => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors ${isActive ? 'bg-pink-100 text-pink-700 font-bold' : 'hover:bg-gray-100'}`}
+              tabIndex={0}
+              style={{ minHeight: 44 }}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+        <div className="w-[240px] absolute left-2 top-[312px] flex flex-col gap-2 items-start">
+          <span className="mt-8 mb-2 font-bold">Library</span>
+          {libraryItems.map(item => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors ${isActive ? 'bg-pink-100 text-pink-700 font-bold' : 'hover:bg-gray-100'}`}
+              tabIndex={0}
+              style={{ minHeight: 44 }}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+      </div>
+      {/* Logout Button at the bottom for desktop/tablet */}
       <button
         onClick={async () => {
           await signOut(auth);
           navigate('/signin');
         }}
-        className="fixed top-4 right-4 md:hidden bg-[#880E4F] text-white rounded-full p-2 shadow-lg z-[200] flex items-center justify-center text-sm"
-        style={{ boxShadow: '0 0 0 4px rgba(136, 14, 79, 0.12), 0 2px 8px 0 rgba(136, 14, 79, 0.18)' }}
-        aria-label="Logout"
+        className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-lg bg-[#880E4F] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
+        style={{ boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
       >
-        <span className="text-lg">🚪</span>
+        <span className="text-xl">🚪</span> Logout
       </button>
-      <div
-        className="hidden md:flex flex-col justify-between w-[240px] h-screen fixed left-0 top-0 bg-white overflow-hidden border-r border-gray-200 z-[100] font-inter font-medium text-base"
-        style={{ minWidth: 240 }}
-      >
-        <div>
-          <div className="absolute left-6 top-6 flex flex-col justify-center">
-            <span className="font-semibold text-xl leading-[30px]">Study app</span>
-            <hr className="w-32 border-t-2 border-black mt-2 mb-2" />
-          </div>
-          <div className="w-[240px] absolute left-2 top-[78px] flex flex-col gap-1 items-start">
-            <span className="mt-8 mb-2 font-bold">Discover</span>
-            {navItems.map(item => (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors ${isActive ? 'bg-pink-100 text-pink-700 font-bold' : 'hover:bg-gray-100'}`}
-                tabIndex={0}
-                style={{ minHeight: 44 }}
-              >
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-          </div>
-          <div className="w-[240px] absolute left-2 top-[312px] flex flex-col gap-2 items-start">
-            <span className="mt-8 mb-2 font-bold">Library</span>
-            {libraryItems.map(item => (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors ${isActive ? 'bg-pink-100 text-pink-700 font-bold' : 'hover:bg-gray-100'}`}
-                tabIndex={0}
-                style={{ minHeight: 44 }}
-              >
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-          </div>
-        </div>
-        {/* Logout Button at the bottom for desktop/tablet */}
-        <button
-          onClick={async () => {
-            await signOut(auth);
-            navigate('/signin');
-          }}
-          className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-lg bg-[#880E4F] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
-          style={{ boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
-        >
-          <span className="text-xl">🚪</span> Logout
-        </button>
-      </div>
-    </>
+    </div>
   );
 }
 

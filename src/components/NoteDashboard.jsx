@@ -171,8 +171,8 @@ const NoteDashboard = () => {
               NOTE NINJA
             </h1>
           </div>
-          <h2 className="text-2xl font-bold mb-1 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Dashboard</h2>
-          <div className="text-lg mb-6 font-inknut text-red-800 pl-0" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Today's top study guides...</div>
+          <h2 className="text-2xl font-bold mb-1 font-inknut text-red-800 pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Dashboard</h2>
+          <div className="text-lg mb-6 font-inknut text-red-800 pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Today's top study guides...</div>
           <motion.div
             className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
             variants={containerVariants}

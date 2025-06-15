@@ -6,7 +6,7 @@ import { collection, addDoc, onSnapshot, serverTimestamp, query, where, orderBy 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
 
-const ADMIN_EMAIL = 'abdul.rahman78113@gmail.com';
+const ADMIN_EMAILS = ['abdul.rahman78113@gmail.com', 'kingbronfan23@gmail.com'];
 
 const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
   const [showNotes, setShowNotes] = useState(false);
@@ -105,7 +105,7 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
         {welcomeMessage}
       </motion.h1>
       {/* Admin Upload Form */}
-      {currentUser && currentUser.email === ADMIN_EMAIL && (
+      {currentUser && ADMIN_EMAILS.includes(currentUser.email) && (
         <form onSubmit={handleUpload} className="mb-8 bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-4 w-full max-w-xl neon-lavender-glow">
           <h3 className="font-bold text-lg mb-2" style={{ color: '#7E44A3' }}>Upload Note</h3>
           <input

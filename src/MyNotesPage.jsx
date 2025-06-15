@@ -23,10 +23,11 @@ const MyNotesPage = () => {
   const [likeCounts, setLikeCounts] = useState({});
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
+  const userKey = currentUser ? `myNotes_${currentUser.uid}` : 'myNotes_guest';
 
   useEffect(() => {
     setLoading(true);
-    const notesArr = JSON.parse(localStorage.getItem('myNotes') || '[]');
+    const notesArr = JSON.parse(localStorage.getItem(userKey) || '[]');
     setNotes(notesArr);
     // Fetch like counts and user likes for all notes
     const fetchLikes = async () => {
@@ -46,7 +47,7 @@ const MyNotesPage = () => {
       setLoading(false);
     };
     fetchLikes();
-  }, [currentUser]);
+  }, [currentUser, userKey]);
 
   const handleLikeClick = async (id, courseCode) => {
     if (!currentUser) return;
@@ -76,9 +77,9 @@ const MyNotesPage = () => {
   };
 
   const handleRemove = (id) => {
-    const myNotesArr = JSON.parse(localStorage.getItem("myNotes") || "[]");
+    const myNotesArr = JSON.parse(localStorage.getItem(userKey) || "[]");
     const newNotesArr = myNotesArr.filter(note => note.id !== id);
-    localStorage.setItem("myNotes", JSON.stringify(newNotesArr));
+    localStorage.setItem(userKey, JSON.stringify(newNotesArr));
     setNotes(newNotesArr);
   };
 
@@ -87,10 +88,11 @@ const MyNotesPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.1, ease: 'easeOut' }}
-      className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
+      className="min-h-screen bg-sour-lavender py-8 px-4"
     >
       <div className="w-full max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold font-inknut text-red-800 mb-6 text-center md:text-left" style={{ fontFamily: 'Inknut Antiqua, serif' }}>
+        <h2 className="text-2xl md:text-3xl font-bold font-inknut mb-6 text-center md:text-left"
+            style={{ fontFamily: 'Inknut Antiqua, serif', color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
           My Notes
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8">
@@ -101,6 +103,8 @@ const MyNotesPage = () => {
           ) : (
             notes.map((note, idx) => {
               const imgSrc = note.previewImg || csImages[idx % csImages.length];
+              const subject = note.courseCode || note.subject || note.course || 'Unknown Subject';
+              const pdfUrl = note.fileUrl || note.pdfUrl;
               return (
                 <div
                   key={note.id}
@@ -108,7 +112,7 @@ const MyNotesPage = () => {
                   style={{ minWidth: 0, transform: `perspective(1000px) rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`, transformStyle: 'preserve-3d' }}
                   onMouseMove={e => handleMouseMove(e, note.id)}
                   onMouseLeave={handleMouseLeave}
-                  onClick={() => navigate(`/download/${note.id}`)}
+                  onClick={() => pdfUrl && window.open(pdfUrl, '_blank')}
                   role="button"
                   tabIndex={0}
                 >
@@ -122,27 +126,20 @@ const MyNotesPage = () => {
                       className="rounded-xl object-cover w-full h-full"
                     />
                     <div
-                      className="absolute top-2 left-2 bg-pink-100 text-pink-700 font-bold px-3 py-1 rounded-lg text-sm shadow font-inknut"
+                      className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm shadow font-inknut"
                       style={{ fontFamily: 'Inknut Antiqua, serif', transform: 'translateZ(30px)' }}
                     >
-                      {note.course}
+                      {subject}
                     </div>
                   </div>
                   <div className="w-full flex flex-col items-start" style={{ transform: 'translateZ(10px)' }}>
                     <div className="font-bold text-lg text-gray-800 font-inknut mb-1" style={{ fontFamily: 'Inknut Antiqua, serif' }}>{note.title}</div>
-                    <div className="text-sm text-gray-500 mb-3 truncate w-full">Description of playlist</div>
+                    <div className="text-sm text-gray-500 mb-3 truncate w-full">{note.description || note.fileName || ''}</div>
                     <div className="flex flex-row gap-2 w-full">
                       <button
                         type="button"
-                        onClick={e => { e.stopPropagation(); handleLikeClick(note.id, note.course); }}
-                        className={`px-4 py-1 rounded-2xl font-bold text-base transition-colors ${liked[note.id] ? 'bg-pink-200 text-pink-700' : 'bg-gray-200 text-black'} focus:outline-none`}
-                      >
-                        {liked[note.id] ? 'Liked' : 'Like'}
-                      </button>
-                      <button
-                        type="button"
                         onClick={e => { e.stopPropagation(); handleRemove(note.id); }}
-                        className="px-4 py-1 rounded-2xl font-bold text-base bg-red-100 text-red-700 shadow hover:bg-red-200 transition-colors focus:outline-none"
+                        className="px-4 py-1 rounded-2xl font-bold text-base bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white shadow hover:from-[#a259e6] hover:to-[#7e44a3] transition-colors focus:outline-none"
                       >
                         Remove from My Notes
                       </button>

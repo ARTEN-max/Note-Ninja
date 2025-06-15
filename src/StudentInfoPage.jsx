@@ -35,9 +35,9 @@ const StudentInfoPage = () => {
             minWidth: 200.00,
             scale: 1.00,
             scaleMobile: 1.00,
-            backgroundColor: 0xfbcfe8,
-            color1: 0xf9a8d4,
-            color2: 0xf472b6,
+            backgroundColor: 0xe3b8f9,
+            color1: 0xb266ff,
+            color2: 0x8a2be2,
             colorMode: "variance",
             birdSize: 1.50,
             wingSpan: 20.00,
@@ -138,7 +138,7 @@ const StudentInfoPage = () => {
       width: '100vw',
       position: 'relative',
       overflow: 'hidden',
-      background: 'linear-gradient(to bottom, rgb(251, 207, 232), rgb(249, 168, 212))'
+      background: 'linear-gradient(to bottom, #e3b8f9, #c895f2)'
     }}>
       <div 
         ref={vantaRef} 
@@ -172,18 +172,18 @@ const StudentInfoPage = () => {
           <h1 style={{
             fontSize: '2.5rem',
             fontWeight: '800',
-            color: '#880E4F',
+            color: '#5E2A84',
             marginBottom: '1rem',
             textAlign: 'center',
             fontFamily: 'Inknut Antiqua, serif',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+            textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff'
           }}>
             Welcome to Note Ninja
           </h1>
           <div className="form_area" style={{ 
-            backgroundColor: 'rgba(237, 220, 217, 0.95)',
+            backgroundColor: 'rgba(255,255,255,0.95)',
             backdropFilter: 'blur(8px)',
-            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+            boxShadow: '0 8px 32px 0 #e3b8f9',
             width: '100%',
             maxWidth: '25rem',
             padding: '1.5rem',
@@ -240,7 +240,7 @@ const StudentInfoPage = () => {
                 />
               </div>
               <button 
-                className="btn" 
+                className="btn bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold" 
                 type="submit" 
                 disabled={loading}
                 style={{ 
@@ -248,7 +248,8 @@ const StudentInfoPage = () => {
                   padding: '0.75rem',
                   fontSize: '1rem',
                   marginTop: '0.5rem',
-                  marginBottom: '0.75rem'
+                  marginBottom: '0.75rem',
+                  boxShadow: '0 2px 16px #e3b8f9'
                 }}
               >
                 {loading ? "Saving..." : "Save & Continue"}

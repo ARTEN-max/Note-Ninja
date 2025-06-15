@@ -58,35 +58,35 @@ function Sidebar() {
     >
       <div>
         <div className="absolute left-6 top-6 flex flex-col justify-center">
-          <span className="font-semibold text-xl leading-[30px]">Study app</span>
-          <hr className="w-32 border-t-2 border-black mt-2 mb-2" />
+          <span className="font-semibold text-xl leading-[30px] font-playfair text-black" style={{ fontFamily: "'Playfair Display', serif", color: '#000' }}>Study App</span>
         </div>
+        <hr className="w-full border-t-2 border-black mt-[70px] mb-2" />
         <div className="w-[240px] absolute left-2 top-[78px] flex flex-col gap-1 items-start">
-          <span className="mt-8 mb-2 font-bold">Discover</span>
+          <span className="mt-8 mb-2 font-bold text-[#4b006e] font-playfair" style={{ fontFamily: "'Playfair Display', serif" }}>Discover</span>
           {navItems.map(item => (
             <NavLink
               key={item.label}
               to={item.to}
-              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors ${isActive ? 'bg-pink-100 text-pink-700 font-bold' : 'hover:bg-gray-100'}`}
+              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
               tabIndex={0}
               style={{ minHeight: 44 }}
             >
-              <span>{item.icon}</span>
+              <span className="sidebar-icon">{React.cloneElement(item.icon, { color: '#4b006e' })}</span>
               <span>{item.label}</span>
             </NavLink>
           ))}
         </div>
         <div className="w-[240px] absolute left-2 top-[312px] flex flex-col gap-2 items-start">
-          <span className="mt-8 mb-2 font-bold">Library</span>
+          <span className="mt-8 mb-2 font-bold text-[#4b006e] font-playfair" style={{ fontFamily: "'Playfair Display', serif" }}>Library</span>
           {libraryItems.map(item => (
             <NavLink
               key={item.label}
               to={item.to}
-              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors ${isActive ? 'bg-pink-100 text-pink-700 font-bold' : 'hover:bg-gray-100'}`}
+              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
               tabIndex={0}
               style={{ minHeight: 44 }}
             >
-              <span>{item.icon}</span>
+              <span className="sidebar-icon">{React.cloneElement(item.icon, { color: '#4b006e' })}</span>
               <span>{item.label}</span>
             </NavLink>
           ))}
@@ -98,8 +98,8 @@ function Sidebar() {
           await signOut(auth);
           navigate('/signin');
         }}
-        className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-lg bg-[#880E4F] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
-        style={{ boxShadow: '0 0 0 8px rgba(136, 14, 79, 0.12), 0 4px 16px 0 rgba(136, 14, 79, 0.18)' }}
+        className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
+        style={{ boxShadow: '0 0 0 8px rgba(178,102,255,0.10), 0 4px 16px 0 rgba(138,43,226,0.18)' }}
       >
         <span className="text-xl">🚪</span> Logout
       </button>

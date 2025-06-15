@@ -16,11 +16,14 @@ import ExamReviewPage from "./ExamReviewPage";
 import QuickRecapPage from "./QuickRecapPage";
 import NightOwlPage from "./NightOwlPage";
 import ChillReviewPage from "./ChillReviewPage";
+import ChapterStudyCards from "./pages/ChapterStudyCards";
+import ChapterNotesPage from "./pages/ChapterNotesPage";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import MobileNav from "./components/MobileNav";
+import SetupStudyGuides from "./components/SetupStudyGuides";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -57,7 +60,7 @@ function AppContent() {
   const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
   return (
-    <div style={{ display: "flex", minHeight: "100vh", width: "100vw", background: "linear-gradient(to bottom, rgb(251, 207, 232), rgb(249, 168, 212))" }}>
+    <div style={{ display: "flex", minHeight: "100vh", width: "100vw" }} className="bg-sour-lavender">
       {showSidebar && <Sidebar showMinimize={showMinimize} />}
       <div className={showSidebar ? 'w-full md:ml-[240px] transition-all duration-300' : 'w-full'} style={{ width: '100%' }}>
         <Routes>
@@ -72,6 +75,22 @@ function AppContent() {
           <Route path="/quick-recap" element={<QuickRecapPage />} />
           <Route path="/night-owl" element={<NightOwlPage />} />
           <Route path="/chill-review" element={<ChillReviewPage />} />
+          <Route
+            path="/guide/:guideId/notes"
+            element={
+              <ProtectedRoute>
+                <ChapterNotesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/guide/:guideId/chapter/:chapterId"
+            element={
+              <ProtectedRoute>
+                <ChapterStudyCards />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/upload"
             element={
@@ -101,6 +120,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <MyNotesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/setup-guides"
+            element={
+              <ProtectedRoute>
+                <SetupStudyGuides />
               </ProtectedRoute>
             }
           />

@@ -93,7 +93,7 @@ const BrowsePage = () => {
   const [notFound, setNotFound] = useState("");
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [recommendedGuides, setRecommendedGuides] = useState([]);
+  const [recommendedGuides, setRecommendedGuides] = useState<StudyGuide[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
 
   useEffect(() => {
@@ -268,7 +268,7 @@ const BrowsePage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.1, ease: 'easeOut' }}
-      className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
+      className="min-h-screen bg-sour-lavender py-8 px-4"
     >
       {/* Search Section */}
       <div className="w-full flex justify-center items-center mt-8 mb-10">
@@ -317,7 +317,8 @@ const BrowsePage = () => {
 
       {/* Personalized Study Guides Section */}
       <div className="w-full max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold font-inknut text-red-800 mb-6 text-center md:text-left" style={{ fontFamily: 'Inknut Antiqua, serif' }}>
+        <h2 className="text-2xl md:text-3xl font-bold font-inknut mb-6 text-center md:text-left"
+            style={{ fontFamily: 'Inknut Antiqua, serif', color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
           {recommendedGuides === studyGuides ? "Popular Study Guides" : "Recommended for You"}
         </h2>
         {loadingRecs ? (
@@ -339,9 +340,9 @@ const BrowsePage = () => {
                   transform: `perspective(1000px) rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`,
                   transformStyle: 'preserve-3d',
                 }}
-                onMouseMove={(e) => handleMouseMove(e, guide.id)}
+                onMouseMove={(e) => handleMouseMove(e, Number(guide.id))}
                 onMouseLeave={handleMouseLeave}
-                onClick={() => navigate(`/download/${guide.id}`)}
+                onClick={() => navigate(`/guide/${guide.courseCode}/notes`)}
                 role="button"
                 tabIndex={0}
               >

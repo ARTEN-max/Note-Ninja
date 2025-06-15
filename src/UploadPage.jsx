@@ -72,7 +72,7 @@ const UploadPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.1, ease: 'easeOut' }}
-      className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4"
+      className="min-h-screen bg-sour-lavender py-8 px-4"
     >
       <div className="max-w-2xl mx-auto">
         <motion.div
@@ -80,7 +80,8 @@ const UploadPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl shadow-xl p-8"
         >
-          <h1 className="text-3xl font-bold text-[#880E4F] mb-6 font-inknut text-center">
+          <h1 className="text-3xl font-bold font-inknut text-center mb-6"
+              style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff', fontFamily: 'Inknut Antiqua, serif' }}>
             Request a Course
           </h1>
 
@@ -145,7 +146,7 @@ const UploadPage = () => {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-pink-500 text-white font-bold text-lg shadow-md hover:bg-pink-600 transition-colors disabled:opacity-60"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold text-lg shadow-md hover:from-[#a259e6] hover:to-[#7e44a3] transition-colors disabled:opacity-60"
               disabled={uploading}
             >
               {uploading ? 'Submitting...' : 'Request'}

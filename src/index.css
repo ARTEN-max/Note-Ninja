@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add custom styles for 3D card flip */
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Inknut Antiqua', serif !important;
+}
+
+body {
+  background: linear-gradient(to bottom, #e3b8f9, #c895f2) !important;
 } 

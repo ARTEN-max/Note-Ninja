@@ -280,9 +280,9 @@ const DownloadNotesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 py-8 px-4">
+    <div className="min-h-screen bg-sour-lavender py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-bold text-[#880E4F] mb-4 font-inknut">
+        <h2 className="text-2xl font-bold font-inknut mb-4" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff', fontFamily: 'Inknut Antiqua, serif' }}>
           Notes for {courseCode}
         </h2>
         {/* Admin Upload Form */}
@@ -344,20 +344,20 @@ const DownloadNotesPage = () => {
                     alt={material.title}
                     className="rounded-lg object-cover w-full h-full"
                   />
-                  <div className="absolute top-2 left-2 bg-pink-100 text-pink-700 font-bold px-3 py-1 rounded-lg text-sm">
+                  <div className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm">
                     {material.type}
                   </div>
                 </div>
                 <h3 className="font-bold text-lg text-gray-800 mb-1">{material.title}</h3>
                 <p className="text-sm text-gray-600 line-clamp-2 mb-2">{material.description}</p>
                 <button
-                  className="w-full py-2 rounded-2xl font-bold text-base bg-[#880E4F] text-white shadow-lg transition-transform hover:scale-105 focus:outline-none mb-2"
+                  className="w-full py-2 rounded-2xl font-bold text-base bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white shadow-lg transition-transform hover:scale-105 focus:outline-none mb-2"
                   onClick={() => window.open(material.fileUrl, '_blank')}
                 >
                   <span className="mr-2">📥</span>Download PDF
                 </button>
                 <button
-                  className="w-full py-2 rounded-2xl font-bold text-base bg-pink-200 text-pink-800 shadow transition-transform hover:scale-105 focus:outline-none mb-2"
+                  className="w-full py-2 rounded-2xl font-bold text-base bg-[#e3b8f9] text-[#5E2A84] shadow transition-transform hover:bg-[#c895f2] focus:outline-none mb-2"
                   onClick={() => handleAddToMyNotes(material)}
                 >
                   <span className="mr-2">➕</span>Add to My Notes

@@ -92,11 +92,11 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-sour-lavender relative overflow-hidden px-2 py-8">
       {/* Animation: Heading at the top, scales and fades in */}
       <motion.h1
-        className="text-4xl md:text-6xl font-bold text-pink-800 mt-12 mb-8"
-        style={{ fontFamily: 'Inknut Antiqua, serif', textAlign: 'center', position: 'relative', zIndex: 20 }}
+        className="text-4xl md:text-6xl font-bold mt-12 mb-8"
+        style={{ fontFamily: 'Inknut Antiqua, serif', textAlign: 'center', position: 'relative', zIndex: 20, color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
@@ -106,14 +106,14 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
       </motion.h1>
       {/* Admin Upload Form */}
       {currentUser && currentUser.email === ADMIN_EMAIL && (
-        <form onSubmit={handleUpload} className="mb-8 bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4 w-full max-w-xl">
-          <h3 className="font-bold text-lg text-pink-800 mb-2">Upload Note</h3>
+        <form onSubmit={handleUpload} className="mb-8 bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-4 w-full max-w-xl neon-lavender-glow">
+          <h3 className="font-bold text-lg mb-2" style={{ color: '#7E44A3' }}>Upload Note</h3>
           <input
             type="text"
             placeholder="Subject (e.g. CS246, MATH137)"
             value={subject}
             onChange={e => setSubject(e.target.value)}
-            className="border rounded p-2"
+            className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#b266ff]"
             required
           />
           <input
@@ -121,34 +121,34 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
             placeholder="Title"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="border rounded p-2"
+            className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#b266ff]"
             required
           />
           <textarea
             placeholder="Description (optional)"
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="border rounded p-2"
+            className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#b266ff]"
           />
           <input
             type="file"
             accept=".pdf"
             onChange={e => setPdfFile(e.target.files[0])}
-            className="border rounded p-2"
+            className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#b266ff]"
             required
           />
           <input
             type="file"
             accept="image/*"
             onChange={e => setImageFile(e.target.files[0])}
-            className="border rounded p-2"
+            className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#b266ff]"
           />
           {imagePreview && (
             <img src={imagePreview} alt="Preview" className="w-32 h-32 object-cover rounded-xl border mx-auto" />
           )}
           <button
             type="submit"
-            className="bg-pink-700 text-white font-bold py-2 px-4 rounded hover:bg-pink-800"
+            className="bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold py-2 px-4 rounded-full hover:from-[#a259e6] hover:to-[#7e44a3] transition-colors shadow-lg"
             disabled={uploading}
           >
             {uploading ? 'Uploading...' : 'Upload Note'}

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import StudyGuideCard from "./StudyGuideCard";
 import AlbumItem from "./AlbumItem";
 import { db } from "../firebase";
-import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, where, addDoc } from "firebase/firestore";
 import { useAuth } from '../contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from '../utils/likeUtils';
 
@@ -14,41 +14,7 @@ const NoteDashboard = () => {
   const { currentUser } = useAuth();
   const [liked, setLiked] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
-
-  const studyGuides = [
-    {
-      id: 1,
-      courseCode: "CS246",
-      title: "Study Guide 1",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/36526b27cd6c189d1bfdb806f5ceb1322060cbad?placeholderIfAbsent=true",
-    },
-    {
-      id: 2,
-      courseCode: "MATH137",
-      title: "Study Guide 2",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6fae324141d1039bf2b81b3ec7dc2f228cce8544?placeholderIfAbsent=true",
-    },
-    {
-      id: 3,
-      courseCode: "STAT230",
-      title: "Study Guide 3",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true",
-    },
-    {
-      id: 4,
-      courseCode: "MATH135",
-      title: "Study Guide 4",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b5a7a6e7eb860dca445df9a3c409eb7da483cae0?placeholderIfAbsent=true",
-    },
-  ];
+  const [likeError, setLikeError] = useState("");
 
   const albums = [
     {
@@ -95,6 +61,42 @@ const NoteDashboard = () => {
     },
   ];
 
+  // Restore the original hardcoded studyGuides array
+  const studyGuides = [
+    {
+      id: 1,
+      courseCode: "CS246",
+      title: "Study Guide 1",
+      description: "Description of playlist",
+      imageUrl:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/36526b27cd6c189d1bfdb806f5ceb1322060cbad?placeholderIfAbsent=true",
+    },
+    {
+      id: 2,
+      courseCode: "MATH137",
+      title: "Study Guide 2",
+      description: "Description of playlist",
+      imageUrl:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/6fae324141d1039bf2b81b3ec7dc2f228cce8544?placeholderIfAbsent=true",
+    },
+    {
+      id: 3,
+      courseCode: "STAT230",
+      title: "Study Guide 3",
+      description: "Description of playlist",
+      imageUrl:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true",
+    },
+    {
+      id: 4,
+      courseCode: "MATH135",
+      title: "Study Guide 4",
+      description: "Description of playlist",
+      imageUrl:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/b5a7a6e7eb860dca445df9a3c409eb7da483cae0?placeholderIfAbsent=true",
+    },
+  ];
+
   useEffect(() => {
     // Fetch like counts and user likes for all study guides
     const fetchLikes = async () => {
@@ -113,10 +115,11 @@ const NoteDashboard = () => {
       }
     };
     fetchLikes();
-  }, [currentUser]);
+  }, [currentUser, studyGuides]);
 
-  const handleStudyGuideClick = (id) => {
-    navigate(`/download/${id}`);
+  const handleStudyGuideClick = (courseCode) => {
+    // Navigate directly to the notes page for this study guide using course code
+    navigate(`/guide/${courseCode}/notes`);
   };
 
   const handleLikeClick = async (id, courseCode) => {
@@ -127,7 +130,18 @@ const NoteDashboard = () => {
       ...prev,
       [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? -1 : 1),
     }));
-    await toggleLike(courseCode, currentUser.uid, alreadyLiked);
+    setLikeError("");
+    try {
+      await toggleLike(courseCode, currentUser.uid, alreadyLiked);
+    } catch (err) {
+      // Rollback UI state
+      setLiked(prev => ({ ...prev, [id]: alreadyLiked }));
+      setLikeCounts(prev => ({
+        ...prev,
+        [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? 1 : -1),
+      }));
+      setLikeError("Failed to update like. Please try again.");
+    }
   };
 
   // Framer Motion variants for staggered animation
@@ -161,42 +175,51 @@ const NoteDashboard = () => {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;600;700&family=Inria+Sans:wght@400;700&family=Inter:wght@400;500&display=swap"
       />
-      <div className="min-h-screen bg-gradient-to-b from-pink-200 to-pink-300 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-sour-lavender flex flex-col items-center justify-center">
         <div className="w-full max-w-7xl mx-auto px-4 md:-mt-16">
           <div className="w-full flex justify-center">
             <h1
-              className="text-4xl font-bold mb-1 font-inknut text-red-800 pl-0"
-              style={{ fontFamily: "'Inknut Antiqua', serif" }}
+              className="text-4xl font-bold mb-1 font-inknut pl-0"
+              style={{ fontFamily: "'Inknut Antiqua', serif", color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
             >
               NOTE NINJA
             </h1>
           </div>
-          <h2 className="text-2xl font-bold mb-1 font-inknut text-red-800 pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Dashboard</h2>
-          <div className="text-lg mb-6 font-inknut text-red-800 pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif" }}>Today's top study guides...</div>
+          <h2 className="text-2xl font-bold mb-1 font-inknut pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif", color: '#7E44A3' }}>Dashboard</h2>
+          <div className="text-lg mb-6 font-inknut pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif", color: '#7E44A3' }}>Today's top study guides...</div>
           <motion.div
             className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
             variants={containerVariants}
             initial="hidden"
             animate="show"
           >
-            {studyGuides.map((guide) => (
-              <motion.div
-                key={guide.id}
-                variants={cardVariants}
-                className="flex justify-center mb-2"
-              >
-                <StudyGuideCard
-                  courseCode={guide.courseCode}
-                  title={guide.title}
-                  description={guide.description}
-                  imageUrl={guide.imageUrl}
-                  liked={!!liked[guide.id]}
-                  onLike={() => handleLikeClick(guide.id, guide.courseCode)}
-                  likeCount={likeCounts[guide.courseCode] || 0}
-                  onClick={() => handleStudyGuideClick(guide.id)}
-                />
-              </motion.div>
-            ))}
+            {likeError && <div className="col-span-4 text-center text-red-600 font-bold mb-2">{likeError}</div>}
+            {studyGuides.length === 0 ? (
+              <div className="col-span-4 text-center py-12 bg-white rounded-2xl shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Study Guides Yet</h3>
+                <p className="text-gray-600 mb-6">Start by adding a study guide.</p>
+                {/* You can add a button here to create a new guide */}
+              </div>
+            ) : (
+              studyGuides.map((guide) => (
+                <motion.div
+                  key={guide.id}
+                  variants={cardVariants}
+                  className="flex justify-center mb-2"
+                >
+                  <StudyGuideCard
+                    courseCode={guide.courseCode}
+                    title={guide.title}
+                    description={guide.description}
+                    imageUrl={guide.imageUrl}
+                    liked={!!liked[guide.id]}
+                    onLike={() => handleLikeClick(guide.id, guide.courseCode)}
+                    likeCount={likeCounts[guide.courseCode] || 0}
+                    onClick={() => handleStudyGuideClick(guide.courseCode)}
+                  />
+                </motion.div>
+              ))
+            )}
           </motion.div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-10">
             {albums.map((album, idx) => (

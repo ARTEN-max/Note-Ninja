@@ -117,7 +117,7 @@ const studyMaterials = {
   ]
 };
 
-const ADMIN_EMAIL = 'abdul.rahman78113@gmail.com'; // <-- Set your email here
+const ADMIN_EMAILS = ['abdul.rahman78113@gmail.com', 'kingbronfan23@gmail.com']; // <-- Add more admin emails here
 
 const DownloadNotesPage = () => {
   const { id } = useParams();
@@ -286,7 +286,7 @@ const DownloadNotesPage = () => {
           Notes for {courseCode}
         </h2>
         {/* Admin Upload Form */}
-        {currentUser && currentUser.email === ADMIN_EMAIL && (
+        {currentUser && ADMIN_EMAILS.includes(currentUser.email) && (
           <form onSubmit={handleUpload} className="mb-8 bg-white/90 rounded-2xl shadow p-6 flex flex-col gap-4">
             <h3 className="font-bold text-lg text-pink-800 mb-2">Upload PDF Note</h3>
             <input

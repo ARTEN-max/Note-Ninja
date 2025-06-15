@@ -6,7 +6,7 @@ import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc } from "fir
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import studyGuides from '../data/studyGuides';
 
-const ADMIN_EMAIL = "abdul.rahman78113@gmail.com"; // <-- Set your email here
+const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"]; // <-- Add more admin emails here
 
 const placeholderImages = [
   "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=400&q=80", // open book, pen, glasses
@@ -22,7 +22,7 @@ const placeholderImages = [
 const ChapterNotesPage = () => {
   const { guideId, chapterNumber } = useParams();
   const { currentUser } = useAuth();
-  const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+  const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
   const [form, setForm] = useState({ file: null, title: "", description: "" });
   const [uploading, setUploading] = useState(false);
   const [notes, setNotes] = useState([]);

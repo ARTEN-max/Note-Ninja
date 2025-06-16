@@ -15,6 +15,9 @@ export default function MobileNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Hide logout on auth pages
+  const hideLogout = ['/signin', '/register', '/student-info'].includes(location.pathname);
+
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-pink-200 flex justify-around items-center py-2 md:hidden z-50">
       <div className="flex flex-row gap-2 w-full justify-around items-center">
@@ -30,18 +33,20 @@ export default function MobileNav() {
             <span>{item.label}</span>
           </button>
         ))}
-        <button
-          onClick={async () => {
-            await signOut(auth);
-            navigate('/signin');
-          }}
-          className="flex flex-row items-center gap-1 bg-[#880E4F] text-white rounded-full px-4 py-2 font-bold text-sm shadow-md ml-2"
-          style={{ minWidth: 0 }}
-          aria-label="Logout"
-        >
-          <span className="text-lg">🚪</span>
-          <span>Logout</span>
-        </button>
+        {!hideLogout && (
+          <button
+            onClick={async () => {
+              await signOut(auth);
+              navigate('/signin');
+            }}
+            className="flex flex-row items-center gap-1 bg-[#880E4F] text-white rounded-full px-4 py-2 font-bold text-sm shadow-md ml-2"
+            style={{ minWidth: 0 }}
+            aria-label="Logout"
+          >
+            <span className="text-lg">🚪</span>
+            <span>Logout</span>
+          </button>
+        )}
       </div>
     </nav>
   );

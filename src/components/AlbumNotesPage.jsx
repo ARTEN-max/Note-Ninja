@@ -95,8 +95,8 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-sour-lavender relative overflow-hidden px-2 py-8">
       {/* Animation: Heading at the top, scales and fades in */}
       <motion.h1
-        className="text-4xl md:text-6xl font-bold mt-12 mb-8"
-        style={{ fontFamily: 'Inknut Antiqua, serif', textAlign: 'center', position: 'relative', zIndex: 20, color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
+        className="text-4xl md:text-6xl font-bold mt-12 mb-8 note-ninja-heading"
+        style={{ textAlign: 'center', position: 'relative', zIndex: 20, color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}

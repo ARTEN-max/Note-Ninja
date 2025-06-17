@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StudyGuideCard from "./StudyGuideCard";
@@ -8,6 +8,42 @@ import { db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, where, addDoc } from "firebase/firestore";
 import { useAuth } from '../contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from '../utils/likeUtils';
+
+// Move studyGuides outside component to prevent useEffect re-runs
+const studyGuides = [
+  {
+    id: 1,
+    courseCode: "CS246",
+    title: "Study Guide 1",
+    description: "Description of playlist",
+    imageUrl:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/36526b27cd6c189d1bfdb806f5ceb1322060cbad?placeholderIfAbsent=true",
+  },
+  {
+    id: 2,
+    courseCode: "MATH137",
+    title: "Study Guide 2",
+    description: "Description of playlist",
+    imageUrl:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/6fae324141d1039bf2b81b3ec7dc2f228cce8544?placeholderIfAbsent=true",
+  },
+  {
+    id: 3,
+    courseCode: "STAT230",
+    title: "Study Guide 3",
+    description: "Description of playlist",
+    imageUrl:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true",
+  },
+  {
+    id: 4,
+    courseCode: "MATH135",
+    title: "Study Guide 4",
+    description: "Description of playlist",
+    imageUrl:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/b5a7a6e7eb860dca445df9a3c409eb7da483cae0?placeholderIfAbsent=true",
+  },
+];
 
 const NoteDashboard = () => {
   const navigate = useNavigate();
@@ -61,42 +97,6 @@ const NoteDashboard = () => {
     },
   ];
 
-  // Restore the original hardcoded studyGuides array
-  const studyGuides = [
-    {
-      id: 1,
-      courseCode: "CS246",
-      title: "Study Guide 1",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/36526b27cd6c189d1bfdb806f5ceb1322060cbad?placeholderIfAbsent=true",
-    },
-    {
-      id: 2,
-      courseCode: "MATH137",
-      title: "Study Guide 2",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6fae324141d1039bf2b81b3ec7dc2f228cce8544?placeholderIfAbsent=true",
-    },
-    {
-      id: 3,
-      courseCode: "STAT230",
-      title: "Study Guide 3",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true",
-    },
-    {
-      id: 4,
-      courseCode: "MATH135",
-      title: "Study Guide 4",
-      description: "Description of playlist",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b5a7a6e7eb860dca445df9a3c409eb7da483cae0?placeholderIfAbsent=true",
-    },
-  ];
-
   useEffect(() => {
     // Fetch like counts and user likes for all study guides
     const fetchLikes = async () => {
@@ -115,7 +115,7 @@ const NoteDashboard = () => {
       }
     };
     fetchLikes();
-  }, [currentUser, studyGuides]);
+  }, [currentUser]); // Removed studyGuides from dependencies
 
   const handleStudyGuideClick = (courseCode) => {
     // Navigate directly to the notes page for this study guide using course code
@@ -124,24 +124,29 @@ const NoteDashboard = () => {
 
   const handleLikeClick = async (id, courseCode) => {
     if (!currentUser) return;
+    
+    // Get current state
     const alreadyLiked = !!liked[id];
-    setLiked(prev => ({ ...prev, [id]: !prev[id] }));
+    
+    // Update UI immediately
+    setLiked(prev => ({ ...prev, [id]: !alreadyLiked }));
     setLikeCounts(prev => ({
       ...prev,
       [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? -1 : 1),
     }));
     setLikeError("");
-    try {
-      await toggleLike(courseCode, currentUser.uid, alreadyLiked);
-    } catch (err) {
-      // Rollback UI state
+    
+    // Fire and forget - don't await
+    toggleLike(courseCode, currentUser.uid, alreadyLiked).catch(err => {
+      console.error('Like error:', err);
+      // Rollback UI state on error
       setLiked(prev => ({ ...prev, [id]: alreadyLiked }));
       setLikeCounts(prev => ({
         ...prev,
         [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? 1 : -1),
       }));
       setLikeError("Failed to update like. Please try again.");
-    }
+    });
   };
 
   // Framer Motion variants for staggered animation
@@ -179,14 +184,14 @@ const NoteDashboard = () => {
         <div className="w-full max-w-7xl mx-auto px-4 md:-mt-16">
           <div className="w-full flex justify-center">
             <h1
-              className="text-4xl font-bold mb-1 font-inknut pl-0"
-              style={{ fontFamily: "'Inknut Antiqua', serif", color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
+              className="text-4xl font-bold mb-1 note-ninja-heading pl-0"
+              style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
             >
               NOTE NINJA
             </h1>
           </div>
-          <h2 className="text-2xl font-bold mb-1 font-inknut pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif", color: '#7E44A3' }}>Dashboard</h2>
-          <div className="text-lg mb-6 font-inknut pl-0 text-center md:text-left" style={{ fontFamily: "'Inknut Antiqua', serif", color: '#7E44A3' }}>Today's top study guides...</div>
+          <h2 className="text-2xl font-bold mb-1 pl-0 text-center md:text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
+          <div className="text-lg mb-6 pl-0 text-center md:text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
           <motion.div
             className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
             variants={containerVariants}

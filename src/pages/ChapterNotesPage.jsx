@@ -148,7 +148,7 @@ const ChapterNotesPage = () => {
 
   return (
     <div className="min-h-screen bg-sour-lavender py-8 px-4 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: "'Inknut Antiqua', serif", color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
+      <h1 className="text-3xl font-bold mb-6 note-ninja-heading" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
         Notes for {subjectName}
       </h1>
       {isAdmin && (

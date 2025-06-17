@@ -137,9 +137,8 @@ const SignIn = () => {
             color: '#5E2A84',
             marginBottom: '1rem',
             textAlign: 'center',
-            fontFamily: 'Inknut Antiqua, serif',
             textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff'
-          }}>
+          }} className="note-ninja-heading">
             Welcome to Note Ninja
           </h1>
           <div className="form_area" style={{ 

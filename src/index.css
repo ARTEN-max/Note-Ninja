@@ -12,7 +12,18 @@
   -webkit-backface-visibility: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+/* Set default font for all text */
+body, p, div, span, button, input, textarea, select {
+  font-family: 'Arial', sans-serif !important;
+}
+
+/* Preserve Inknut Antiqua for headings with NOTE NINJA class */
+.note-ninja-heading {
+  font-family: 'Inknut Antiqua', serif !important;
+}
+
+/* Keep Inknut Antiqua only for h1-h6 elements that are part of the NOTE NINJA branding */
+h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
   font-family: 'Inknut Antiqua', serif !important;
 }
 

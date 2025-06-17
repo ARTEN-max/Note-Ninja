@@ -282,7 +282,7 @@ const DownloadNotesPage = () => {
   return (
     <div className="min-h-screen bg-sour-lavender py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-bold font-inknut mb-4" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff', fontFamily: 'Inknut Antiqua, serif' }}>
+        <h2 className="text-2xl font-bold note-ninja-heading mb-4" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
           Notes for {courseCode}
         </h2>
         {/* Admin Upload Form */}

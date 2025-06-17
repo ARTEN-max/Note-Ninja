@@ -18,6 +18,7 @@ import NightOwlPage from "./NightOwlPage";
 import ChillReviewPage from "./ChillReviewPage";
 import ChapterStudyCards from "./pages/ChapterStudyCards";
 import ChapterNotesPage from "./pages/ChapterNotesPage";
+import AudioNotesPage from "./pages/AudioNotesPage";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -128,6 +129,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <SetupStudyGuides />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/audio-notes"
+            element={
+              <ProtectedRoute>
+                <AudioNotesPage />
               </ProtectedRoute>
             }
           />

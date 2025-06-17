@@ -34,7 +34,7 @@ const ForgotPassword = () => {
         className="backdrop-blur-lg bg-white/60 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-full max-w-md border border-[#e3b8f9]"
         style={{ boxShadow: "0 8px 32px 0 #e3b8f9" }}
       >
-        <h1 className="text-3xl font-extrabold mb-2 tracking-tight" style={{ fontFamily: 'Inknut Antiqua, serif', letterSpacing: -1, color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>NOTE NINJA</h1>
+        <h1 className="text-3xl font-extrabold mb-2 tracking-tight note-ninja-heading" style={{ letterSpacing: -1, color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>NOTE NINJA</h1>
         <p className="text-base font-medium mb-6" style={{ color: '#7E44A3' }}>Reset your password</p>
         <form className="w-full space-y-4" onSubmit={handleSubmit} autoComplete="off">
           <div>

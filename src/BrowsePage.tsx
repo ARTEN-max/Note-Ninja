@@ -1,5 +1,5 @@
 // If you haven't already, run: npm install react-icons
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiSearch } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { doc, getDoc, setDoc, increment, collection, query, where, getDocs, or, onSnapshot, QueryFieldFilterConstraint, Query, DocumentData, QueryConstraint } from "firebase/firestore";
@@ -196,13 +196,27 @@ const BrowsePage = () => {
 
   const handleLikeClick = async (id, courseCode) => {
     if (!currentUser) return;
+    
+    // Get current state
     const alreadyLiked = !!liked[id];
-    setLiked(prev => ({ ...prev, [id]: !prev[id] }));
+    
+    // Update UI immediately
+    setLiked(prev => ({ ...prev, [id]: !alreadyLiked }));
     setLikeCounts(prev => ({
       ...prev,
       [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? -1 : 1),
     }));
-    await toggleLike(courseCode, currentUser.uid, alreadyLiked);
+    
+    // Fire and forget - don't await
+    toggleLike(courseCode, currentUser.uid, alreadyLiked).catch(err => {
+      console.error('Like error:', err);
+      // Rollback UI state on error
+      setLiked(prev => ({ ...prev, [id]: alreadyLiked }));
+      setLikeCounts(prev => ({
+        ...prev,
+        [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? 1 : -1),
+      }));
+    });
   };
 
   // Update to use a more specific type
@@ -355,6 +369,40 @@ const BrowsePage = () => {
                     alt={guide.title}
                     className="rounded-xl object-cover w-full h-full"
                   />
+                  {/* Like button positioned at top left of image */}
+                  <motion.button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); handleLikeClick(guide.id, guide.courseCode); }}
+                    className="absolute top-2 left-2 flex items-center justify-center"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: liked[guide.id] ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' : 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(8px)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: liked[guide.id] ? '0 4px 12px rgba(255, 107, 107, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    <motion.svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill={liked[guide.id] ? "#ffffff" : "none"}
+                      stroke={liked[guide.id] ? "#ffffff" : "#666666"}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      animate={liked[guide.id] ? { scale: [1, 1.2, 1] } : {}}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </motion.svg>
+                  </motion.button>
                 </div>
                 <div 
                   className="w-full flex flex-col items-start"
@@ -362,13 +410,6 @@ const BrowsePage = () => {
                 >
                   <div className="font-bold text-lg text-gray-800 font-inknut mb-1" style={{ fontFamily: 'Inknut Antiqua, serif' }}>{guide.courseCode}</div>
                   <div className="text-sm text-gray-500 mb-3">{guide.description}</div>
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); handleLikeClick(guide.id, guide.courseCode); }}
-                    className={`px-4 py-1 rounded-2xl font-bold text-base transition-colors ${liked[guide.id] ? 'bg-pink-200 text-pink-700' : 'bg-gray-200 text-black'} focus:outline-none`}
-                  >
-                    {liked[guide.id] ? 'Liked' : 'Like'}
-                  </button>
                 </div>
               </div>
             ))}

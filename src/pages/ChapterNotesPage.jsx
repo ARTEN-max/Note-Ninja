@@ -5,6 +5,7 @@ import { db, storage } from "../firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import studyGuides from '../data/studyGuides';
+import { formatCourseCode } from "../utils/courseUtils";
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"]; // <-- Add more admin emails here
 
@@ -134,22 +135,69 @@ const ChapterNotesPage = () => {
     }
   };
 
-  const handleAddToMyNotes = (note) => {
+  const handleAddToMyNotes = async (note) => {
     const notesArr = JSON.parse(localStorage.getItem(userKey) || '[]');
     if (notesArr.some(n => n.id === note.id)) return;
-    notesArr.push({ 
+    
+    const noteToSave = { 
       ...note, 
       addedAt: new Date().toISOString(),
-      courseCode: subjectName // ensure course code is saved
-    });
+      courseCode: subjectName, // ensure course code is saved
+      savedBy: currentUser?.uid || 'guest',
+      savedByEmail: currentUser?.email || 'guest'
+    };
+    
+    notesArr.push(noteToSave);
     localStorage.setItem(userKey, JSON.stringify(notesArr));
     setMyNotesIds(prev => [...prev, note.id]);
+
+    // Also save to Firebase for public profile viewing
+    if (currentUser) {
+      try {
+        console.log('Attempting to save note to Firebase:', {
+          note: noteToSave,
+          user: {
+            uid: currentUser.uid,
+            email: currentUser.email
+          }
+        });
+        
+        const savedNotesRef = collection(db, 'savedNotes');
+        const savedNote = {
+          ...noteToSave,
+          originalNoteId: note.id,
+          savedAt: new Date().toISOString(),
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          username: currentUser.displayName || currentUser.email?.split('@')[0],
+          uid: currentUser.uid,
+          // Add these fields to ensure we have all necessary data
+          title: note.title || 'Untitled Note',
+          description: note.description || '',
+          fileUrl: note.fileUrl || note.pdfUrl,
+          fileName: note.fileName || '',
+          course: subjectName,
+          type: 'Saved Note'
+        };
+        
+        const docRef = await addDoc(savedNotesRef, savedNote);
+        console.log('Successfully saved note to Firebase with ID:', docRef.id);
+      } catch (err) {
+        console.error('Error saving note to Firebase:', err);
+        // Try to get more error details
+        console.error('Error details:', {
+          code: err.code,
+          message: err.message,
+          details: err.details
+        });
+      }
+    }
   };
 
   return (
     <div className="min-h-screen bg-sour-lavender py-8 px-4 flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-6 note-ninja-heading" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
-        Notes for {subjectName}
+        Notes for {formatCourseCode(subjectName)}
       </h1>
       {isAdmin && (
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8 mb-8">
@@ -208,7 +256,7 @@ const ChapterNotesPage = () => {
                       className="rounded-lg object-cover w-full h-full"
                     />
                     <div className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm">
-                      {subjectName}
+                      {formatCourseCode(subjectName)}
                     </div>
                   </div>
                   <h3 className="font-bold text-lg text-gray-800 mb-1">{note.title}</h3>

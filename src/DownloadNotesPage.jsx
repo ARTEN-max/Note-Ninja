@@ -6,6 +6,7 @@ import { useAuth } from './contexts/AuthContext';
 import { doc, setDoc, collection, query, where, getDocs, onSnapshot, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from './firebase';
+import { formatCourseCode } from "./utils/courseUtils";
 
 // Mock data for different types of study materials
 const studyMaterials = {
@@ -213,21 +214,26 @@ const DownloadNotesPage = () => {
     }
   };
 
-  // Add to My Notes handler (localStorage version)
-  const handleAddToMyNotes = (material) => {
+  // Add to My Notes handler (Firestore version)
+  const handleAddToMyNotes = async (material) => {
     setAddSuccess("");
     setAddError("");
+    if (!currentUser) {
+      setAddError("You must be signed in to add notes.");
+      return;
+    }
     try {
-      const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
-      if (notes.some(note => note.id === material.id)) {
-        setAddError("This note is already in My Notes.");
-        return;
-      }
-      notes.push({ ...material, addedAt: new Date().toISOString() });
-      localStorage.setItem('myNotes', JSON.stringify(notes));
+      await setDoc(
+        doc(db, "students", currentUser.uid, "myNotes", material.id),
+        {
+          ...material,
+          addedAt: new Date().toISOString(),
+        }
+      );
       setAddSuccess("Added to My Notes!");
     } catch (err) {
       setAddError("Failed to add to My Notes.");
+      console.error(err);
     }
   };
 
@@ -283,7 +289,7 @@ const DownloadNotesPage = () => {
     <div className="min-h-screen bg-sour-lavender py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-bold note-ninja-heading mb-4" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
-          Notes for {courseCode}
+          Notes for {formatCourseCode(courseCode)}
         </h2>
         {/* Admin Upload Form */}
         {currentUser && ADMIN_EMAILS.includes(currentUser.email) && (

@@ -72,9 +72,9 @@ const UploadPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.1, ease: 'easeOut' }}
-      className="min-h-screen bg-sour-lavender py-8 px-4"
+      className="min-h-screen bg-sour-lavender py-8 px-4 flex items-center justify-center"
     >
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

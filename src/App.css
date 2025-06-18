@@ -1,0 +1,25 @@
+/* Note Ninja Global Styles */
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background: #e3b8f9;
+  color: #222;
+}
+
+.bg-sour-lavender {
+  background: #e3b8f9;
+}
+
+.note-ninja-heading {
+  font-family: 'Inknut Antiqua', serif;
+  letter-spacing: 1px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: linear-gradient(135deg, #e3b8f9 0%, #c895f2 100%);
+}
+::-webkit-scrollbar-thumb {
+  background: #e3b8f9;
+  border-radius: 8px;
+} 

@@ -19,12 +19,16 @@ import ChillReviewPage from "./ChillReviewPage";
 import ChapterStudyCards from "./pages/ChapterStudyCards";
 import ChapterNotesPage from "./pages/ChapterNotesPage";
 import AudioNotesPage from "./pages/AudioNotesPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import PublicProfilePage from "./pages/PublicProfilePage";
+import MobileNav from "./components/MobileNav";
+import SetupStudyGuides from "./components/SetupStudyGuides";
+import { AuthProvider } from "./contexts/AuthContext";
+import "./App.css";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import MobileNav from "./components/MobileNav";
-import SetupStudyGuides from "./components/SetupStudyGuides";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -141,10 +145,19 @@ function AppContent() {
             }
           />
           <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/u/:username" element={<PublicProfilePage />} />
+          <Route
             path="/*"
             element={
               <ProtectedRoute>
-                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1rem 2rem 2rem 2rem", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
                   <NoteDashboard />
                 </div>
               </ProtectedRoute>
@@ -160,7 +173,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

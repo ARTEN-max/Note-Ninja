@@ -2,13 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import '../styles/ProfilePage.css';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, collectionGroup } from 'firebase/firestore';
 import { 
-  FiUser, FiBook, FiAward, FiMail, FiHome, FiHeart, 
-  FiEye, FiShare2, FiCopy, FiBookmark, FiUpload 
+  FiUser, FiBook, FiClock, FiHeart, FiBookmark, FiUpload, FiDownload,
+  FiShare2, FiCopy, FiPlus, FiArrowRight, FiEye, FiFileText, FiCalendar
 } from 'react-icons/fi';
 import { formatCourseCode } from '../utils/courseUtils';
+
+// Simple function to format time ago
+const formatTimeAgo = (date) => {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) {
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+  } else if (hours > 0) {
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  } else if (minutes > 0) {
+    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  } else {
+    return 'Just now';
+  }
+};
 
 const PublicProfilePage = () => {
   const { username } = useParams();
@@ -21,6 +40,7 @@ const PublicProfilePage = () => {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [activeTab, setActiveTab] = useState('saved');
   const [showCopied, setShowCopied] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -51,193 +71,105 @@ const PublicProfilePage = () => {
 
         const userDoc = querySnapshot.docs[0];
         const data = userDoc.data();
-        console.log('User data found:', data);
-        console.log('Profile image URL:', data.profileImageUrl);
         setUserData(data);
 
         // Check if this is the current user's profile
         setIsOwnProfile(currentUser && currentUser.uid === userDoc.id);
 
-        // Fetch user's notes from multiple collections
-        const allNotes = [];
-
-        // 1. Fetch from notes collection (DownloadNotesPage)
-        try {
-          const notesRef = collection(db, 'notes');
-          const notesQuery = query(notesRef, where('uploaderId', '==', userDoc.id));
-          const notesSnapshot = await getDocs(notesQuery);
-          notesSnapshot.forEach(doc => {
-            allNotes.push({ 
+        // Fetch all notes in parallel
+        const fetchPromises = [
+          // 1. Regular notes
+          getDocs(query(collection(db, 'notes'), where('uploaderId', '==', userDoc.id)))
+            .then(snapshot => snapshot.docs.map(doc => ({ 
               id: doc.id, 
               ...doc.data(),
               source: 'notes',
               type: 'Study Material'
-            });
-          });
-        } catch (err) {
-          console.error('Error fetching from notes collection:', err);
-        }
+            })))
+            .catch(err => {
+              console.warn('Error fetching notes:', err);
+              return [];
+            }),
 
-        // 2. Fetch from albumNotes collection
-        try {
-          const albumNotesRef = collection(db, 'albumNotes');
-          const albumNotesQuery = query(albumNotesRef, where('uploaderId', '==', userDoc.id));
-          const albumNotesSnapshot = await getDocs(albumNotesQuery);
-          albumNotesSnapshot.forEach(doc => {
-            allNotes.push({ 
+          // 2. Album notes
+          getDocs(query(collection(db, 'albumNotes'), where('uploaderId', '==', userDoc.id)))
+            .then(snapshot => snapshot.docs.map(doc => ({ 
               id: doc.id, 
               ...doc.data(),
               source: 'albumNotes',
               type: 'Album Note'
-            });
-          });
-        } catch (err) {
-          console.error('Error fetching from albumNotes collection:', err);
-        }
+            })))
+            .catch(err => {
+              console.warn('Error fetching album notes:', err);
+              return [];
+            }),
 
-        // 3. Fetch from audioNotes collection
-        try {
-          const audioNotesRef = collection(db, 'audioNotes');
-          const audioNotesQuery = query(audioNotesRef, where('uploaderId', '==', userDoc.id));
-          const audioNotesSnapshot = await getDocs(audioNotesQuery);
-          audioNotesSnapshot.forEach(doc => {
-            allNotes.push({ 
+          // 3. Audio notes
+          getDocs(query(collection(db, 'audioNotes'), where('uploaderId', '==', userDoc.id)))
+            .then(snapshot => snapshot.docs.map(doc => ({ 
               id: doc.id, 
               ...doc.data(),
               source: 'audioNotes',
               type: 'Audio Note'
-            });
-          });
-        } catch (err) {
-          console.error('Error fetching from audioNotes collection:', err);
-        }
+            })))
+            .catch(err => {
+              console.warn('Error fetching audio notes:', err);
+              return [];
+            }),
 
-        // 4. Fetch from studyGuides subcollections (ChapterNotesPage)
-        try {
-          // Get all study guides
-          const studyGuidesRef = collection(db, 'studyGuides');
-          const studyGuidesSnapshot = await getDocs(studyGuidesRef);
-          
-          for (const guideDoc of studyGuidesSnapshot.docs) {
-            const guideId = guideDoc.id;
-            const chaptersRef = collection(db, `studyGuides/${guideId}/chapters`);
-            const chaptersSnapshot = await getDocs(chaptersRef);
-            
-            for (const chapterDoc of chaptersSnapshot.docs) {
-              const chapterNumber = chapterDoc.id;
-              const notesRef = collection(db, `studyGuides/${guideId}/chapters/${chapterNumber}/notes`);
-              const notesQuery = query(notesRef, where('uploader', '==', data.email));
-              const notesSnapshot = await getDocs(notesQuery);
-              
-              notesSnapshot.forEach(noteDoc => {
-                allNotes.push({ 
-                  id: noteDoc.id, 
-                  ...noteDoc.data(),
-                  source: 'chapterNotes',
-                  type: 'Chapter Note',
-                  guideId,
-                  chapterNumber
-                });
-              });
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching from studyGuides subcollections:', err);
-        }
+          // 4. Study guide notes - using a more efficient query
+          getDocs(query(
+            collection(db, `studyGuides/default/chapters/1/notes`), 
+            where('uploader', '==', data.email)
+          )).then(snapshot => snapshot.docs.map(doc => {
+            const pathSegments = doc.ref.path.split('/');
+            return {
+              id: doc.id,
+              ...doc.data(),
+              source: 'chapterNotes',
+              type: 'Chapter Note',
+              guideId: pathSegments[1],
+              chapterNumber: pathSegments[3]
+            };
+          }))
+          .catch(err => {
+            console.warn('Error fetching study guide notes:', err);
+            return [];
+          }),
 
-        // 5. Fetch saved notes from savedNotes collection
-        try {
-          const savedNotesRef = collection(db, 'savedNotes');
-          console.log('Looking for saved notes for user:', {
-            uid: data.uid,
-            docId: userDoc.id,
-            email: data.email
-          });
-          
-          // Try multiple query strategies to find saved notes
-          let savedNotesSnapshot = null;
-          
-          // Strategy 1: Query by UID
-          if (data.uid) {
-            const query1 = query(savedNotesRef, where('userId', '==', data.uid));
-            savedNotesSnapshot = await getDocs(query1);
-            console.log('Saved notes by UID:', savedNotesSnapshot.size);
-          }
-          
-          // Strategy 2: Query by document ID
-          if (!savedNotesSnapshot || savedNotesSnapshot.empty) {
-            const query2 = query(savedNotesRef, where('userId', '==', userDoc.id));
-            savedNotesSnapshot = await getDocs(query2);
-            console.log('Saved notes by doc ID:', savedNotesSnapshot.size);
-          }
-          
-          // Strategy 3: Query by email
-          if (!savedNotesSnapshot || savedNotesSnapshot.empty) {
-            const query3 = query(savedNotesRef, where('userEmail', '==', data.email));
-            savedNotesSnapshot = await getDocs(query3);
-            console.log('Saved notes by email:', savedNotesSnapshot.size);
-          }
-          
-          // Strategy 4: Query by uid field (alternative field name)
-          if (!savedNotesSnapshot || savedNotesSnapshot.empty) {
-            const query4 = query(savedNotesRef, where('uid', '==', data.uid || userDoc.id));
-            savedNotesSnapshot = await getDocs(query4);
-            console.log('Saved notes by uid field:', savedNotesSnapshot.size);
-          }
-          
-          // Strategy 5: Get all saved notes and filter client-side (fallback)
-          if (!savedNotesSnapshot || savedNotesSnapshot.empty) {
-            console.log('Trying fallback: getting all saved notes...');
-            savedNotesSnapshot = await getDocs(savedNotesRef);
-            const allSavedNotes = savedNotesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log('All saved notes in database:', allSavedNotes);
-            
-            // Filter by email or any matching field
-            const filteredNotes = allSavedNotes.filter(note => 
-              note.userEmail === data.email || 
-              note.userId === data.uid || 
-              note.userId === userDoc.id ||
-              note.uid === data.uid ||
-              note.uid === userDoc.id
-            );
-            console.log('Filtered saved notes:', filteredNotes);
-            
-            filteredNotes.forEach(note => {
-              allNotes.push({ 
-                id: note.id, 
-                ...note,
-                source: 'savedNotes',
-                type: 'Saved Note'
-              });
-            });
-          } else {
-            savedNotesSnapshot.forEach(doc => {
-              console.log('Found saved note:', doc.data());
-              allNotes.push({ 
-                id: doc.id, 
-                ...doc.data(),
-                source: 'savedNotes',
-                type: 'Saved Note'
-              });
-            });
-          }
-        } catch (err) {
-          console.error('Error fetching from savedNotes collection:', err);
-        }
+          // 5. Saved notes - using a compound query
+          getDocs(query(
+            collection(db, 'savedNotes'),
+            where('userId', 'in', [data.uid, userDoc.id])
+          )).then(snapshot => snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            source: 'savedNotes',
+            type: 'Saved Note'
+          })))
+          .catch(err => {
+            console.warn('Error fetching saved notes:', err);
+            return [];
+          })
+        ];
 
-        // Sort notes by creation date (newest first)
-        allNotes.sort((a, b) => {
-          const dateA = a.uploadDate?.toDate?.() || new Date(a.createdAt || a.uploadDate);
-          const dateB = b.uploadDate?.toDate?.() || new Date(b.createdAt || b.uploadDate);
-          return dateB - dateA;
-        });
+        // Wait for all queries to complete
+        const results = await Promise.all(fetchPromises);
+        
+        // Combine all notes and filter out empty arrays
+        const allNotes = results.flat().filter(Boolean);
+        
+        // Remove duplicates based on id
+        const uniqueNotes = Array.from(
+          new Map(allNotes.map(note => [note.id, note])).values()
+        );
 
-        setUserNotes(allNotes);
+        setUserNotes(uniqueNotes);
+        setLoading(false);
 
       } catch (err) {
-        console.error('Error fetching user profile:', err);
+        console.error('Error fetching profile:', err);
         setError('Failed to load profile');
-      } finally {
         setLoading(false);
       }
     };
@@ -294,44 +226,54 @@ const PublicProfilePage = () => {
     }
   };
 
+  const handleUploadClick = () => {
+    navigate('/upload');
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen bg-sour-lavender flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5E2A84]"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-purple-200 p-8 flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold text-purple-800 mb-4">😕 Oops!</div>
-        <div className="text-purple-700">{error}</div>
+      <div className="min-h-screen bg-sour-lavender p-8 flex flex-col items-center justify-center">
+        <div className="text-2xl font-bold text-[#5E2A84] mb-4">😕 Oops!</div>
+        <div className="text-[#5E2A84]">{error}</div>
       </div>
     );
   }
 
   const savedNotes = userNotes.filter(note => note.source === 'savedNotes');
   const uploadedNotes = userNotes.filter(note => note.source !== 'savedNotes');
-  const totalNotes = userNotes.length;
-  const completionRate = Math.round((savedNotes.length / (totalNotes || 1)) * 100);
+  const lastActive = userData?.lastActive ? new Date(userData.lastActive) : new Date();
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-sour-lavender py-8 px-4"
+      className="min-h-screen bg-sour-lavender py-8 px-4 sm:px-6"
     >
       <div className="max-w-6xl mx-auto">
         {/* Profile Header */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl p-8 mb-8 shadow-xl">
+        <div className="bg-white/90 backdrop-blur-lg rounded-3xl p-6 sm:p-8 mb-8 shadow-xl profile-header">
+          {/* Floating Particles */}
+          <div className="floating-particle"></div>
+          <div className="floating-particle"></div>
+          <div className="floating-particle"></div>
+          <div className="floating-particle"></div>
+          <div className="floating-particle"></div>
+
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Profile Picture */}
             <motion.div 
               className="relative"
               whileHover={{ scale: 1.05 }}
             >
-              <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-purple-400 ring-opacity-50 shadow-lg">
+              <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-full overflow-hidden ring-4 ring-[#e3b8f9] ring-opacity-50 shadow-lg">
                 {userData?.profileImageUrl ? (
                   <img
                     src={userData.profileImageUrl}
@@ -339,13 +281,13 @@ const PublicProfilePage = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                    <FiUser className="w-12 h-12 text-white" />
+                  <div className="w-full h-full bg-gradient-to-br from-[#e3b8f9] to-[#5E2A84] flex items-center justify-center">
+                    <FiUser className="w-16 h-16 text-white" />
                   </div>
                 )}
               </div>
               <motion.div
-                className="absolute inset-0 rounded-full"
+                className="absolute inset-0 rounded-full profile-glow"
                 animate={{
                   boxShadow: [
                     '0 0 20px rgba(227, 184, 249, 0.3)',
@@ -362,85 +304,103 @@ const PublicProfilePage = () => {
             </motion.div>
 
             {/* User Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
-                <h1 className="text-3xl font-bold text-purple-900">
-                  {userData?.displayName || username}
-                </h1>
-                <div className="flex items-center gap-2">
-                  <button
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-6">
+                <div>
+                  <h1 className="username-text mb-2">@{username}</h1>
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#e3b8f9]/20 text-[#5E2A84] font-medium">
+                    <FiUser className="w-4 h-4" />
+                    <span className="text-sm">
+                      {userData?.faculty || 'Faculty not specified'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <motion.button
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
                     onClick={handleCopyURL}
-                    className="p-2 hover:bg-purple-100 rounded-full transition-colors"
-                    title="Copy profile URL"
+                    className="p-2 hover:bg-[#e3b8f9]/10 rounded-full transition-colors relative"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
-                    <FiCopy className="text-purple-600" />
-                  </button>
-                  <button
+                    <FiCopy className="w-5 h-5 text-[#5E2A84]" />
+                    {showTooltip && (
+                      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs bg-[#5E2A84] text-white px-2 py-1 rounded whitespace-nowrap">
+                        Copy Profile Link
+                      </div>
+                    )}
+                  </motion.button>
+                  <motion.button
                     onClick={handleShare}
-                    className="p-2 hover:bg-purple-100 rounded-full transition-colors"
-                    title="Share profile"
+                    className="p-2 hover:bg-[#e3b8f9]/10 rounded-full transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
-                    <FiShare2 className="text-purple-600" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="text-purple-600 mb-4">@{username}</div>
-              
-              {/* Stats Bar */}
-              <div className="flex items-center gap-6 mb-6">
-                <div className="flex items-center gap-2">
-                  <FiBook className="text-[#5E2A84] w-5 h-5" />
-                  <div>
-                    <div className="text-sm text-[#5E2A84]/70">Faculty</div>
-                    <div className="font-semibold text-[#5E2A84]">{userData?.faculty || 'Not Set'}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiBookmark className="text-[#5E2A84] w-5 h-5" />
-                  <div>
-                    <div className="text-sm text-[#5E2A84]/70">Saved</div>
-                    <div className="font-semibold text-[#5E2A84]">{savedNotes.length}</div>
-                  </div>
+                    <FiShare2 className="w-5 h-5 text-[#5E2A84]" />
+                  </motion.button>
                 </div>
               </div>
 
-              {/* Progress Bar */}
-              <div className="w-full bg-[#e3b8f9]/20 rounded-full h-1">
-                <div 
-                  className="bg-[#e3b8f9] rounded-full h-full transition-all duration-500"
-                  style={{ width: '100%' }}
-                />
+              {/* Stats Row */}
+              <div className="flex flex-wrap justify-start gap-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <FiUpload className="w-4 h-4 text-[#5E2A84]" />
+                  <span className="text-sm text-[#5E2A84]">
+                    <strong>{uploadedNotes.length}</strong> Uploaded
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiDownload className="w-4 h-4 text-[#5E2A84]" />
+                  <span className="text-sm text-[#5E2A84]">
+                    <strong>{savedNotes.length}</strong> Saved
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiClock className="w-4 h-4 text-[#5E2A84]" />
+                  <span className="text-sm text-[#5E2A84]">
+                    Last active {formatTimeAgo(lastActive)}
+                  </span>
+                </div>
               </div>
+
+              {/* Divider */}
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-[#e3b8f9]/30 to-transparent" />
             </div>
           </div>
         </div>
 
         {/* Notes Section */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-3xl p-8 shadow-xl">
+        <div className="bg-white/90 backdrop-blur-lg rounded-3xl p-4 sm:p-6 shadow-xl w-full max-w-[1200px] mx-auto">
           {/* Tabs */}
-          <div className="flex gap-4 mb-8">
+          <div className="tabs-container mb-4 overflow-x-auto">
+            {/* Active Tab Indicator */}
+            <motion.div
+              className="tab-indicator"
+              initial={false}
+              animate={{
+                left: activeTab === 'saved' ? '0.5rem' : '50%',
+                width: 'calc(50% - 0.75rem)',
+              }}
+            />
+            
+            {/* Tab Buttons */}
             <button
               onClick={() => setActiveTab('saved')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'saved'
-                  ? 'bg-[#e3b8f9] text-[#5E2A84] shadow-lg'
-                  : 'bg-purple-100 text-[#5E2A84] hover:bg-purple-200'
-              }`}
+              className={`tab-button ${activeTab === 'saved' ? 'active' : ''}`}
             >
-              <FiBookmark />
-              Saved Notes ({savedNotes.length})
+              <FiBookmark className="w-5 h-5" />
+              <span>Saved Notes</span>
+              <span className="tab-count">{savedNotes.length}</span>
             </button>
+            
             <button
               onClick={() => setActiveTab('uploaded')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'uploaded'
-                  ? 'bg-[#e3b8f9] text-[#5E2A84] shadow-lg'
-                  : 'bg-purple-100 text-[#5E2A84] hover:bg-purple-200'
-              }`}
+              className={`tab-button ${activeTab === 'uploaded' ? 'active' : ''}`}
             >
-              <FiUpload />
-              Uploaded Notes ({uploadedNotes.length})
+              <FiUpload className="w-5 h-5" />
+              <span>Uploaded Notes</span>
+              <span className="tab-count">{uploadedNotes.length}</span>
             </button>
           </div>
 
@@ -451,54 +411,134 @@ const PublicProfilePage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-2"
             >
-              {(activeTab === 'saved' ? savedNotes : uploadedNotes).map((note) => (
-                <motion.div
-                  key={note.id}
-                  whileHover={{ y: -5 }}
-                  className="group relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  {/* Course Tag */}
-                  <div className="absolute top-4 right-4 bg-[#e3b8f9] text-[#5E2A84] px-3 py-1 rounded-full text-sm font-medium">
-                    {formatCourseCode(note.course || note.courseCode)}
-                  </div>
-
-                  <h3 className="text-xl font-semibold text-[#5E2A84] mb-2 pr-20">
-                    {note.title}
-                  </h3>
-                  
-                  <p className="text-[#5E2A84] mb-4 line-clamp-2">
-                    {note.description || 'No description provided'}
-                  </p>
-
-                  {/* Note Footer */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="text-sm text-[#5E2A84]">
-                      {new Date(note.createdAt || note.savedAt).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-3">
+              {(activeTab === 'saved' ? savedNotes : uploadedNotes).length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                  {activeTab === 'uploaded' ? (
+                    <>
+                      <div className="w-16 h-16 rounded-full bg-[#e3b8f9]/20 flex items-center justify-center mb-4">
+                        <FiUpload className="w-8 h-8 text-[#5E2A84]" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-[#5E2A84] mb-2">No uploaded notes yet</h3>
+                      <p className="text-[#5E2A84]/70 mb-6">Ready to share your knowledge?</p>
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 hover:bg-[#e3b8f9]/10 rounded-full transition-colors"
+                        onClick={handleUploadClick}
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#5E2A84] text-white font-semibold hover:bg-[#5E2A84]/90 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <FiHeart className="text-[#5E2A84] group-hover:text-[#e3b8f9] transition-colors" />
+                        <FiPlus className="w-5 h-5" />
+                        Upload Notes
                       </motion.button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 rounded-full bg-[#e3b8f9]/20 flex items-center justify-center mb-4">
+                        <FiBookmark className="w-8 h-8 text-[#5E2A84]" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-[#5E2A84] mb-2">No saved notes</h3>
+                      <p className="text-[#5E2A84]/70 mb-6">Browse notes to start saving!</p>
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 hover:bg-[#e3b8f9]/10 rounded-full transition-colors"
+                        onClick={() => navigate('/browse')}
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#5E2A84] text-white font-semibold hover:bg-[#5E2A84]/90 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <FiBookmark className="text-[#5E2A84] group-hover:text-[#e3b8f9] transition-colors" />
+                        Browse Notes
+                        <FiArrowRight className="w-5 h-5" />
                       </motion.button>
-                    </div>
-                  </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                (activeTab === 'saved' ? savedNotes : uploadedNotes).map((note) => (
+                  <motion.div
+                    key={note.id}
+                    className={`note-card relative ${note.isFlipped ? 'flipped' : ''} bg-white rounded-2xl shadow-lg overflow-hidden`}
+                    onClick={() => {
+                      const updatedNotes = userNotes.map(n => 
+                        n.id === note.id ? { ...n, isFlipped: !n.isFlipped } : n
+                      );
+                      setUserNotes(updatedNotes);
+                    }}
+                  >
+                    {/* Front of Card */}
+                    <div className="note-card-front p-6 h-full">
+                      {/* Course Tag */}
+                      <div 
+                        className="course-badge absolute top-4 right-4 flex items-center gap-2 bg-gradient-to-r from-[#e3b8f9]/30 to-[#e3b8f9]/10 text-[#5E2A84] px-3 py-1.5 rounded-full text-sm font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/browse?course=${note.course || note.courseCode}`);
+                        }}
+                      >
+                        <FiBook className="w-4 h-4" />
+                        {formatCourseCode(note.course || note.courseCode)}
+                        <div className="tooltip">
+                          Browse all {formatCourseCode(note.course || note.courseCode)} notes
+                        </div>
+                      </div>
 
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-[#e3b8f9] bg-opacity-0 group-hover:bg-opacity-5 rounded-2xl transition-all duration-300" />
-                </motion.div>
-              ))}
+                      <h3 className="text-xl font-semibold text-[#5E2A84] mb-2 pr-24">
+                        {note.title}
+                      </h3>
+                      
+                      <p className="text-[#5E2A84]/70 mb-4 line-clamp-2">
+                        {note.description || 'No description provided'}
+                      </p>
+
+                      {/* Note Footer */}
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="text-sm text-[#5E2A84]/60">
+                          {formatTimeAgo(new Date(note.createdAt || note.savedAt))}
+                        </div>
+                        <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
+                          <motion.button
+                            className="like-button flex items-center gap-1.5 p-2 hover:bg-[#e3b8f9]/10 rounded-full transition-colors"
+                          >
+                            <FiHeart 
+                              className={`heart-icon w-5 h-5 ${note.isLiked ? 'text-pink-500 fill-pink-500' : 'text-[#5E2A84]'} transition-colors`}
+                            />
+                            <span className="text-sm text-[#5E2A84]/70">{note.likes || 0}</span>
+                          </motion.button>
+                          <motion.button
+                            className="save-button flex items-center gap-1.5 p-2 hover:bg-[#e3b8f9]/10 rounded-full transition-colors"
+                          >
+                            <FiBookmark 
+                              className={`bookmark-icon w-5 h-5 ${note.isSaved ? 'text-[#5E2A84] fill-[#5E2A84]' : 'text-[#5E2A84]'} transition-colors`}
+                            />
+                            <span className="text-sm text-[#5E2A84]/70">{note.saves || 0}</span>
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Back of Card */}
+                    <div className="note-card-back">
+                      <div className="metadata-item">
+                        <FiEye />
+                        <span>{note.views || 0} Views</span>
+                      </div>
+                      <div className="metadata-item">
+                        <FiShare2 />
+                        <span>{note.shares || 0} Shares</span>
+                      </div>
+                      <div className="metadata-item">
+                        <FiFileText />
+                        <span>{note.fileSize || '2.3'} MB</span>
+                      </div>
+                      <div className="metadata-item">
+                        <FiCalendar />
+                        <span>Created {formatTimeAgo(new Date(note.createdAt))}</span>
+                      </div>
+                      <div className="text-sm text-[#5E2A84]/60 mt-4 text-center">
+                        Click to flip back
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -521,4 +561,4 @@ const PublicProfilePage = () => {
   );
 };
 
-export default PublicProfilePage; 
+export default PublicProfilePage;

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 
 const StudentInfoPage = () => {
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [faculty, setFaculty] = useState("");
   const [year, setYear] = useState("");
   const [loading, setLoading] = useState(false);
@@ -98,6 +99,7 @@ const StudentInfoPage = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setName(data.name || "");
+          setUsername(data.username || "");
           setFaculty(data.faculty || "");
           setYear(data.year || "");
         }
@@ -111,14 +113,17 @@ const StudentInfoPage = () => {
     setLoading(true);
     setError("");
     setSuccess(false);
-    if (!faculty || !year) {
-      setError("Faculty and year of study are required.");
+    if (!faculty || !year || !username) {
+      setError("Faculty, year of study, and username are required.");
       setLoading(false);
       return;
     }
     try {
+      // Store username in lowercase for consistent searching
       await setDoc(doc(db, "students", user.uid), {
         name,
+        username: username.toLowerCase(),
+        displayUsername: username, // Keep original case for display
         faculty,
         year,
         uid: user.uid,
@@ -199,6 +204,20 @@ const StudentInfoPage = () => {
                   id="name"
                   value={name}
                   onChange={e => setName(e.target.value)}
+                  required
+                  disabled={loading}
+                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
+                />
+              </div>
+              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
+                <label className="sub_title" htmlFor="username" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Username</label>
+                <input
+                  placeholder="Enter your username"
+                  className="form_style"
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
                   required
                   disabled={loading}
                   style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}

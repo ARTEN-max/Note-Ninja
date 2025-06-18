@@ -28,5 +28,90 @@ h1.brand, h2.brand, h3.brand, h4.brand, h5.brand, h6.brand {
 }
 
 body {
-  background: linear-gradient(to bottom, #e3b8f9, #c895f2) !important;
+  background: #e3b8f9 !important;
+}
+
+/* Profile page animations */
+.profile-glow {
+  animation: profile-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes profile-glow {
+  from {
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(167, 139, 250, 0.5);
+  }
+}
+
+/* Card hover effects */
+.note-card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.note-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px -5px rgba(167, 139, 250, 0.2);
+}
+
+/* Frosted glass effect */
+.frosted {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* Progress bar animation */
+.progress-bar {
+  transition: width 1s ease-in-out;
+}
+
+/* Tab hover effects */
+.tab-hover {
+  transition: all 0.3s ease;
+}
+
+.tab-hover:hover {
+  background: rgba(167, 139, 250, 0.1);
+}
+
+/* Icon animations */
+.icon-hover {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.icon-hover:hover {
+  transform: scale(1.1);
+  color: theme('colors.purple.600');
+}
+
+/* Line clamp for descriptions */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Toast animation */
+.toast-enter {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.toast-enter-active {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast-exit {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast-exit-active {
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 } 

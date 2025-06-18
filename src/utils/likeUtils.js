@@ -6,6 +6,7 @@ const getLikeCountCacheKey = (courseCode) => `likeCount_${courseCode}`;
 const getUserLikesCacheKey = (userId) => `userLikes_${userId}`;
 
 export async function getLikeCount(courseCode) {
+  if (!courseCode || typeof courseCode !== 'string') return 0;
   // Check cache first
   const cached = localStorage.getItem(getLikeCountCacheKey(courseCode));
   if (cached !== null) {

@@ -8,6 +8,7 @@ import { db } from "../firebase";
 import { doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, where, addDoc } from "firebase/firestore";
 import { useAuth } from '../contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from '../utils/likeUtils';
+import { FiUser } from "react-icons/fi";
 
 // Move studyGuides outside component to prevent useEffect re-runs
 const studyGuides = [
@@ -180,8 +181,8 @@ const NoteDashboard = () => {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;600;700&family=Inria+Sans:wght@400;700&family=Inter:wght@400;500&display=swap"
       />
-      <div className="min-h-screen bg-sour-lavender flex flex-col items-center justify-center">
-        <div className="w-full max-w-7xl mx-auto px-4 md:-mt-16">
+      <div className="min-h-screen bg-sour-lavender flex flex-col items-center justify-start">
+        <div className="w-full max-w-7xl mx-auto px-4 flex flex-col flex-1 overflow-auto pt-6">
           <div className="w-full flex justify-center">
             <h1
               className="text-4xl font-bold mb-1 note-ninja-heading pl-0"
@@ -190,8 +191,10 @@ const NoteDashboard = () => {
               NOTE NINJA
             </h1>
           </div>
-          <h2 className="text-2xl font-bold mb-1 pl-0 text-center md:text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
-          <div className="text-lg mb-6 pl-0 text-center md:text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
+          <div className="mb-2">
+            <h2 className="text-2xl font-bold mb-1 pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
+            <div className="text-lg pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
+          </div>
           <motion.div
             className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
             variants={containerVariants}
@@ -200,9 +203,9 @@ const NoteDashboard = () => {
           >
             {likeError && <div className="col-span-4 text-center text-red-600 font-bold mb-2">{likeError}</div>}
             {studyGuides.length === 0 ? (
-              <div className="col-span-4 text-center py-12 bg-white rounded-2xl shadow-lg">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Study Guides Yet</h3>
-                <p className="text-gray-600 mb-6">Start by adding a study guide.</p>
+              <div className="col-span-4 text-center py-12 rounded-2xl shadow-lg">
+                <h3 className="text-xl font-semibold text-white mb-2">No Study Guides Yet</h3>
+                <p className="text-white mb-6">Start by adding a study guide.</p>
                 {/* You can add a button here to create a new guide */}
               </div>
             ) : (
@@ -226,7 +229,7 @@ const NoteDashboard = () => {
               ))
             )}
           </motion.div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-10 ml-6">
             {albums.map((album, idx) => (
               <AlbumItem
                 key={album.id}

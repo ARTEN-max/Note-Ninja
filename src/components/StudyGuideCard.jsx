@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatCourseCode } from "../utils/courseUtils";
 
 const StudyGuideCard = ({
   courseCode,
@@ -172,7 +173,7 @@ const StudyGuideCard = ({
           width: '100%'
         }}
       >
-        <div className="font-bold text-lg text-black text-center" style={{ fontFamily: "'Inknut Antiqua', serif" }}>{courseCode}</div>
+        <div className="font-bold text-lg text-black text-center" style={{ fontFamily: "'Inknut Antiqua', serif" }}>{formatCourseCode(courseCode)}</div>
         <div className="text-sm text-black text-center mt-1">{description}</div>
       </div>
     </div>

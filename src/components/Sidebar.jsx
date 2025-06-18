@@ -102,6 +102,12 @@ const libraryItems = [
   ) },
 ];
 
+const extraItems = [
+  { label: "User Search", to: "/search-users", icon: (
+    <span role="img" aria-label="Search">🔍</span>
+  ) },
+];
+
 function Sidebar() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -181,6 +187,16 @@ function Sidebar() {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          {/* Profile Button */}
+          <NavLink
+            to="/profile"
+            className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
+            tabIndex={0}
+            style={{ minHeight: 44 }}
+          >
+            <span className="sidebar-icon" role="img" aria-label="Profile">👤</span>
+            <span>Profile</span>
+          </NavLink>
         </div>
       </div>
       {/* Logout Button at the bottom for desktop/tablet */}

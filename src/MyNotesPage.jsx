@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils';
 import { motion } from "framer-motion";
+import { formatCourseCode } from "./utils/courseUtils";
+import { db } from './firebase';
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 const csImages = [
   'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80',
@@ -90,11 +93,29 @@ const MyNotesPage = () => {
     setMousePosition({ x: 0, y: 0 });
   };
 
-  const handleRemove = (id) => {
+  const handleRemove = async (id) => {
     const myNotesArr = JSON.parse(localStorage.getItem(userKey) || "[]");
     const newNotesArr = myNotesArr.filter(note => note.id !== id);
     localStorage.setItem(userKey, JSON.stringify(newNotesArr));
     setNotes(newNotesArr);
+
+    // Also remove from Firebase
+    if (currentUser) {
+      try {
+        const savedNotesRef = collection(db, 'savedNotes');
+        const q = query(
+          savedNotesRef, 
+          where('userId', '==', currentUser.uid),
+          where('originalNoteId', '==', id)
+        );
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async (document) => {
+          await deleteDoc(doc(db, 'savedNotes', document.id));
+        });
+      } catch (err) {
+        console.error('Error removing note from Firebase:', err);
+      }
+    }
   };
 
   return (
@@ -143,7 +164,7 @@ const MyNotesPage = () => {
                       className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm shadow font-inknut"
                       style={{ fontFamily: 'Inknut Antiqua, serif', transform: 'translateZ(30px)' }}
                     >
-                      {subject}
+                      {formatCourseCode(subject)}
                     </div>
                   </div>
                   <div className="w-full flex flex-col items-start" style={{ transform: 'translateZ(10px)' }}>

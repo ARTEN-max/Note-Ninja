@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from './contexts/AuthContext.jsx';
 import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils.js';
 import StudyGuideCard from './components/StudyGuideCard';
+import { formatCourseCode } from "./utils/courseUtils";
 
 // Add type for study guide document
 interface StudyGuide {
@@ -95,6 +96,9 @@ const BrowsePage = () => {
   const { currentUser } = useAuth();
   const [recommendedGuides, setRecommendedGuides] = useState<StudyGuide[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState<'studyGuides' | 'profiles'>("studyGuides");
+  const [profileResults, setProfileResults] = useState<any[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
 
   useEffect(() => {
     // Fetch like counts and user likes for all study guides
@@ -194,6 +198,27 @@ const BrowsePage = () => {
     fetchRecommended();
   }, [currentUser]);
 
+  // Profile search logic
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (selectedFilter !== 'profiles' || !search.trim()) {
+        setProfileResults([]);
+        setLoadingProfiles(false);
+        return;
+      }
+      setLoadingProfiles(true);
+      const q = query(collection(db, 'students'), where('username', '>=', search), where('username', '<=', search + '\uf8ff'));
+      const querySnapshot = await getDocs(q);
+      const users: any[] = [];
+      querySnapshot.forEach((doc) => {
+        users.push({ id: doc.id, ...doc.data() });
+      });
+      setProfileResults(users);
+      setLoadingProfiles(false);
+    };
+    fetchProfiles();
+  }, [search, selectedFilter]);
+
   const handleLikeClick = async (id, courseCode) => {
     if (!currentUser) return;
     
@@ -285,7 +310,7 @@ const BrowsePage = () => {
       className="min-h-screen bg-sour-lavender py-8 px-4"
     >
       {/* Search Section */}
-      <div className="w-full flex justify-center items-center mt-8 mb-10">
+      <div className="w-full flex flex-col items-center mt-8 mb-10">
         <div className="relative w-full max-w-lg mx-auto">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 text-2xl">
             <FiSearch />
@@ -305,117 +330,142 @@ const BrowsePage = () => {
             onFocus={() => setShowSuggestions(true)}
             style={{ fontFamily: 'Inter, Arial, sans-serif' }}
           />
-          {/* Suggestions Dropdown */}
-          {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-10 border border-pink-100 max-h-60 overflow-y-auto">
-              {filteredSuggestions.map(guide => (
+        </div>
+        {/* Filter Pills */}
+        {search.trim().length > 0 && (
+          <div className="flex gap-2 mt-4">
+            <button
+              className={`px-5 py-2 rounded-full font-semibold shadow transition-all duration-150 ${selectedFilter === 'studyGuides' ? 'bg-[#b266ff] text-white' : 'bg-white text-[#5E2A84] border border-[#b266ff]'}`}
+              onClick={() => setSelectedFilter('studyGuides')}
+            >
+              Study Guides
+            </button>
+            <button
+              className={`px-5 py-2 rounded-full font-semibold shadow transition-all duration-150 ${selectedFilter === 'profiles' ? 'bg-[#b266ff] text-white' : 'bg-white text-[#5E2A84] border border-[#b266ff]'}`}
+              onClick={() => setSelectedFilter('profiles')}
+            >
+              Profiles
+            </button>
+          </div>
+        )}
+      </div>
+      {/* Results Section */}
+      {search.trim().length > 0 && selectedFilter === 'profiles' ? (
+        <div className="w-full max-w-4xl mx-auto mt-8">
+          {loadingProfiles ? (
+            <div className="text-lg text-[#5E2A84]">Loading...</div>
+          ) : profileResults.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {profileResults.map(user => (
+                <div
+                  key={user.id}
+                  className="bg-white rounded-xl shadow-md p-4 flex items-center gap-4 cursor-pointer hover:bg-[#f3e8ff] transition"
+                  onClick={() => navigate(`/u/${user.username}`)}
+                >
+                  <img
+                    src={user.profileImageUrl || 'https://i.imgur.com/6VBx3io.png'}
+                    alt={user.username}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-[#b266ff]"
+                  />
+                  <div>
+                    <div className="font-bold text-lg text-[#5E2A84]">{user.username}</div>
+                    <div className="text-gray-500">View Profile</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 mt-8">No users found.</div>
+          )}
+        </div>
+      ) : (
+        <div className="w-full max-w-6xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold font-inknut mb-6 text-center md:text-left"
+              style={{ fontFamily: 'Inknut Antiqua, serif', color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
+            {recommendedGuides === studyGuides ? "Popular Study Guides" : "Recommended for You"}
+          </h2>
+          {loadingRecs ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <svg className="animate-spin h-12 w-12 text-pink-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+              <div className="text-lg font-semibold text-pink-700">Fetching your recommendations...</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+              {recommendedGuides.map((guide) => (
                 <div
                   key={guide.id}
-                  className="px-4 py-3 cursor-pointer hover:bg-pink-50 flex items-center gap-3"
-                  onMouseDown={() => handleSuggestionClick(guide.id)}
+                  className="bg-white/90 rounded-2xl shadow-lg flex flex-col items-center p-4 transition-all duration-300 hover:shadow-xl cursor-pointer perspective-1000"
+                  style={{
+                    minWidth: 0,
+                    transform: `perspective(1000px) rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`,
+                    transformStyle: 'preserve-3d',
+                  }}
+                  onMouseMove={(e) => handleMouseMove(e, Number(guide.id))}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={() => navigate(`/guide/${guide.courseCode}/notes`)}
+                  role="button"
+                  tabIndex={0}
                 >
-                  <span className="bg-pink-100 text-pink-700 font-bold px-2 py-1 rounded text-xs">{guide.courseCode}</span>
-                  <span className="font-medium text-gray-800">{guide.title}</span>
+                  <div 
+                    className="relative w-full h-40 mb-4 transition-transform duration-300"
+                    style={{ transform: 'translateZ(20px)' }}
+                  >
+                    <img
+                      src={guide.imageUrl}
+                      alt={guide.title}
+                      className="rounded-xl object-cover w-full h-full"
+                    />
+                    {/* Like button positioned at top left of image */}
+                    <motion.button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); handleLikeClick(guide.id, guide.courseCode); }}
+                      className="absolute top-2 left-2 flex items-center justify-center"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        background: liked[guide.id] ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' : 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(8px)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: liked[guide.id] ? '0 4px 12px rgba(255, 107, 107, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <motion.svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill={liked[guide.id] ? "#ffffff" : "none"}
+                        stroke={liked[guide.id] ? "#ffffff" : "#666666"}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        animate={liked[guide.id] ? { scale: [1, 1.2, 1] } : {}}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </motion.svg>
+                    </motion.button>
+                  </div>
+                  <div 
+                    className="w-full flex flex-col items-start"
+                    style={{ transform: 'translateZ(10px)' }}
+                  >
+                    <div className="font-bold text-lg text-gray-800 font-inknut mb-1" style={{ fontFamily: 'Inknut Antiqua, serif' }}>{formatCourseCode(guide.courseCode)}</div>
+                    <div className="text-sm text-gray-500 mb-3">{guide.description}</div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
-          {/* Not Found Message */}
-          {notFound && (
-            <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-10 border border-red-200 text-red-600 px-4 py-3 font-semibold">
-              {notFound}
-            </div>
-          )}
         </div>
-      </div>
-
-      {/* Personalized Study Guides Section */}
-      <div className="w-full max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold font-inknut mb-6 text-center md:text-left"
-            style={{ fontFamily: 'Inknut Antiqua, serif', color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
-          {recommendedGuides === studyGuides ? "Popular Study Guides" : "Recommended for You"}
-        </h2>
-        {loadingRecs ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <svg className="animate-spin h-12 w-12 text-pink-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
-            <div className="text-lg font-semibold text-pink-700">Fetching your recommendations...</div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-            {recommendedGuides.map((guide) => (
-              <div
-                key={guide.id}
-                className="bg-white/90 rounded-2xl shadow-lg flex flex-col items-center p-4 transition-all duration-300 hover:shadow-xl cursor-pointer perspective-1000"
-                style={{
-                  minWidth: 0,
-                  transform: `perspective(1000px) rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`,
-                  transformStyle: 'preserve-3d',
-                }}
-                onMouseMove={(e) => handleMouseMove(e, Number(guide.id))}
-                onMouseLeave={handleMouseLeave}
-                onClick={() => navigate(`/guide/${guide.courseCode}/notes`)}
-                role="button"
-                tabIndex={0}
-              >
-                <div 
-                  className="relative w-full h-40 mb-4 transition-transform duration-300"
-                  style={{ transform: 'translateZ(20px)' }}
-                >
-                  <img
-                    src={guide.imageUrl}
-                    alt={guide.title}
-                    className="rounded-xl object-cover w-full h-full"
-                  />
-                  {/* Like button positioned at top left of image */}
-                  <motion.button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); handleLikeClick(guide.id, guide.courseCode); }}
-                    className="absolute top-2 left-2 flex items-center justify-center"
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: '50%',
-                      background: liked[guide.id] ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' : 'rgba(255, 255, 255, 0.9)',
-                      backdropFilter: 'blur(8px)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      boxShadow: liked[guide.id] ? '0 4px 12px rgba(255, 107, 107, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                  >
-                    <motion.svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill={liked[guide.id] ? "#ffffff" : "none"}
-                      stroke={liked[guide.id] ? "#ffffff" : "#666666"}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      animate={liked[guide.id] ? { scale: [1, 1.2, 1] } : {}}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </motion.svg>
-                  </motion.button>
-                </div>
-                <div 
-                  className="w-full flex flex-col items-start"
-                  style={{ transform: 'translateZ(10px)' }}
-                >
-                  <div className="font-bold text-lg text-gray-800 font-inknut mb-1" style={{ fontFamily: 'Inknut Antiqua, serif' }}>{guide.courseCode}</div>
-                  <div className="text-sm text-gray-500 mb-3">{guide.description}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </motion.main>
   );
 };

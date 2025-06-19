@@ -3,7 +3,7 @@
     "origin": [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      "https://note-ninja.vercel.app"
+      "https://note-ninja-six.vercel.app/"
     ],
     "method": ["GET", "POST", "PUT", "DELETE"],
     "maxAgeSeconds": 3600,

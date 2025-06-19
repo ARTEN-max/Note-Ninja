@@ -1,15 +1,12 @@
 [
   {
     "origin": [
-      "http://localhost:5173",
-      "http://localhost:5174", 
-      "http://localhost:5175",
-      "http://localhost:5176",
       "http://localhost:3000",
-      "http://localhost:8080"
+      "http://127.0.0.1:3000",
+      "https://note-ninja.vercel.app"
     ],
-    "method": ["GET", "HEAD"],
+    "method": ["GET", "POST", "PUT", "DELETE"],
     "maxAgeSeconds": 3600,
-    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"]
+    "responseHeader": ["Content-Type", "Authorization"]
   }
-] 
+]

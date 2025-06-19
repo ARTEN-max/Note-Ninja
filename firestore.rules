@@ -123,3 +123,17 @@ service cloud.firestore {
 // 2. Composite Index:
 //    Collection: savedNotes
 //    Field: userIdentifier, Ascending 
+
+// IMPORTANT: For audio files to work properly, configure Firebase Storage CORS rules:
+// 
+// 1. Install Firebase CLI: npm install -g firebase-tools
+// 2. Create a cors.json file with:
+//    [
+//      {
+//        "origin": ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"],
+//        "method": ["GET", "HEAD"],
+//        "maxAgeSeconds": 3600
+//      }
+//    ]
+// 3. Run: gsutil cors set cors.json gs://note-ninja-856f6.appspot.com
+// 4. Or use Firebase Console: Storage > Rules > Add CORS configuration 

@@ -112,6 +112,7 @@ function Sidebar() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [userName, setUserName] = useState("");
+  const [profileImageUrl, setProfileImageUrl] = useState("");
 
   // Function to capitalize first letter of name
   const capitalizeName = (name) => {
@@ -128,6 +129,9 @@ function Sidebar() {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setUserName(data.name || "");
+            setProfileImageUrl(data.profileImageUrl || "");
+          } else {
+            setProfileImageUrl("");
           }
         } catch (error) {
           console.error("Error fetching user name:", error);
@@ -194,7 +198,17 @@ function Sidebar() {
             tabIndex={0}
             style={{ minHeight: 44 }}
           >
-            <span className="sidebar-icon" role="img" aria-label="Profile">👤</span>
+            <span className="sidebar-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}>
+              {profileImageUrl || currentUser?.photoURL ? (
+                <img
+                  src={profileImageUrl || currentUser.photoURL}
+                  alt="Profile"
+                  style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e3b8f9', background: '#f3e8ff' }}
+                />
+              ) : (
+                <span role="img" aria-label="Profile" style={{ fontSize: 24 }}>👤</span>
+              )}
+            </span>
             <span>Profile</span>
           </NavLink>
         </div>

@@ -24,6 +24,7 @@ import PublicProfilePage from "./pages/PublicProfilePage";
 import MobileNav from "./components/MobileNav";
 import SetupStudyGuides from "./components/SetupStudyGuides";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AudioProvider } from './contexts/AudioContext';
 import "./App.css";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
@@ -174,7 +175,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <AudioProvider>
+          <AppContent />
+        </AudioProvider>
       </AuthProvider>
     </BrowserRouter>
   );

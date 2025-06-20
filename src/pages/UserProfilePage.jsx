@@ -200,7 +200,7 @@ const UserProfilePage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="min-h-screen bg-sour-lavender py-8 px-4"
+      className="min-h-screen bg-sour-lavender py-6 px-2 sm:py-8 sm:px-4"
     >
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -208,14 +208,14 @@ const UserProfilePage = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center justify-between mb-8"
+          className="flex flex-col items-center sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0"
         >
-          <h1 className="text-4xl font-bold font-inknut" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
+          <h1 className="text-3xl sm:text-4xl font-bold font-inknut text-center sm:text-left" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
             My Profile
           </h1>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-3 bg-white/20 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white/30 transition-all duration-300 flex items-center space-x-2 shadow-lg border border-white/30"
+            className="w-full sm:w-auto px-6 py-3 bg-white/20 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white/30 transition-all duration-300 flex items-center justify-center sm:justify-start space-x-2 shadow-lg border border-white/30"
           >
             <FiHome className="w-4 h-4" />
             <span>Dashboard</span>
@@ -248,95 +248,40 @@ const UserProfilePage = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            className="lg:col-span-1"
+            className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 flex flex-col items-center lg:items-start"
           >
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/50">
-              {/* Profile Picture Section */}
-              <div className="text-center mb-8">
-                <div className="relative inline-block">
-                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600 mx-auto mb-4 shadow-xl border-4 border-white">
-                    {userData?.profileImageUrl ? (
-                      <img
-                        src={userData.profileImageUrl}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <FiUser className="w-16 h-16 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Camera Icon Overlay */}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
-                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-110"
-                  >
-                    {uploadingImage ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                    ) : (
-                      <FiCamera className="w-5 h-5 text-white" />
-                    )}
-                  </button>
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-                
-                <h2 className="text-2xl font-bold text-gray-800 mb-1">{userData?.name || 'User'}</h2>
-                <p className="text-gray-600 flex items-center justify-center space-x-1 mb-1">
-                  <FiMail className="w-4 h-4" />
-                  <span>{formData.email}</span>
-                </p>
-                {userData?.username && (
-                  <p className="text-sm text-gray-500 font-medium">@{userData.username}</p>
-                )}
-              </div>
-
-              {/* Quick Stats */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl">
-                  <FiAward className="w-6 h-6 text-pink-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Faculty</p>
-                    <p className="font-semibold text-gray-800">{userData?.faculty || 'Not set'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-                  <FiBook className="w-6 h-6 text-purple-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Year of Study</p>
-                    <p className="font-semibold text-gray-800">{userData?.year || 'Not set'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Public Profile URL */}
-              {userData?.username && (
-                <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                  <p className="text-xs text-gray-500 mb-2">Your Public Profile URL</p>
-                  <p className="text-sm font-mono text-gray-700 break-all">
-                    noteninja.com/u/{userData.username}
-                  </p>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`noteninja.com/u/${userData.username}`);
-                      setSuccess('Profile URL copied to clipboard!');
-                      setTimeout(() => setSuccess(''), 3000);
-                    }}
-                    className="mt-2 text-xs text-pink-600 hover:text-pink-700 font-medium"
-                  >
-                    Copy URL
-                  </button>
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-lg mb-4 border-4 border-purple-100">
+              {userData?.profileImageUrl ? (
+                <img
+                  src={userData.profileImageUrl}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <FiUser className="w-16 h-16 text-white" />
                 </div>
               )}
+            </div>
+            <div className="flex flex-col items-center lg:items-start w-full">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 text-center sm:text-left">@{userData?.username || 'username'}</h2>
+              <div className="flex items-center gap-2 mb-2">
+                <FiUser className="text-purple-500" />
+                <span className="text-sm text-gray-600">{userData?.faculty || 'Not set'}</span>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center lg:justify-start mb-2">
+                {userData.faculty && <span className="text-sm bg-purple-100 text-purple-600 px-3 py-1 rounded-full">{userData.faculty}</span>}
+              </div>
+              <div className="flex items-center space-x-6 text-gray-600 mt-4 text-sm justify-center lg:justify-start w-full">
+                <div className="flex items-center gap-2">
+                  <FiBook className="text-purple-500" />
+                  <span><span className="font-bold">{userData.savedNotes?.length || 0}</span> Saved</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiAward className="text-purple-500" />
+                  <span><span className="font-bold">{userData.rank || 'N/A'}</span> Rank</span>
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -446,6 +391,35 @@ const UserProfilePage = () => {
               </div>
             </div>
           </motion.div>
+        </div>
+
+        {/* Notes Section */}
+        <div className="bg-white rounded-3xl shadow-lg p-4 sm:p-8 mt-8">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+            <FiBook className="text-purple-700" />
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Saved Notes</h2>
+            <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full">
+              {userData.savedNotes?.length || 0}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+            {/* Dummy Study Guide Card */}
+            {/* Replace with actual user's saved notes */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-2 sm:mb-3">
+                <h3 className="font-bold text-base sm:text-lg text-gray-800">Full Study Guide</h3>
+                <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 sm:px-3 py-1 rounded-full">MATH 137</span>
+              </div>
+              <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-4">Must know points</p>
+              <div className="flex justify-between items-center text-xs text-gray-500">
+                <span>3 days ago</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span>♡ 0</span>
+                  <span>⚑ 0</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>

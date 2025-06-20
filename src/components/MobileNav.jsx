@@ -1,14 +1,14 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { HomeIcon, BookOpenIcon, ArrowUpOnSquareIcon, UserIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, BookOpenIcon, ArrowUpOnSquareIcon, UserIcon, MusicalNoteIcon } from "@heroicons/react/24/outline";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
 const navItems = [
   { label: "Home", to: "/", icon: <HomeIcon className="w-6 h-6" /> },
   { label: "Browse", to: "/browse", icon: <BookOpenIcon className="w-6 h-6" /> },
-  { label: "Request", to: "/upload", icon: <ArrowUpOnSquareIcon className="w-6 h-6" /> },
-  { label: "My Notes", to: "/my-notes", icon: <UserIcon className="w-6 h-6" /> },
+  { label: "Audio", to: "/audio-notes", icon: <MusicalNoteIcon className="w-6 h-6" /> },
+  { label: "Profile", to: "/profile", icon: <UserIcon className="w-6 h-6" /> },
 ];
 
 export default function MobileNav() {

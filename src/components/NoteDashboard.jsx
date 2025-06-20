@@ -229,7 +229,7 @@ const NoteDashboard = () => {
               ))
             )}
           </motion.div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-10 ml-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-10">
             {albums.map((album, idx) => (
               <AlbumItem
                 key={album.id}

@@ -24,12 +24,13 @@ import PublicProfilePage from "./pages/PublicProfilePage";
 import MobileNav from "./components/MobileNav";
 import SetupStudyGuides from "./components/SetupStudyGuides";
 import { AuthProvider } from "./contexts/AuthContext";
-import { AudioProvider } from './contexts/AudioContext';
+import { AudioProvider, useAudio } from './contexts/AudioContext';
 import "./App.css";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import MiniPlayer from "./components/MiniPlayer";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -63,6 +64,7 @@ function ProtectedRoute({ children }) {
 
 function AppContent() {
   const location = useLocation();
+  const { currentAudio } = useAudio();
   const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
   return (
@@ -165,6 +167,7 @@ function AppContent() {
             }
           />
         </Routes>
+        {currentAudio && <MiniPlayer />}
       </div>
       <MobileNav />
     </div>

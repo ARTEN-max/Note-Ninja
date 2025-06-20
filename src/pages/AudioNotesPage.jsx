@@ -6,7 +6,6 @@ import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, serverTimestam
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiClock, FiUser, FiHeart, FiUpload, FiTrash2 } from 'react-icons/fi';
-import MiniPlayer from '../components/MiniPlayer';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"];
 
@@ -42,15 +41,37 @@ const AudioNotesPage = () => {
         const q = query(audioNotesRef, orderBy('uploadDate', 'desc'));
         const snapshot = await getDocs(q);
         
-        const notes = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          url: doc.data().audioUrl // Map audioUrl to url for the player
-        }));
-        
-        setAudioNotes(notes);
-        setAudioNotesLocal(notes);
-        console.log('AudioNotes set in context:', notes.length, 'notes');
+        const notes = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || '',
+            subject: data.subject || '',
+            url: data.audioUrl || '',
+            albumArt: `https://picsum.photos/seed/${doc.id}/40/40`,
+            ...data
+          };
+        });
+
+        // Get durations for all notes
+        const getAudioDuration = (note) => {
+          return new Promise((resolve) => {
+            if (!note.url) return resolve(note);
+            const audio = new window.Audio();
+            audio.src = note.url;
+            audio.addEventListener('loadedmetadata', () => {
+              resolve({ ...note, duration: audio.duration });
+            });
+            audio.addEventListener('error', () => {
+              resolve({ ...note, duration: null });
+            });
+          });
+        };
+
+        Promise.all(notes.map(getAudioDuration)).then((notesWithDurations) => {
+          setAudioNotesLocal(notesWithDurations);
+          console.log('AudioNotes set in context:', notesWithDurations.length, 'notes');
+        });
       } catch (error) {
         console.error('Error fetching audio notes:', error);
       } finally {
@@ -110,12 +131,18 @@ const AudioNotesPage = () => {
       const audioNotesRef = collection(db, 'audioNotes');
       const q = query(audioNotesRef, orderBy('uploadDate', 'desc'));
       const snapshot2 = await getDocs(q);
-      const notes = snapshot2.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        url: doc.data().audioUrl
-      }));
-      setAudioNotes(notes);
+      const notes = snapshot2.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title || '',
+          subject: data.subject || '',
+          url: data.audioUrl || '',
+          albumArt: `https://picsum.photos/seed/${doc.id}/40/40`,
+          ...data
+        };
+      });
+      setAudioNotesLocal(notes);
     } catch (error) {
       setUploadError("Failed to upload audio note. Please try again.");
       console.error("Upload error:", error);
@@ -130,9 +157,21 @@ const AudioNotesPage = () => {
     try {
       // Delete from Firestore
       await deleteDoc(doc(db, "audioNotes", note.id));
-      setAudioNotes(prev => prev.filter(n => n.id !== note.id));
+      
+      // Delete from Storage
+      if (note.audioUrl) {
+          try {
+            const fileRef = ref(storage, note.audioUrl);
+            await deleteObject(fileRef);
+          } catch(storageError) {
+              console.warn("Could not delete file from storage. It might have been already deleted or the URL is incorrect.", storageError);
+          }
+      }
+
+      setAudioNotesLocal(prev => prev.filter(n => n.id !== note.id));
     } catch (error) {
       console.error("Delete error:", error);
+      alert("Failed to delete audio note. Check console for details.");
     }
   };
 
@@ -151,10 +190,14 @@ const AudioNotesPage = () => {
   };
 
   const handlePlayClick = (note) => {
+    if (!note.url) {
+      alert("This note has no audio file to play.");
+      return;
+    }
     if (currentAudio?.id === note.id) {
       togglePlay();
     } else {
-      playAudio(note);
+      playAudio({ ...note, artist: note.uploaderName || 'Unknown Artist' });
     }
   };
 
@@ -216,83 +259,40 @@ const AudioNotesPage = () => {
           </div>
         </div>
       </div>
-
+      
       {/* Admin Upload Form */}
       {isAdmin && (
         <motion.div 
-          className="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-8 mb-8 border border-[#e3b8f9]/20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="px-10 py-6 bg-[#1a1028]/50 mb-8"
         >
-          <h2 className="text-xl font-bold mb-6 text-[#5E2A84] flex items-center gap-2">
-            <FiUpload className="w-5 h-5" />
-            Upload Audio Note
-          </h2>
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#5E2A84]">Subject</label>
-              <input
-                type="text"
-                name="subject"
-                placeholder="e.g., CS246, MATH137"
-                value={form.subject}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-[#e3b8f9]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5E2A84] focus:border-transparent bg-white/50"
-                required
-              />
+          <h3 className="text-2xl font-bold text-white mb-4 border-b border-purple-400/30 pb-2">Upload New Audio Note</h3>
+          <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="col-span-1">
+              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="title">Title</label>
+              <input type="text" name="title" id="title" value={form.title} onChange={handleInputChange} required className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none" />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#5E2A84]">Title</label>
-              <input
-                type="text"
-                name="title"
-                placeholder="Audio note title"
-                value={form.title}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-[#e3b8f9]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5E2A84] focus:border-transparent bg-white/50"
-                required
-              />
+            <div className="col-span-1">
+              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="subject">Subject</label>
+              <input type="text" name="subject" id="subject" value={form.subject} onChange={handleInputChange} required className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none" />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#5E2A84]">Description</label>
-              <textarea
-                name="description"
-                placeholder="Description (optional)"
-                value={form.description}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-[#e3b8f9]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5E2A84] focus:border-transparent bg-white/50"
-                rows="3"
-              />
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="description">Description</label>
+              <textarea name="description" id="description" value={form.description} onChange={handleInputChange} rows="3" className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none"></textarea>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#5E2A84]">Audio File</label>
-              <input
-                type="file"
-                name="audioFile"
-                accept="audio/*"
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-[#e3b8f9]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5E2A84] focus:border-transparent bg-white/50"
-                required
-              />
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="audioFile">Audio File</label>
+              <input type="file" name="audioFile" id="audioFile" onChange={handleInputChange} required accept="audio/*" className="w-full text-sm text-purple-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-600" />
             </div>
-            <button
-              type="submit"
-              className="w-full px-6 py-3 bg-gradient-to-r from-[#5E2A84] to-[#7E44A3] text-white rounded-xl hover:from-[#7E44A3] hover:to-[#5E2A84] transition-all duration-300 font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={uploading}
-            >
-              {uploading ? "Uploading..." : "Upload Audio Note"}
-            </button>
-            {uploadSuccess && (
-              <div className="text-green-600 text-center bg-green-50 p-3 rounded-lg">
-                {uploadSuccess}
-              </div>
-            )}
-            {uploadError && (
-              <div className="text-red-600 text-center bg-red-50 p-3 rounded-lg">
-                {uploadError}
-              </div>
-            )}
+            <div className="col-span-2 flex justify-end items-center">
+              {uploadError && <p className="text-red-400 text-sm mr-4">{uploadError}</p>}
+              {uploadSuccess && <p className="text-green-400 text-sm mr-4">{uploadSuccess}</p>}
+              <button type="submit" disabled={uploading} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed">
+                {uploading ? 'Uploading...' : 'Upload'}
+              </button>
+            </div>
           </form>
         </motion.div>
       )}
@@ -302,9 +302,9 @@ const AudioNotesPage = () => {
         <div className="flex items-center px-10 py-3 text-sm font-semibold text-purple-200 uppercase tracking-widest border-b border-[#b266ff]/30">
           <div className="w-8 text-left">#</div>
           <div className="flex-1">Title</div>
-          <div className="w-56 hidden md:block">Album</div>
+          <div className="w-56 hidden md:block">Subject</div>
           <div className="w-40 hidden md:block">Date added</div>
-          <div className="w-20 text-right">Duration</div>
+          <div className="w-24 text-right">Duration</div>
         </div>
         {audioNotesLocal.length === 0 ? (
           <div className="text-center py-16 text-purple-200">No Audio Notes Yet</div>
@@ -312,27 +312,44 @@ const AudioNotesPage = () => {
           audioNotesLocal.map((note, index) => (
             <div
               key={note.id}
-              className="flex items-center px-10 py-4 border-b border-[#b266ff]/10 hover:bg-[#2a1a3a] transition group cursor-pointer"
-              onClick={() => handlePlayClick(note)}
+              className={`flex items-center px-10 py-4 border-b border-[#b266ff]/10 transition group
+                ${note.url ? "hover:bg-[#2a1a3a] cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
+              onClick={() => note.url && handlePlayClick(note)}
             >
               {/* Index */}
               <div className="w-8 text-left text-purple-300 font-mono">{index + 1}</div>
               {/* Title and Info */}
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-white truncate">{note.title}</div>
-                <div className="text-xs text-purple-300 truncate">{note.subject}</div>
+              <div className="flex-1 min-w-0 flex items-center gap-4">
+                  <img src={note.albumArt} alt={note.title} className="w-10 h-10 rounded-sm object-cover"/>
+                  <div>
+                      <div className="font-bold text-white truncate">{note.title}</div>
+                      <div className="text-xs text-purple-300 truncate">{note.subject}</div>
+                  </div>
               </div>
-              {/* Album (placeholder for now) */}
-              <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.album || note.subject}</div>
+              {/* Subject */}
+              <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.subject}</div>
               {/* Date added (placeholder for now) */}
               <div className="w-40 text-purple-200 text-sm hidden md:block truncate">{note.uploadDate ? formatDate(note.uploadDate) : ''}</div>
               {/* Duration */}
-              <div className="w-20 text-right text-white font-mono">{note.duration ? formatDuration(note.duration) : '--:--'}</div>
+              <div className="w-24 text-right text-white font-mono flex items-center justify-end gap-4">
+                <span>{note.duration ? formatDuration(note.duration) : '--:--'}</span>
+                {isAdmin && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(note);
+                    }}
+                    className="text-purple-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete this note"
+                  >
+                    <FiTrash2 size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}
       </div>
-      <MiniPlayer />
     </div>
   );
 };

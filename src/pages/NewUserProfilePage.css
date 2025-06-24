@@ -1,0 +1,183 @@
+body {
+  background-color: #121212;
+}
+
+.profile-container {
+  background: linear-gradient(135deg, #1f1f1f 0%, #121212 100%);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.profile-header {
+  background: linear-gradient(to bottom, rgba(75, 0, 110, 0.5), transparent);
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.course-thumbnail, .playlist-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.course-thumbnail:hover, .playlist-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.profile-page-container {
+    background-color: #121212;
+    color: #ffffff;
+    min-height: 100vh;
+    padding-bottom: 80px; 
+  }
+  
+  .profile-header-section {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    padding: 60px 32px 24px;
+    background: linear-gradient(to bottom, #442266, #121212 500px);
+  }
+  
+  .profile-picture-details {
+    width: 232px;
+    height: 232px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+  
+  .profile-info-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .profile-type-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  
+  .profile-name-heading {
+    font-size: 6rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  
+  .profile-stats-info {
+    margin-top: 16px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .profile-content-area {
+    padding: 0 32px;
+  }
+  
+  .profile-section-layout {
+    margin-top: 48px;
+  }
+  
+  .section-title-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  
+  .courses-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+  }
+  
+  .course-item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .course-thumbnail-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 12px;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .course-item-card:hover .course-thumbnail-image {
+    transform: scale(1.05);
+  }
+  
+  .course-title-text {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .playlists-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
+  }
+  
+  .playlist-item-card {
+    background-color: #181818;
+    border-radius: 8px;
+    padding: 16px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .playlist-item-card:hover {
+    background-color: #282828;
+  }
+  
+  .playlist-thumbnail-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-bottom: 16px;
+  }
+  
+  .playlist-info-details .playlist-title-text {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .playlist-info-details .playlist-description-text {
+    font-size: 0.875rem;
+    color: #b3b3b3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .no-courses-message {
+    color: #b3b3b3;
+    text-align: center;
+    grid-column: 1 / -1;
+    margin-top: 24px;
+    font-style: italic;
+  } 
+  .course-thumbnail-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%; /* This will make the image circular */
+    object-fit: cover;
+    margin-bottom: 12px;
+    transition: transform 0.2s ease-in-out;
+  }

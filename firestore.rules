@@ -98,7 +98,13 @@ service cloud.firestore {
 
     // My Notes subcollection under students
     match /students/{userId}/myNotes/{noteId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User Downloads: Allow users to read and create their own download records
+    match /userDownloads/{downloadId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
     // Saved Notes: Anyone can read (for public profiles), only authenticated users can write their own

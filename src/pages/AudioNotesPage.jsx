@@ -215,7 +215,44 @@ const AudioNotesPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e3b8f9]/20 to-white p-6">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5E2A84] mx-auto"></div>
+        <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12">
+          <div className="bg-gray-300 rounded-2xl w-80 h-80 animate-pulse mb-6 md:mb-0" />
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="bg-gray-300 rounded w-2/3 h-10 animate-pulse mb-2" />
+            <div className="bg-gray-300 rounded w-1/3 h-6 animate-pulse mb-2" />
+            <div className="bg-gray-300 rounded w-1/2 h-6 animate-pulse mb-2" />
+            <div className="flex gap-2 mt-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-gray-300 rounded-full w-10 h-10 animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="w-full mt-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center px-10 py-4 border-b border-[#b266ff]/10 animate-pulse">
+              <div className="w-8 text-left">
+                <div className="bg-gray-300 rounded h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0 flex items-center gap-4">
+                <div className="bg-gray-300 rounded w-10 h-10" />
+                <div className="flex flex-col gap-2">
+                  <div className="bg-gray-300 rounded w-32 h-4" />
+                  <div className="bg-gray-300 rounded w-20 h-3" />
+                </div>
+              </div>
+              <div className="w-56 hidden md:block">
+                <div className="bg-gray-300 rounded w-24 h-4" />
+              </div>
+              <div className="w-40 hidden md:block">
+                <div className="bg-gray-300 rounded w-20 h-4" />
+              </div>
+              <div className="w-24 text-right">
+                <div className="bg-gray-300 rounded w-12 h-4" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -225,26 +262,19 @@ const AudioNotesPage = () => {
       <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12"
         style={{
           background: 'linear-gradient(135deg, #4b006e 0%, #b266ff 100%)',
-          minHeight: 280,
+          minHeight: 400,
         }}
       >
         {/* Playlist Image/Icon Card */}
-        <div className="flex-shrink-0 flex flex-col items-center justify-center w-48 h-48 rounded-2xl bg-[#2a1a3a] shadow-xl overflow-hidden mr-0 md:mr-10 mb-6 md:mb-0 p-6">
-          <div className="uppercase text-xs text-purple-200 tracking-widest mb-2">Audio Notes</div>
-          <div className="flex items-center justify-center w-20 h-20 rounded-full bg-[#4b267a] mb-4">
-            <svg width="48" height="48" fill="none" viewBox="0 0 48 48">
-              <circle cx="24" cy="24" r="24" fill="#b266ff" />
-              <rect x="16" y="18" width="4" height="12" rx="2" fill="#fff" />
-              <rect x="28" y="14" width="4" height="16" rx="2" fill="#fff" />
-            </svg>
-          </div>
-          <div className="text-white text-xl font-bold mb-1">Cram Mode</div>
-          <div className="text-purple-300 text-sm">All subjects</div>
-        </div>
+        <img 
+          src="/goose-radio.png" 
+          alt="Note Ninja Radio"
+          className="w-80 h-80 rounded-2xl shadow-xl object-cover mr-0 md:mr-10 mb-6 md:mb-0"
+        />
         {/* Playlist Info & Actions */}
         <div className="flex-1 flex flex-col justify-center items-start text-left">
           <div className="uppercase text-xs text-purple-200 mb-2 tracking-widest">Public Playlist</div>
-          <div className="text-5xl md:text-6xl font-extrabold text-white mb-2 tracking-tight leading-tight">CRAM MODE</div>
+          <div className="text-6xl md:text-7xl font-extrabold text-white mb-2 tracking-tight leading-tight">NOTE NINJA RADIO</div>
           <div className="text-purple-200 text-base mb-3">For efficient review before exams</div>
           <div className="flex items-center gap-2 text-purple-100 text-sm font-medium mb-6">
             <span className="font-bold text-white">Note Ninja</span>

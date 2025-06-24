@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import NoteDashboard from "./components/NoteDashboard";
 import SignIn from "./SignIn";
@@ -31,6 +31,7 @@ import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import MiniPlayer from "./components/MiniPlayer";
+import NewUserProfilePage from "./pages/NewUserProfilePage";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -60,6 +61,11 @@ function ProtectedRoute({ children }) {
   if (!user) return <Navigate to="/signin" state={{ from: location }} replace />;
   if (!hasStudentInfo && location.pathname !== "/student-info") return <Navigate to="/student-info" replace />;
   return children;
+}
+
+function RedirectToAccountProfile() {
+  const { username } = useParams();
+  return <Navigate to={`/account?username=${username}`} replace />;
 }
 
 function AppContent() {
@@ -155,7 +161,15 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          <Route path="/u/:username" element={<PublicProfilePage />} />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <NewUserProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/u/:username" element={<NewUserProfilePage />} />
           <Route
             path="/*"
             element={

@@ -211,7 +211,7 @@ const UserProfilePage = () => {
           className="flex flex-col items-center sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0"
         >
           <h1 className="text-3xl sm:text-4xl font-bold font-inknut text-center sm:text-left" style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
-            My Profile
+            My Account
           </h1>
           <button
             onClick={() => navigate('/dashboard')}

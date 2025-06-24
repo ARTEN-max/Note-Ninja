@@ -198,6 +198,18 @@ function Sidebar() {
             tabIndex={0}
             style={{ minHeight: 44 }}
           >
+             <span className="sidebar-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}>
+               <span role="img" aria-label="Profile" style={{ fontSize: 24 }}>👤</span>
+             </span>
+             <span>Account</span>
+          </NavLink>
+          {/* Account Button */}
+          <NavLink
+            to="/account"
+            className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
+            tabIndex={0}
+            style={{ minHeight: 44 }}
+          >
             <span className="sidebar-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}>
               {profileImageUrl || currentUser?.photoURL ? (
                 <img

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCourseCode } from "../utils/courseUtils";
+import { FiHeart } from 'react-icons/fi';
 
 const StudyGuideCard = ({
   courseCode,
@@ -12,6 +13,8 @@ const StudyGuideCard = ({
   onLike = () => {},
   likeCount,
   minimal = false,
+  onAddToMyNotes,
+  addNoteStatus,
   ...props
 }) => {
   const [hovered, setHovered] = useState(false);
@@ -174,8 +177,25 @@ const StudyGuideCard = ({
         }}
       >
         <div className="font-bold text-lg text-black text-center" style={{ fontFamily: "'Inknut Antiqua', serif" }}>{formatCourseCode(courseCode)}</div>
-        <div className="text-sm text-black text-center mt-1">{description}</div>
+        <div className="text-sm text-gray-600 text-center mt-1 mb-3">{description}</div>
       </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddToMyNotes();
+        }}
+        className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
+          addNoteStatus === 'added'
+            ? "bg-green-200 text-green-800 cursor-not-allowed"
+            : addNoteStatus === 'adding'
+            ? "bg-yellow-200 text-yellow-800 cursor-wait"
+            : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
+        }`}
+        disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
+      >
+        {addNoteStatus === 'added' ? "Added to My Notes" : 
+         addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
+      </button>
     </div>
   );
 };

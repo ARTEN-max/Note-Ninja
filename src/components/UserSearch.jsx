@@ -80,16 +80,20 @@ const UserSearch = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const handleUserClick = (username) => {
+  const handleUserClick = (username, id) => {
     setSearchQuery('');
     setShowResults(false);
-    navigate(`/u/${username}`);
+    if (id) {
+      navigate(`/account?uid=${id}`);
+    } else {
+      navigate(`/account?username=${username}`);
+    }
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/u/${searchQuery.trim()}`);
+      navigate(`/account?username=${searchQuery.trim()}`);
       setSearchQuery('');
       setShowResults(false);
     }
@@ -144,7 +148,7 @@ const UserSearch = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    onClick={() => handleUserClick(user.username)}
+                    onClick={() => handleUserClick(user.username, user.id)}
                     className="w-full p-4 text-left hover:bg-pink-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center space-x-3"
                   >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center">

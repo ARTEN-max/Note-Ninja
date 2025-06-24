@@ -130,6 +130,14 @@ const ChapterNotesPage = () => {
       // Delete from Firestore
       await deleteDoc(doc(db, notesCollectionPath, note.id));
       setNotes(notes.filter(n => n.id !== note.id));
+
+      // Also remove from local myNotesIds if it exists there
+      setMyNotesIds(prev => prev.filter(id => id !== note.id));
+
+      // Also remove from localStorage to ensure consistency
+      const notesArr = JSON.parse(localStorage.getItem(userKey) || '[]');
+      const updatedNotesArr = notesArr.filter(n => n.id !== note.id);
+      localStorage.setItem(userKey, JSON.stringify(updatedNotesArr));
     } catch (err) {
       // handle error
     }

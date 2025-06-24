@@ -52,6 +52,7 @@ const NoteDashboard = () => {
   const [liked, setLiked] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
   const [likeError, setLikeError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const albums = [
     {
@@ -118,6 +119,12 @@ const NoteDashboard = () => {
     fetchLikes();
   }, [currentUser]); // Removed studyGuides from dependencies
 
+  useEffect(() => {
+    // Simulate loading for 1s for demo; replace with real loading logic if needed
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleStudyGuideClick = (courseCode) => {
     // Navigate directly to the notes page for this study guide using course code
     navigate(`/guide/${courseCode}/notes`);
@@ -183,73 +190,108 @@ const NoteDashboard = () => {
       />
       <div className="min-h-screen bg-sour-lavender flex flex-col items-center justify-start">
         <div className="w-full max-w-7xl mx-auto px-4 flex flex-col flex-1 overflow-auto pt-6">
-          <div className="w-full flex justify-center">
-            <h1
-              className="text-4xl font-bold mb-1 note-ninja-heading pl-0"
-              style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
-            >
-              NOTE NINJA
-            </h1>
-          </div>
-          <div className="mb-2">
-            <h2 className="text-2xl font-bold mb-1 pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
-            <div className="text-lg pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
-          </div>
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-          >
-            {likeError && <div className="col-span-4 text-center text-red-600 font-bold mb-2">{likeError}</div>}
-            {studyGuides.length === 0 ? (
-              <div className="col-span-4 text-center py-12 rounded-2xl shadow-lg">
-                <h3 className="text-xl font-semibold text-white mb-2">No Study Guides Yet</h3>
-                <p className="text-white mb-6">Start by adding a study guide.</p>
-                {/* You can add a button here to create a new guide */}
+          {loading ? (
+            <>
+              {/* Skeleton for heading and subheading */}
+              <div className="w-full flex justify-center mb-2">
+                <div className="bg-gray-300 rounded h-10 w-64 animate-pulse" />
               </div>
-            ) : (
-              studyGuides.map((guide) => (
-                <motion.div
-                  key={guide.id}
-                  variants={cardVariants}
-                  className="flex justify-center mb-2"
+              <div className="mb-2">
+                <div className="bg-gray-300 rounded h-8 w-48 mb-2 animate-pulse" />
+                <div className="bg-gray-300 rounded h-6 w-72 animate-pulse" />
+              </div>
+              {/* Skeleton for study guide cards grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8 mb-10">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center bg-white rounded-2xl shadow-md p-4 animate-pulse" style={{ width: 232, height: 300 }}>
+                    <div className="bg-gray-300 rounded-lg mb-2 object-cover" style={{ width: 200, height: 120 }} />
+                    <div className="bg-gray-300 rounded w-24 h-4 mt-2 mb-1" />
+                    <div className="bg-gray-300 rounded w-20 h-3" />
+                  </div>
+                ))}
+              </div>
+              {/* Skeleton for album cards grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-10" style={{ marginLeft: 20 }}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center bg-white rounded-xl shadow-md p-4 animate-pulse" style={{ width: 144, height: 200 }}>
+                    <div className="bg-gray-300 rounded-lg mb-2 object-cover" style={{ width: 144, height: 144 }} />
+                    <div className="bg-gray-300 rounded w-20 h-4 mt-2 mb-1" />
+                    <div className="bg-gray-300 rounded w-16 h-3" />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-full flex justify-center">
+                <h1
+                  className="text-4xl font-bold mb-1 note-ninja-heading pl-0"
+                  style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
                 >
-                  <StudyGuideCard
-                    courseCode={guide.courseCode}
-                    title={guide.title}
-                    description={guide.description}
-                    imageUrl={guide.imageUrl}
-                    liked={!!liked[guide.id]}
-                    onLike={() => handleLikeClick(guide.id, guide.courseCode)}
-                    likeCount={likeCounts[guide.courseCode] || 0}
-                    onClick={() => handleStudyGuideClick(guide.courseCode)}
+                  NOTE NINJA
+                </h1>
+              </div>
+              <div className="mb-2">
+                <h2 className="text-2xl font-bold mb-1 pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
+                <div className="text-lg pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
+              </div>
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+              >
+                {likeError && <div className="col-span-4 text-center text-red-600 font-bold mb-2">{likeError}</div>}
+                {studyGuides.length === 0 ? (
+                  <div className="col-span-4 text-center py-12 rounded-2xl shadow-lg">
+                    <h3 className="text-xl font-semibold text-white mb-2">No Study Guides Yet</h3>
+                    <p className="text-white mb-6">Start by adding a study guide.</p>
+                    {/* You can add a button here to create a new guide */}
+                  </div>
+                ) : (
+                  studyGuides.map((guide) => (
+                    <motion.div
+                      key={guide.id}
+                      variants={cardVariants}
+                      className="flex justify-center mb-2"
+                    >
+                      <StudyGuideCard
+                        courseCode={guide.courseCode}
+                        title={guide.title}
+                        description={guide.description}
+                        imageUrl={guide.imageUrl}
+                        liked={!!liked[guide.id]}
+                        onLike={() => handleLikeClick(guide.id, guide.courseCode)}
+                        likeCount={likeCounts[guide.courseCode] || 0}
+                        onClick={() => handleStudyGuideClick(guide.courseCode)}
+                      />
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-10" style={{ marginLeft: 20 }}>
+                {albums.map((album, idx) => (
+                  <AlbumItem
+                    key={album.id}
+                    title={album.title}
+                    subtitle={album.subtitle}
+                    imageUrl={album.imageUrl}
+                    onClick={() => {
+                      const routes = [
+                        '/cram-mode',
+                        '/deep-dive',
+                        '/exam-review',
+                        '/quick-recap',
+                        '/night-owl',
+                        '/chill-review',
+                      ];
+                      navigate(routes[idx]);
+                    }}
                   />
-                </motion.div>
-              ))
-            )}
-          </motion.div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-10">
-            {albums.map((album, idx) => (
-              <AlbumItem
-                key={album.id}
-                title={album.title}
-                subtitle={album.subtitle}
-                imageUrl={album.imageUrl}
-                onClick={() => {
-                  const routes = [
-                    '/cram-mode',
-                    '/deep-dive',
-                    '/exam-review',
-                    '/quick-recap',
-                    '/night-owl',
-                    '/chill-review',
-                  ];
-                  navigate(routes[idx]);
-                }}
-              />
-            ))}
-          </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

@@ -1,74 +1,85 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
-import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils';
+import { db } from './firebase';
+import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { motion } from "framer-motion";
 import { formatCourseCode } from "./utils/courseUtils";
-import { db } from './firebase';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
-
-const csImages = [
-  'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1461344577544-4e5dc9487184?auto=format&fit=crop&w=600&q=80',
-];
+import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils';
 
 const MyNotesPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const navigate = useNavigate();
-  const userKey = currentUser ? `myNotes_${currentUser.uid}` : 'myNotes_guest';
 
   useEffect(() => {
-    setLoading(true);
-    const notesArr = JSON.parse(localStorage.getItem(userKey) || '[]');
-    setNotes(notesArr);
-    // Fetch like counts and user likes for all notes
-    const fetchLikes = async () => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!currentUser) {
+      setNotes([]);
+      setLoading(false);
+      return;
+    }
+    
+    const notesQuery = query(collection(db, 'savedNotes'), where('userId', '==', currentUser.uid));
+    
+    const unsubscribe = onSnapshot(notesQuery, async (querySnapshot) => {
+      const notesArr = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      setNotes(notesArr);
+
+      // Fetch likes data whenever notes change
       const counts = {};
+      const userLikes = await getUserLikes(currentUser.uid);
+      const likedMap = {};
       for (const note of notesArr) {
         counts[note.course] = await getLikeCount(note.course);
+        likedMap[note.id] = userLikes.includes(note.course);
       }
       setLikeCounts(counts);
-      if (currentUser) {
-        const userLikes = await getUserLikes(currentUser.uid);
-        const likedMap = {};
-        for (const note of notesArr) {
-          likedMap[note.id] = userLikes.includes(note.course);
-        }
-        setLiked(likedMap);
-      }
+      setLiked(likedMap);
+      
       setLoading(false);
-    };
-    fetchLikes();
-  }, [currentUser, userKey]);
+    }, (error) => {
+      console.error("Error fetching saved notes: ", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, authLoading]);
+
+  const handleRemove = async (noteToRemove) => {
+    if (!currentUser) return;
+    try {
+      await deleteDoc(doc(db, 'savedNotes', noteToRemove.id));
+
+      const userKey = `myNotes_${currentUser.uid}`;
+      const notesArr = JSON.parse(localStorage.getItem(userKey) || '[]');
+      
+      if (noteToRemove.originalNoteId) {
+        const updatedNotesArr = notesArr.filter(n => n.id !== noteToRemove.originalNoteId);
+        localStorage.setItem(userKey, JSON.stringify(updatedNotesArr));
+      }
+    } catch (error) {
+      console.error("Error removing saved note: ", error);
+      alert("Failed to remove note. Please try again.");
+    }
+  };
 
   const handleLikeClick = async (id, courseCode) => {
     if (!currentUser) return;
     
-    // Get current state
     const alreadyLiked = !!liked[id];
-    
-    // Update UI immediately
     setLiked(prev => ({ ...prev, [id]: !alreadyLiked }));
     setLikeCounts(prev => ({
       ...prev,
       [courseCode]: (prev[courseCode] || 0) + (alreadyLiked ? -1 : 1),
     }));
     
-    // Fire and forget - don't await
     toggleLike(courseCode, currentUser.uid, alreadyLiked).catch(err => {
       console.error('Like error:', err);
-      // Rollback UI state on error
       setLiked(prev => ({ ...prev, [id]: alreadyLiked }));
       setLikeCounts(prev => ({
         ...prev,
@@ -77,46 +88,13 @@ const MyNotesPage = () => {
     });
   };
 
-  const handleMouseMove = (e, cardId) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = (y - centerY) / 10;
-    const rotateY = (centerX - x) / 10;
-    setMousePosition({ x: rotateY, y: rotateX });
-  };
-
-  const handleMouseLeave = () => {
-    setMousePosition({ x: 0, y: 0 });
-  };
-
-  const handleRemove = async (id) => {
-    const myNotesArr = JSON.parse(localStorage.getItem(userKey) || "[]");
-    const newNotesArr = myNotesArr.filter(note => note.id !== id);
-    localStorage.setItem(userKey, JSON.stringify(newNotesArr));
-    setNotes(newNotesArr);
-
-    // Also remove from Firebase
-    if (currentUser) {
-      try {
-        const savedNotesRef = collection(db, 'savedNotes');
-        const q = query(
-          savedNotesRef, 
-          where('userId', '==', currentUser.uid),
-          where('originalNoteId', '==', id)
-        );
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach(async (document) => {
-          await deleteDoc(doc(db, 'savedNotes', document.id));
-        });
-      } catch (err) {
-        console.error('Error removing note from Firebase:', err);
-      }
-    }
-  };
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-sour-lavender flex justify-center items-center">
+        <div className="text-xl font-semibold text-[#5E2A84]">Loading your notes...</div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -131,43 +109,38 @@ const MyNotesPage = () => {
           My Notes
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-          {notes.length === 0 ? (
+        {notes.length === 0 ? (
             <div className="col-span-full text-center text-lg text-gray-600 font-semibold py-16">
               <span role="img" aria-label="empty">🗒️</span> Oops, nothing's here yet!<br />No notes found.
             </div>
-          ) : (
+        ) : (
             notes.map((note, idx) => {
+              const csImages = [
+                'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80',
+              ];
               const imgSrc = note.previewImg || csImages[idx % csImages.length];
               const subject = note.courseCode || note.subject || note.course || 'Unknown Subject';
               const pdfUrl = note.fileUrl || note.pdfUrl;
               return (
                 <div
                   key={note.id}
-                  className="bg-white/90 rounded-2xl shadow-lg flex flex-col items-center p-4 transition-all duration-300 hover:shadow-xl cursor-pointer perspective-1000"
-                  style={{ minWidth: 0, transform: `perspective(1000px) rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`, transformStyle: 'preserve-3d' }}
-                  onMouseMove={e => handleMouseMove(e, note.id)}
-                  onMouseLeave={handleMouseLeave}
+                  className="bg-white/90 rounded-2xl shadow-lg flex flex-col items-center p-4 transition-all duration-300 hover:shadow-xl cursor-pointer"
                   onClick={() => pdfUrl && window.open(pdfUrl, '_blank')}
                   role="button"
                   tabIndex={0}
                 >
-                  <div
-                    className="relative w-full h-40 mb-4 transition-transform duration-300"
-                    style={{ transform: 'translateZ(20px)' }}
-                  >
+                  <div className="relative w-full h-40 mb-4 transition-transform duration-300">
                     <img
                       src={imgSrc}
                       alt={note.title}
                       className="rounded-xl object-cover w-full h-full"
                     />
-                    <div
-                      className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm shadow font-inknut"
-                      style={{ fontFamily: 'Inknut Antiqua, serif', transform: 'translateZ(30px)' }}
-                    >
+                    <div className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm shadow font-inknut" style={{ fontFamily: 'Inknut Antiqua, serif' }}>
                       {formatCourseCode(subject)}
                     </div>
                   </div>
-                  <div className="w-full flex flex-col items-start" style={{ transform: 'translateZ(10px)' }}>
+                  <div className="w-full flex flex-col items-start">
                     <div className="font-bold text-lg text-gray-800 font-inknut mb-1" style={{ fontFamily: 'Inknut Antiqua, serif' }}>{note.title}</div>
                     <div className="text-sm text-gray-500 mb-3 truncate w-full">{note.description || note.fileName || ''}</div>
                     <div className="flex flex-row gap-2 w-full">
@@ -180,33 +153,16 @@ const MyNotesPage = () => {
                           height: 40,
                           borderRadius: '50%',
                           background: liked[note.id] ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' : 'rgba(255, 255, 255, 0.9)',
-                          backdropFilter: 'blur(8px)',
-                          border: 'none',
-                          cursor: 'pointer',
                           boxShadow: liked[note.id] ? '0 4px 12px rgba(255, 107, 107, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                         }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
                       >
-                        <motion.svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill={liked[note.id] ? "#ffffff" : "none"}
-                          stroke={liked[note.id] ? "#ffffff" : "#666666"}
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          animate={liked[note.id] ? { scale: [1, 1.2, 1] } : {}}
-                          transition={{ duration: 0.3 }}
-                        >
+                        <motion.svg width="20" height="20" viewBox="0 0 24 24" fill={liked[note.id] ? "#ffffff" : "none"} stroke={liked[note.id] ? "#ffffff" : "#666666"} strokeWidth="2">
                           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                         </motion.svg>
                       </motion.button>
                       <button
                         type="button"
-                        onClick={e => { e.stopPropagation(); handleRemove(note.id); }}
+                        onClick={e => { e.stopPropagation(); handleRemove(note); }}
                         className="px-4 py-1 rounded-2xl font-bold text-base bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white shadow hover:from-[#a259e6] hover:to-[#7e44a3] transition-colors focus:outline-none"
                       >
                         Remove from My Notes

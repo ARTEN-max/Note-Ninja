@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { db, storage } from "../firebase";
-import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, serverTimestamp, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, serverTimestamp, query, orderBy, where, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { useAudio } from '../contexts/AudioContext';
-import { FiPlay, FiPause, FiClock, FiUser, FiHeart, FiUpload, FiTrash2 } from 'react-icons/fi';
+import { FiPlay, FiPause, FiClock, FiUser, FiHeart, FiUpload, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"];
 
@@ -32,6 +32,15 @@ const AudioNotesPage = () => {
   });
   const [loading, setLoading] = useState(true);
   const { currentAudio, isPlaying, playAudio, togglePlay, setAudioNotes } = useAudio();
+  const [playlists, setPlaylists] = useState([]);
+  const [playlistMenuNoteId, setPlaylistMenuNoteId] = useState(null);
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const menuRef = useRef();
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [pendingNoteId, setPendingNoteId] = useState(null);
+  const [modalError, setModalError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Fetch audio notes from Firestore
   useEffect(() => {
@@ -81,6 +90,33 @@ const AudioNotesPage = () => {
 
     fetchAudioNotes();
   }, [setAudioNotes]);
+
+  // Fetch user playlists
+  const fetchPlaylists = async () => {
+    if (!currentUser) return;
+    const playlistsRef = collection(db, 'audioPlaylists');
+    const q = query(playlistsRef, where('userId', '==', currentUser.uid));
+    const snapshot = await getDocs(q);
+    setPlaylists(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  };
+  useEffect(() => {
+    fetchPlaylists();
+  }, [currentUser]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setPlaylistMenuNoteId(null);
+      }
+    }
+    if (playlistMenuNoteId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [playlistMenuNoteId]);
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -212,6 +248,53 @@ const AudioNotesPage = () => {
       ? `about ${hours} hr${hours > 1 ? 's' : ''} ${minutes} min`
       : `about ${minutes} min`;
 
+  // Create playlist and add audio note
+  const handleCreatePlaylist = async (e) => {
+    e.preventDefault();
+    setModalError("");
+    if (!newPlaylistName.trim()) {
+      setModalError("Playlist name cannot be empty.");
+      return;
+    }
+    try {
+      // Check if playlist exists
+      const playlistsRef = collection(db, 'audioPlaylists');
+      const q = query(playlistsRef, where('userId', '==', currentUser.uid), where('name', '==', newPlaylistName.trim()));
+      const snapshot = await getDocs(q);
+      let playlistId;
+      if (!snapshot.empty) {
+        playlistId = snapshot.docs[0].id;
+      } else {
+        // Create new playlist
+        const docRef = await addDoc(playlistsRef, {
+          userId: currentUser.uid,
+          name: newPlaylistName.trim(),
+          createdAt: serverTimestamp(),
+          audios: []
+        });
+        playlistId = docRef.id;
+      }
+      // Add audio note to playlist
+      const playlistDoc = doc(db, 'audioPlaylists', playlistId);
+      const playlistSnap = await getDoc(playlistDoc);
+      let audios = (playlistSnap.data()?.audios || []);
+      if (!audios.includes(pendingNoteId)) {
+        audios.push(pendingNoteId);
+        await updateDoc(playlistDoc, { audios });
+      }
+      setShowPlaylistModal(false);
+      setPlaylistMenuNoteId(null);
+      setNewPlaylistName("");
+      setPendingNoteId(null);
+      await fetchPlaylists();
+      setSuccessMessage("Playlist created!");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (err) {
+      setModalError("Failed to create playlist. Try again.");
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e3b8f9]/20 to-white p-6">
@@ -282,7 +365,18 @@ const AudioNotesPage = () => {
             <span>• {durationString}</span>
           </div>
           <div className="flex items-center gap-4 mt-2">
-            <button className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform"><svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff" fillOpacity=".08"/><polygon points="11,8 21,14 11,20" fill="#fff"/></svg></button>
+            <button
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform"
+              onClick={() => {
+                const first = audioNotesLocal[0];
+                if (first && first.url) {
+                  playAudio({ ...first, artist: first.uploaderName || 'Unknown Artist' });
+                }
+              }}
+              aria-label="Play first audio"
+            >
+              <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff" fillOpacity=".08"/><polygon points="11,8 21,14 11,20" fill="#fff"/></svg>
+            </button>
             <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><span className="text-2xl">+</span></button>
             <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 3v10m0 0l-3-3m3 3l3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="15" width="14" height="2" rx="1" fill="currentColor"/></svg></button>
             <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2" fill="currentColor"/><circle cx="16" cy="10" r="2" fill="currentColor"/><circle cx="4" cy="10" r="2" fill="currentColor"/></svg></button>
@@ -333,6 +427,7 @@ const AudioNotesPage = () => {
           <div className="w-8 text-left">#</div>
           <div className="flex-1">Title</div>
           <div className="w-56 hidden md:block">Subject</div>
+          <div className="w-16 flex items-center justify-center"> </div>
           <div className="w-40 hidden md:block">Date added</div>
           <div className="w-24 text-right">Duration</div>
         </div>
@@ -350,14 +445,61 @@ const AudioNotesPage = () => {
               <div className="w-8 text-left text-purple-300 font-mono">{index + 1}</div>
               {/* Title and Info */}
               <div className="flex-1 min-w-0 flex items-center gap-4">
-                  <img src={note.albumArt} alt={note.title} className="w-10 h-10 rounded-sm object-cover"/>
-                  <div>
-                      <div className="font-bold text-white truncate">{note.title}</div>
-                      <div className="text-xs text-purple-300 truncate">{note.subject}</div>
-                  </div>
+                <img src={note.albumArt} alt={note.title} className="w-10 h-10 rounded-sm object-cover"/>
+                <div>
+                  <div className="font-bold text-white truncate">{note.title}</div>
+                  <div className="text-xs text-purple-300 truncate">{note.subject}</div>
+                </div>
               </div>
               {/* Subject */}
               <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.subject}</div>
+              {/* + Button Column */}
+              <div className="w-16 flex items-center justify-center relative">
+                <button
+                  className="text-purple-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
+                  title="Add to playlist"
+                  onClick={e => { e.stopPropagation(); setPlaylistMenuNoteId(note.id); setMenuAnchor(e.currentTarget); }}
+                  style={{ minWidth: 32, minHeight: 32 }}
+                >
+                  <FiPlus size={18} />
+                </button>
+                {/* Playlist menu */}
+                {playlistMenuNoteId === note.id && (
+                  <div ref={menuRef} className="absolute z-50 top-12 right-0 bg-[#2a0845] border border-purple-700 rounded-lg shadow-lg p-2 min-w-[180px]">
+                    {playlists.length === 0 ? (
+                      <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
+                        Add to saved playlist
+                      </button>
+                    ) : (
+                      <>
+                        <div className="mb-1 text-xs text-purple-200 px-4 py-1">Add to playlist</div>
+                        {playlists.map(pl => (
+                          <button key={pl.id} className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={async e => {
+                            e.stopPropagation();
+                            // Add audio note to existing playlist
+                            const playlistDoc = doc(db, 'audioPlaylists', pl.id);
+                            const playlistSnap = await getDoc(playlistDoc);
+                            let audios = (playlistSnap.data()?.audios || []);
+                            if (!audios.includes(note.id)) {
+                              audios.push(note.id);
+                              await updateDoc(playlistDoc, { audios });
+                            }
+                            setPlaylistMenuNoteId(null);
+                            setSuccessMessage('Added to playlist!');
+                            setTimeout(() => setSuccessMessage(''), 2000);
+                            await fetchPlaylists();
+                          }}>
+                            {pl.name}
+                          </button>
+                        ))}
+                        <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition mt-1" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
+                          + Create new playlist
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               {/* Date added (placeholder for now) */}
               <div className="w-40 text-purple-200 text-sm hidden md:block truncate">{note.uploadDate ? formatDate(note.uploadDate) : ''}</div>
               {/* Duration */}
@@ -380,6 +522,38 @@ const AudioNotesPage = () => {
           ))
         )}
       </div>
+
+      {/* Playlist Creation Modal */}
+      {showPlaylistModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-[#1a1028] rounded-xl shadow-2xl p-8 w-full max-w-md relative">
+            <button className="absolute top-4 right-4 text-purple-200 hover:text-white" onClick={() => { setShowPlaylistModal(false); setNewPlaylistName(""); setPendingNoteId(null); }}>
+              <FiX size={24} />
+            </button>
+            <h2 className="text-2xl font-bold text-white mb-4">Create Playlist</h2>
+            <form onSubmit={handleCreatePlaylist}>
+              <input
+                type="text"
+                className="w-full bg-[#2a0845] text-white border border-purple-700 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                placeholder="Enter playlist name"
+                value={newPlaylistName}
+                onChange={e => setNewPlaylistName(e.target.value)}
+                autoFocus
+              />
+              {modalError && <div className="text-red-400 mb-2">{modalError}</div>}
+              <button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform">
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Success Toast */}
+      {successMessage && (
+        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg text-lg font-semibold animate-fade-in-out">
+          {successMessage}
+        </div>
+      )}
     </div>
   );
 };

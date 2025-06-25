@@ -90,8 +90,10 @@ const MyNotesPage = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-sour-lavender flex justify-center items-center">
-        <div className="text-xl font-semibold text-[#5E2A84]">Loading your notes...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#2a0845] to-[#1a1028]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-400 mb-6"></div>
+        <div className="text-white text-2xl font-bold mb-2">Loading your notes...</div>
+        <div className="text-purple-200 text-lg">Getting your study vibes ready!</div>
       </div>
     );
   }

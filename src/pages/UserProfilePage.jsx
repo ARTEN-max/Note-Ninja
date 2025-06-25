@@ -269,19 +269,6 @@ const UserProfilePage = () => {
                 <FiUser className="text-purple-500" />
                 <span className="text-sm text-gray-600">{userData?.faculty || 'Not set'}</span>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center lg:justify-start mb-2">
-                {userData.faculty && <span className="text-sm bg-purple-100 text-purple-600 px-3 py-1 rounded-full">{userData.faculty}</span>}
-              </div>
-              <div className="flex items-center space-x-6 text-gray-600 mt-4 text-sm justify-center lg:justify-start w-full">
-                <div className="flex items-center gap-2">
-                  <FiBook className="text-purple-500" />
-                  <span><span className="font-bold">{userData.savedNotes?.length || 0}</span> Saved</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiAward className="text-purple-500" />
-                  <span><span className="font-bold">{userData.rank || 'N/A'}</span> Rank</span>
-                </div>
-              </div>
             </div>
           </motion.div>
 
@@ -394,33 +381,7 @@ const UserProfilePage = () => {
         </div>
 
         {/* Notes Section */}
-        <div className="bg-white rounded-3xl shadow-lg p-4 sm:p-8 mt-8">
-          <div className="flex items-center gap-2 mb-4 sm:mb-6">
-            <FiBook className="text-purple-700" />
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Saved Notes</h2>
-            <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full">
-              {userData.savedNotes?.length || 0}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-            {/* Dummy Study Guide Card */}
-            {/* Replace with actual user's saved notes */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-2 sm:mb-3">
-                <h3 className="font-bold text-base sm:text-lg text-gray-800">Full Study Guide</h3>
-                <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 sm:px-3 py-1 rounded-full">MATH 137</span>
-              </div>
-              <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-4">Must know points</p>
-              <div className="flex justify-between items-center text-xs text-gray-500">
-                <span>3 days ago</span>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <span>♡ 0</span>
-                  <span>⚑ 0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Removed Saved Notes section as requested */}
       </div>
     </motion.div>
   );

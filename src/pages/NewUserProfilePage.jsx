@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import studyGuides from '../data/studyGuides';
 import { FiEdit2 } from 'react-icons/fi';
+import { FiPlay } from 'react-icons/fi';
 
 const topCourses = [
   { name: 'Advanced Calculus', thumbnail: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?auto=format&fit=crop&w=200&q=80' },
@@ -43,6 +44,8 @@ const NewUserProfilePage = () => {
   const fileInputRef = React.useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [playlistAudios, setPlaylistAudios] = useState({});
 
   // Fetch current user's username from Firestore
   useEffect(() => {
@@ -192,6 +195,39 @@ const NewUserProfilePage = () => {
     return () => unsubscribe();
   }, [user]);
 
+  // Fetch user playlists and their audio notes
+  useEffect(() => {
+    const fetchPlaylistsAndAudios = async () => {
+      if (!user || !user.uid) return;
+      // Fetch playlists
+      const playlistsRef = collection(db, 'audioPlaylists');
+      const q = query(playlistsRef, where('userId', '==', user.uid));
+      const snapshot = await getDocs(q);
+      const playlists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserPlaylists(playlists);
+      // Fetch audio notes for each playlist
+      const audiosByPlaylist = {};
+      for (const pl of playlists) {
+        if (pl.audios && pl.audios.length > 0) {
+          const audioNotes = [];
+          for (const audioId of pl.audios) {
+            try {
+              const audioDoc = await getDoc(doc(db, 'audioNotes', audioId));
+              if (audioDoc.exists()) {
+                audioNotes.push({ id: audioDoc.id, ...audioDoc.data() });
+              }
+            } catch {}
+          }
+          audiosByPlaylist[pl.id] = audioNotes;
+        } else {
+          audiosByPlaylist[pl.id] = [];
+        }
+      }
+      setPlaylistAudios(audiosByPlaylist);
+    };
+    fetchPlaylistsAndAudios();
+  }, [user]);
+
   const handleProfilePicClick = (e) => {
     e.stopPropagation();
     if (isOwnProfile && fileInputRef.current) {
@@ -279,6 +315,40 @@ const NewUserProfilePage = () => {
   ];
   const showCourses = topCourses && topCourses.length > 0;
 
+  // Playlist placeholder images
+  const playlistPlaceholders = [
+    'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1547891654-e66ed711b934?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1509233725247-49e657c54213?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1581092921447-4a11c8734568?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1627807033482-d8527a4e613c?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1524995767968-97212abf4625?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1503676260728-f68a1a41a682?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1491841550275-5b462bf485cc?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=crop&w=400&q=80'
+  ];
+
+  // Helper: hash a string to a number
+  function hashStringToIndex(str, max) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    return Math.abs(hash) % max;
+  }
+
   return (
     <motion.div
       className="profile-container min-h-screen p-0"
@@ -360,16 +430,41 @@ const NewUserProfilePage = () => {
         <section className="mt-12">
           <h2 className="text-2xl font-bold mb-6">Public Study Playlists</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {publicPlaylists.map((playlist, index) => (
-              <motion.div key={index} className="playlist-card bg-[#181818] p-4 rounded-lg shadow-lg hover:bg-[#282828]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}>
-                <img src={playlist.thumbnail} alt={playlist.name} className="rounded-md w-full h-40 object-cover mb-4" />
-                <h3 className="font-bold text-lg">{playlist.name}</h3>
-                <p className="text-sm text-gray-400">{playlist.description}</p>
-              </motion.div>
-            ))}
+            {userPlaylists.length === 0 ? (
+              <div className="text-gray-400 col-span-full">No playlists yet.</div>
+            ) : (
+              userPlaylists.map((playlist, index) => (
+                <motion.div
+                  key={playlist.id}
+                  className="playlist-card bg-[#181818] p-4 rounded-lg shadow-lg hover:bg-[#282828] flex flex-col relative group cursor-pointer"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  onClick={() => navigate(`/playlist/${playlist.id}`)}
+                >
+                  {/* Playlist cover image */}
+                  <div className="relative w-full h-40 mb-4">
+                    <img
+                      src={playlist.coverImage || `https://picsum.photos/seed/${encodeURIComponent(playlist.id || playlist.name)}/400/200`}
+                      alt={playlist.name}
+                      className="rounded-md w-full h-40 object-cover"
+                      onError={e => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80'; }}
+                    />
+                    {/* Improved Play button overlay */}
+                    <button
+                      className="absolute bottom-3 right-3 z-10 bg-green-500 hover:bg-green-400 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 focus:outline-none focus:ring-2 focus:ring-green-400"
+                      onClick={e => { e.stopPropagation(); navigate(`/playlist/${playlist.id}`); }}
+                      tabIndex={0}
+                      aria-label="View playlist"
+                    >
+                      <FiPlay size={24} fill="white" className="ml-1" />
+                    </button>
+                  </div>
+                  <h3 className="font-bold text-lg mb-1 text-white">{playlist.name}</h3>
+                  <div className="text-sm text-gray-300 mb-2">By {user.name}</div>
+                </motion.div>
+              ))
+            )}
           </div>
         </section>
       </main>

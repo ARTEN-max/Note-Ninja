@@ -32,6 +32,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import MiniPlayer from "./components/MiniPlayer";
 import NewUserProfilePage from "./pages/NewUserProfilePage";
+import PlaylistViewPage from "./pages/PlaylistViewPage";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -170,6 +171,14 @@ function AppContent() {
             }
           />
           <Route path="/u/:username" element={<NewUserProfilePage />} />
+          <Route
+            path="/playlist/:playlistId"
+            element={
+              <ProtectedRoute>
+                <PlaylistViewPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/*"
             element={

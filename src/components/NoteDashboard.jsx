@@ -9,6 +9,7 @@ import { doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, 
 import { useAuth } from '../contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from '../utils/likeUtils';
 import { FiUser } from "react-icons/fi";
+import Skeleton from './Skeleton';
 
 // Move studyGuides outside component to prevent useEffect re-runs
 const studyGuides = [
@@ -192,31 +193,28 @@ const NoteDashboard = () => {
         <div className="w-full max-w-7xl mx-auto px-4 flex flex-col flex-1 overflow-auto pt-6">
           {loading ? (
             <>
-              {/* Skeleton for heading and subheading */}
               <div className="w-full flex justify-center mb-2">
-                <div className="bg-gray-300 rounded h-10 w-64 animate-pulse" />
+                <Skeleton variant="text" width={256} height={40} />
               </div>
               <div className="mb-2">
-                <div className="bg-gray-300 rounded h-8 w-48 mb-2 animate-pulse" />
-                <div className="bg-gray-300 rounded h-6 w-72 animate-pulse" />
+                <Skeleton variant="text" width={192} height={32} className="mb-2" />
+                <Skeleton variant="text" width={288} height={24} />
               </div>
-              {/* Skeleton for study guide cards grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8 mb-10">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex flex-col items-center bg-white rounded-2xl shadow-md p-4 animate-pulse" style={{ width: 232, height: 300 }}>
-                    <div className="bg-gray-300 rounded-lg mb-2 object-cover" style={{ width: 200, height: 120 }} />
-                    <div className="bg-gray-300 rounded w-24 h-4 mt-2 mb-1" />
-                    <div className="bg-gray-300 rounded w-20 h-3" />
+                  <div key={i} className="flex flex-col items-center bg-white rounded-2xl shadow-md p-4">
+                    <Skeleton variant="rect" width={200} height={120} className="mb-2" />
+                    <Skeleton variant="text" width={96} height={16} className="mt-2 mb-1" />
+                    <Skeleton variant="text" width={80} height={12} />
                   </div>
                 ))}
               </div>
-              {/* Skeleton for album cards grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-10" style={{ marginLeft: 20 }}>
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="flex flex-col items-center bg-white rounded-xl shadow-md p-4 animate-pulse" style={{ width: 144, height: 200 }}>
-                    <div className="bg-gray-300 rounded-lg mb-2 object-cover" style={{ width: 144, height: 144 }} />
-                    <div className="bg-gray-300 rounded w-20 h-4 mt-2 mb-1" />
-                    <div className="bg-gray-300 rounded w-16 h-3" />
+                  <div key={i} className="flex flex-col items-center bg-white rounded-xl shadow-md p-4">
+                    <Skeleton variant="rect" width={144} height={144} className="mb-2" />
+                    <Skeleton variant="text" width={80} height={16} className="mt-2 mb-1" />
+                    <Skeleton variant="text" width={64} height={12} />
                   </div>
                 ))}
               </div>

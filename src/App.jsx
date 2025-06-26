@@ -75,122 +75,124 @@ function AppContent() {
   const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
   return (
-    <div style={{ display: "flex", minHeight: "100vh", width: "100vw" }} className="bg-sour-lavender">
+    <div className="bg-sour-lavender flex flex-col md:flex-row min-h-screen w-full">
       {showSidebar && <Sidebar showMinimize={showMinimize} />}
       <div className={showSidebar ? 'w-full md:ml-[240px] transition-all duration-300' : 'w-full'} style={{ width: '100%' }}>
-        <Routes>
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot" element={<ForgotPassword />} />
-          <Route path="/student-info" element={<StudentInfoPage />} />
-          <Route path="/download/:id" element={<DownloadNotesPage />} />
-          <Route path="/cram-mode" element={<CramModePage />} />
-          <Route path="/deep-dive" element={<DeepDivePage />} />
-          <Route path="/exam-review" element={<ExamReviewPage />} />
-          <Route path="/quick-recap" element={<QuickRecapPage />} />
-          <Route path="/night-owl" element={<NightOwlPage />} />
-          <Route path="/chill-review" element={<ChillReviewPage />} />
-          <Route
-            path="/guide/:guideId/notes"
-            element={
-              <ProtectedRoute>
-                <ChapterNotesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/guide/:guideId/chapter/:chapterId"
-            element={
-              <ProtectedRoute>
-                <ChapterStudyCards />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/upload"
-            element={
-              <ProtectedRoute>
-                <UploadPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/placeholder"
-            element={
-              <ProtectedRoute>
-                <PlaceholderPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/browse"
-            element={
-              <ProtectedRoute>
-                <BrowsePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-notes"
-            element={
-              <ProtectedRoute>
-                <MyNotesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/setup-guides"
-            element={
-              <ProtectedRoute>
-                <SetupStudyGuides />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/audio-notes"
-            element={
-              <ProtectedRoute>
-                <AudioNotesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <UserProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-                <NewUserProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/u/:username" element={<NewUserProfilePage />} />
-          <Route
-            path="/playlist/:playlistId"
-            element={
-              <ProtectedRoute>
-                <PlaylistViewPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
-                  <NoteDashboard />
-                </div>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-        {currentAudio && <MiniPlayer />}
+        <div className="px-4 md:px-0 w-full">
+          <Routes>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot" element={<ForgotPassword />} />
+            <Route path="/student-info" element={<StudentInfoPage />} />
+            <Route path="/download/:id" element={<DownloadNotesPage />} />
+            <Route path="/cram-mode" element={<CramModePage />} />
+            <Route path="/deep-dive" element={<DeepDivePage />} />
+            <Route path="/exam-review" element={<ExamReviewPage />} />
+            <Route path="/quick-recap" element={<QuickRecapPage />} />
+            <Route path="/night-owl" element={<NightOwlPage />} />
+            <Route path="/chill-review" element={<ChillReviewPage />} />
+            <Route
+              path="/guide/:guideId/notes"
+              element={
+                <ProtectedRoute>
+                  <ChapterNotesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/guide/:guideId/chapter/:chapterId"
+              element={
+                <ProtectedRoute>
+                  <ChapterStudyCards />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upload"
+              element={
+                <ProtectedRoute>
+                  <UploadPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/placeholder"
+              element={
+                <ProtectedRoute>
+                  <PlaceholderPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/browse"
+              element={
+                <ProtectedRoute>
+                  <BrowsePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-notes"
+              element={
+                <ProtectedRoute>
+                  <MyNotesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/setup-guides"
+              element={
+                <ProtectedRoute>
+                  <SetupStudyGuides />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/audio-notes"
+              element={
+                <ProtectedRoute>
+                  <AudioNotesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <UserProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <NewUserProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/u/:username" element={<NewUserProfilePage />} />
+            <Route
+              path="/playlist/:playlistId"
+              element={
+                <ProtectedRoute>
+                  <PlaylistViewPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
+                    <NoteDashboard />
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+          {currentAudio && <MiniPlayer />}
+        </div>
       </div>
       <MobileNav />
     </div>

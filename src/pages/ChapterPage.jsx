@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import BackToPrevious from '../components/BackToPrevious';
 
 const StudyCard = ({ section, isFlipped, onFlip }) => {
   return (
@@ -136,49 +137,52 @@ const ChapterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-sour-lavender py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4" style={{ color: '#5E2A84', fontFamily: "'Inknut Antiqua', serif", textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
-            Chapter {chapter.number}: {chapter.title}
-          </h1>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: '#7E44A3' }}>{chapter.description}</p>
-        </div>
-
-        {/* Study Cards */}
-        <div className="space-y-8">
-          {sections.map((section, index) => (
-            <motion.div
-              key={section.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <StudyCard
-                section={section}
-                isFlipped={flippedCards[section.id]}
-                onFlip={() => handleCardFlip(section.id)}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {sections.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-2" style={{ color: '#5E2A84' }}>No Study Cards Yet</h3>
-            <p className="mb-6" style={{ color: '#7E44A3' }}>Start by adding study cards to this chapter.</p>
-            <button
-              onClick={() => navigate(`/guide/${guideId}/chapter/${chapterId}/add-section`)}
-              className="px-6 py-2 bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white rounded-full hover:from-[#a259e6] hover:to-[#7e44a3] transition-colors"
-            >
-              Add First Study Card
-            </button>
+    <>
+      <BackToPrevious />
+      <div className="min-h-screen bg-sour-lavender py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4" style={{ color: '#5E2A84', fontFamily: "'Inknut Antiqua', serif", textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
+              Chapter {chapter.number}: {chapter.title}
+            </h1>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#7E44A3' }}>{chapter.description}</p>
           </div>
-        )}
+
+          {/* Study Cards */}
+          <div className="space-y-8">
+            {sections.map((section, index) => (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <StudyCard
+                  section={section}
+                  isFlipped={flippedCards[section.id]}
+                  onFlip={() => handleCardFlip(section.id)}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {sections.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-2" style={{ color: '#5E2A84' }}>No Study Cards Yet</h3>
+              <p className="mb-6" style={{ color: '#7E44A3' }}>Start by adding study cards to this chapter.</p>
+              <button
+                onClick={() => navigate(`/guide/${guideId}/chapter/${chapterId}/add-section`)}
+                className="px-6 py-2 bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white rounded-full hover:from-[#a259e6] hover:to-[#7e44a3] transition-colors"
+              >
+                Add First Study Card
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -8,6 +8,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import studyGuides from '../data/studyGuides';
 import { FiEdit2 } from 'react-icons/fi';
 import { FiPlay } from 'react-icons/fi';
+import BackToPrevious from '../components/BackToPrevious';
 
 const topCourses = [
   { name: 'Advanced Calculus', thumbnail: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?auto=format&fit=crop&w=200&q=80' },
@@ -350,125 +351,119 @@ const NewUserProfilePage = () => {
   }
 
   return (
-    <motion.div
-      className="profile-container min-h-screen p-0"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <header className="profile-header flex flex-row items-center gap-8">
-        <motion.div
-          className="h-40 w-40 rounded-full border-4 border-white/20 shadow-lg flex items-center justify-center bg-gray-300"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 20 }}
-        >
-          {renderProfileImage()}
-        </motion.div>
-        <div>
-          <h1 className="text-6xl font-extrabold">{user.name}</h1>
-          <div className="flex space-x-6 mt-4 text-lg text-gray-300">
-            <span><strong>{courseCount}</strong> Courses</span>
-            <span><strong>{user.stats.followers}</strong> Followers</span>
-            <span><strong>{user.stats.following}</strong> Following</span>
+    <>
+      <BackToPrevious />
+      <motion.div
+        className="profile-container absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-transparent md:max-w-none md:mx-0 p-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <header className="profile-header flex flex-row items-center gap-8">
+          <motion.div
+            className="h-40 w-40 rounded-full border-4 border-white/20 shadow-lg flex items-center justify-center bg-gray-300"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 20 }}
+          >
+            {renderProfileImage()}
+          </motion.div>
+          <div>
+            <h1 className="text-6xl font-extrabold">{user.name}</h1>
+            <div className="flex space-x-6 mt-4 text-lg text-gray-300">
+              <span><strong>{courseCount}</strong> Courses</span>
+              <span><strong>{user.stats.followers}</strong> Followers</span>
+              <span><strong>{user.stats.following}</strong> Following</span>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="p-8">
-        <section>
-          <h2 className="text-2xl font-bold mb-6">Top Courses this Month</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {showCourses
-              ? topCourses.map((course, index) => {
-                  const imgSrc = course.thumbnail && course.thumbnail.trim().startsWith('http')
-                    ? course.thumbnail
-                    : course.randomPlaceholder;
-                  const name = course && course.name ? course.name : 'Untitled';
-                  // Normalize for robust matching
-                  const normalize = str => (str || '').replace(/\s+/g, '').toUpperCase();
-                  const guide = studyGuides.find(
-                    g =>
-                      normalize(g.title) === normalize(name) ||
-                      normalize(g.courseCode) === normalize(name)
-                  );
-                  const courseCode = guide ? guide.courseCode : null;
-                  const finalCourseCode = courseCode || normalize(name);
-                  return (
-                    <div
-                      key={course.id || index}
-                      className="text-center cursor-pointer group transition-transform duration-200"
-                      onClick={() => {
-                        console.log('Course name:', name, 'Matched courseCode:', courseCode, 'Final code:', finalCourseCode);
-                        navigate(`/guide/${finalCourseCode}/notes`);
-                      }}
-                    >
-                      <div className="flex flex-col items-center">
-                        <img
-                          src={imgSrc}
-                          alt={name}
-                          className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200"
-                        />
-                        <div className="bg-gray-700 rounded-lg w-32 mt-1 mb-1 py-1 px-2 flex items-center justify-center mx-auto group-hover:bg-gray-600 group-hover:scale-105 group-hover:shadow-lg transition-all duration-200">
-                          <span className="text-white text-base font-bold truncate w-full text-center">{name}</span>
+        <main className="p-8">
+          <section>
+            <h2 className="text-2xl font-bold mb-6">Top Courses this Month</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              {showCourses
+                ? topCourses.map((course, index) => {
+                    const imgSrc = course.thumbnail && course.thumbnail.trim().startsWith('http')
+                      ? course.thumbnail
+                      : course.randomPlaceholder;
+                    const name = course && course.name ? course.name : 'Untitled';
+                    // Normalize for robust matching
+                    const normalize = str => (str || '').replace(/\s+/g, '').toUpperCase();
+                    const guide = studyGuides.find(
+                      g =>
+                        normalize(g.title) === normalize(name) ||
+                        normalize(g.courseCode) === normalize(name)
+                    );
+                    const courseCode = guide ? guide.courseCode : null;
+                    const finalCourseCode = courseCode || normalize(name);
+                    return (
+                      <div
+                        key={course.id || index}
+                        className="text-center cursor-pointer group transition-transform duration-200"
+                        onClick={() => {
+                          console.log('Course name:', name, 'Matched courseCode:', courseCode, 'Final code:', finalCourseCode);
+                          navigate(`/guide/${finalCourseCode}/notes`, { state: { from: location.pathname } });
+                        }}
+                      >
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={imgSrc}
+                            alt={name}
+                            className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200"
+                          />
+                          <div className="bg-gray-700 rounded-lg w-32 mt-1 mb-1 py-1 px-2 flex items-center justify-center mx-auto group-hover:bg-gray-600 group-hover:scale-105 group-hover:shadow-lg transition-all duration-200">
+                            <span className="text-white text-base font-bold truncate w-full text-center">{name}</span>
+                          </div>
                         </div>
                       </div>
+                    );
+                  })
+                : placeholderPool.map((src, i) => (
+                    <div key={i} className="flex flex-col items-center">
+                      <img src={src} alt="Placeholder" className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto" />
+                      <div className="bg-gray-700 rounded-lg w-32 mb-1 py-1 px-2 flex items-center justify-center mx-auto">
+                        <span className="text-white text-base font-bold truncate w-full text-center">&nbsp;</span>
+                      </div>
                     </div>
-                  );
-                })
-              : placeholderPool.map((src, i) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <img src={src} alt="Placeholder" className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto" />
-                    <div className="bg-gray-700 rounded-lg w-32 mb-1 py-1 px-2 flex items-center justify-center mx-auto">
-                      <span className="text-white text-base font-bold truncate w-full text-center">&nbsp;</span>
-                    </div>
-                  </div>
-                ))}
-          </div>
-        </section>
+                  ))}
+            </div>
+          </section>
 
-        <section className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Public Study Playlists</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {userPlaylists.length === 0 ? (
-              <div className="text-gray-400 col-span-full">No playlists yet.</div>
-            ) : (
-              userPlaylists.map((playlist, index) => (
-                <motion.div
-                  key={playlist.id}
-                  className="playlist-card bg-[#181818] p-4 rounded-lg shadow-lg hover:bg-[#282828] flex flex-col relative group cursor-pointer"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  onClick={() => navigate(`/playlist/${playlist.id}`)}
-                >
-                  {/* Playlist cover image */}
-                  <div className="relative w-full h-40 mb-4">
-                    <img
-                      src={playlist.coverImage || `https://picsum.photos/seed/${encodeURIComponent(playlist.id || playlist.name)}/400/200`}
-                      alt={playlist.name}
-                      className="rounded-md w-full h-40 object-cover"
-                      onError={e => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80'; }}
-                    />
-                    {/* Improved Play button overlay */}
-                    <button
-                      className="absolute bottom-3 right-3 z-10 bg-green-500 hover:bg-green-400 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      onClick={e => { e.stopPropagation(); navigate(`/playlist/${playlist.id}`); }}
-                      tabIndex={0}
-                      aria-label="View playlist"
-                    >
-                      <FiPlay size={24} fill="white" className="ml-1" />
-                    </button>
-                  </div>
-                  <h3 className="font-bold text-lg mb-1 text-white">{playlist.name}</h3>
-                  <div className="text-sm text-gray-300 mb-2">By {user.name}</div>
-                </motion.div>
-              ))
-            )}
-          </div>
-        </section>
-      </main>
-    </motion.div>
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">Public Study Playlists</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {userPlaylists.length === 0 ? (
+                <div className="text-gray-400 col-span-full">No playlists yet.</div>
+              ) : (
+                userPlaylists.map((playlist, index) => (
+                  <motion.div
+                    key={playlist.id}
+                    className="playlist-card bg-[#181818] p-4 rounded-lg shadow-lg hover:bg-[#282828] flex flex-col relative group cursor-pointer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    onClick={() => navigate(`/playlist/${playlist.id}`, { state: { from: location.pathname } })}
+                  >
+                    {/* Playlist cover image */}
+                    <div className="relative w-full h-40 mb-4">
+                      <img
+                        src={playlist.coverImage || `https://picsum.photos/seed/${encodeURIComponent(playlist.id || playlist.name)}/400/200`}
+                        alt={playlist.name}
+                        className="rounded-md w-full h-40 object-cover"
+                        onError={e => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80'; }}
+                      />
+                    </div>
+                    <h3 className="font-bold text-lg mb-1 text-white">{playlist.name}</h3>
+                    <div className="text-sm text-gray-300 mb-2">By {user.name}</div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </section>
+        </main>
+      </motion.div>
+    </>
   );
 };
 

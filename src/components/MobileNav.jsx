@@ -18,15 +18,24 @@ export default function MobileNav() {
   // Hide logout on auth pages
   const hideLogout = ['/signin', '/register', '/student-info'].includes(location.pathname);
 
+  // Helper to detect mobile
+  const isMobile = () => window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-pink-200 flex justify-around items-center py-2 md:hidden z-50">
       <div className="flex flex-row gap-2 w-full justify-around items-center">
         {navItems.map(item => (
           <button
             key={item.to}
-            onClick={() => navigate(item.to)}
+            onClick={() => {
+              if (item.label === "Profile" && isMobile()) {
+                navigate("/account");
+              } else {
+                navigate(item.to);
+              }
+            }}
             className={`flex flex-col items-center text-xs font-medium ${
-              location.pathname === item.to ? "text-pink-700" : "text-gray-500"
+              location.pathname === item.to || (item.label === "Profile" && location.pathname === "/account") ? "text-pink-700" : "text-gray-500"
             }`}
           >
             {item.icon}

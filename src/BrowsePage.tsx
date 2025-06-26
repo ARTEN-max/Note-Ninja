@@ -4,7 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { doc, getDoc, setDoc, increment, collection, query, where, getDocs, or, onSnapshot, QueryFieldFilterConstraint, Query, DocumentData, QueryConstraint } from "firebase/firestore";
 import { db } from "./firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from './contexts/AuthContext.jsx';
 import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils.js';
 import StudyGuideCard from './components/StudyGuideCard';
@@ -93,6 +93,7 @@ const BrowsePage = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [notFound, setNotFound] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
   const [recommendedGuides, setRecommendedGuides] = useState<StudyGuide[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
@@ -296,10 +297,10 @@ const BrowsePage = () => {
     }
   };
 
-  const handleSuggestionClick = (id) => {
+  const handleSuggestionClick = (guide) => {
     setNotFound("");
     setShowSuggestions(false);
-    navigate(`/choose-mode/${id}`);
+    navigate(`/guide/${guide.courseCode}/notes`, { state: { from: location.pathname } });
   };
 
   return (
@@ -311,29 +312,9 @@ const BrowsePage = () => {
     >
       {/* Search Section */}
       <div className="w-full flex flex-col items-center mt-8 mb-10">
-        <div className="relative w-full max-w-lg mx-auto">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 text-2xl">
-            <FiSearch />
-          </span>
-          <input
-            type="text"
-            className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-lg bg-white/90 border border-pink-100 focus:outline-none focus:ring-2 focus:ring-pink-300 text-lg font-medium placeholder-gray-400 transition"
-            placeholder="Search for courses, notes, or study guides..."
-            value={search}
-            onChange={e => {
-              setSearch(e.target.value);
-              setShowSuggestions(true);
-              setNotFound("");
-            }}
-            onKeyDown={handleSearchKeyDown}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            onFocus={() => setShowSuggestions(true)}
-            style={{ fontFamily: 'Inter, Arial, sans-serif' }}
-          />
-        </div>
-        {/* Filter Pills */}
+        {/* Filter Pills - move above search bar and suggestions */}
         {search.trim().length > 0 && (
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mb-4">
             <button
               className={`px-5 py-2 rounded-full font-semibold shadow transition-all duration-150 ${selectedFilter === 'studyGuides' ? 'bg-[#b266ff] text-white' : 'bg-white text-[#5E2A84] border border-[#b266ff]'}`}
               onClick={() => setSelectedFilter('studyGuides')}
@@ -348,6 +329,70 @@ const BrowsePage = () => {
             </button>
           </div>
         )}
+        <div className="relative w-full max-w-lg mx-auto">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 text-2xl">
+            <FiSearch />
+          </span>
+          <input
+            type="text"
+            className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-lg bg-white/90 border border-pink-100 focus:outline-none focus:ring-2 focus:ring-pink-300 text-lg font-medium placeholder-gray-400 transition"
+            placeholder="Search for courses, profiles..."
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setShowSuggestions(true);
+              setNotFound("");
+            }}
+            onKeyDown={handleSearchKeyDown}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            onFocus={() => setShowSuggestions(true)}
+            style={{ fontFamily: 'Inter, Arial, sans-serif' }}
+          />
+          {/* Study Guide Suggestions Dropdown */}
+          {showSuggestions && search.trim().length > 0 && selectedFilter === 'studyGuides' && filteredSuggestions.length > 0 && (
+            <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-20 max-h-64 overflow-y-auto border border-pink-100">
+              {filteredSuggestions.map(guide => (
+                <div
+                  key={guide.id}
+                  className="px-4 py-3 cursor-pointer hover:bg-[#f3e8ff] transition flex items-center gap-3"
+                  onMouseDown={() => handleSuggestionClick(guide)}
+                >
+                  <img
+                    src={guide.imageUrl}
+                    alt={guide.title}
+                    className="w-10 h-10 rounded-lg object-cover border border-[#e3b8f9]"
+                  />
+                  <div>
+                    <div className="font-bold text-[#5E2A84] text-base">{guide.courseCode}</div>
+                    <div className="text-gray-500 text-sm">{guide.title}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Profile Suggestions Dropdown */}
+          {showSuggestions && search.trim().length > 0 && selectedFilter === 'profiles' && profileResults.length > 0 && (
+            <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-20 max-h-64 overflow-y-auto border border-pink-100">
+              {profileResults.map(user => (
+                <div
+                  key={user.id}
+                  className="px-4 py-3 cursor-pointer hover:bg-[#f3e8ff] transition flex items-center gap-3"
+                  onMouseDown={() => navigate(`/u/${user.username}`, { state: { from: location.pathname } })}
+                >
+                  <img
+                    src={user.profileImageUrl || 'https://i.imgur.com/6VBx3io.png'}
+                    alt={user.username}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[#b266ff]"
+                  />
+                  <div>
+                    <div className="font-bold text-[#5E2A84] text-base">{user.username}</div>
+                    <div className="text-gray-500 text-sm">View Profile</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       {/* Results Section */}
       {search.trim().length > 0 && selectedFilter === 'profiles' ? (
@@ -359,17 +404,18 @@ const BrowsePage = () => {
               {profileResults.map(user => (
                 <div
                   key={user.id}
-                  className="bg-white rounded-xl shadow-md p-4 flex items-center gap-4 cursor-pointer hover:bg-[#f3e8ff] transition"
+                  className="bg-black rounded-lg shadow-lg p-3 flex items-center gap-3 cursor-pointer hover:bg-[#18181b] transition border border-[#222] h-auto min-h-0"
+                  style={{ minWidth: 0, maxWidth: 340 }}
                   onClick={() => navigate(`/u/${user.username}`)}
                 >
                   <img
                     src={user.profileImageUrl || 'https://i.imgur.com/6VBx3io.png'}
                     alt={user.username}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-[#b266ff]"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-[#b266ff]"
                   />
-                  <div>
-                    <div className="font-bold text-lg text-[#5E2A84]">{user.username}</div>
-                    <div className="text-gray-500">View Profile</div>
+                  <div className="flex flex-col justify-center">
+                    <div className="font-bold text-base text-white leading-tight">{user.username}</div>
+                    <div className="text-gray-400 text-sm">View Profile</div>
                   </div>
                 </div>
               ))}
@@ -470,4 +516,4 @@ const BrowsePage = () => {
   );
 };
 
-export default BrowsePage; 
+export default BrowsePage;

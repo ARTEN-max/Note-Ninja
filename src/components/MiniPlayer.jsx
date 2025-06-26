@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle, FiList, FiMusic } from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
 
 const MiniPlayer = () => {
   const { currentAudio, isPlaying, playAudio, pauseAudio, togglePlay, audioElementRef, nextTrack, prevTrack, shuffleTrack } = useAudio();
@@ -9,6 +10,7 @@ const MiniPlayer = () => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const { currentUser } = useAuth();
 
   // Volume drag state
   const volumeBarRef = useRef();
@@ -117,6 +119,8 @@ const MiniPlayer = () => {
   const audioTitle = currentAudio?.title || 'No audio selected';
   const audioSubtitle = currentAudio?.artist || 'Select a track to play';
   const albumArt = currentAudio?.albumArt || '/path/to/default/art.jpg';
+
+  if (!currentUser) return null;
 
   if (!currentAudio) {
     return (

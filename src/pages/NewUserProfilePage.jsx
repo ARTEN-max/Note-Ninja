@@ -354,12 +354,13 @@ const NewUserProfilePage = () => {
     <>
       <BackToPrevious />
       <motion.div
-        className="profile-container absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-transparent md:max-w-none md:mx-0 p-0"
+        className="profile-container absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-[#181818] md:max-w-none md:mx-0 p-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
+        style={{ background: '#181818' }}
       >
-        <header className="profile-header flex flex-row items-center gap-8">
+        <header className="profile-header flex flex-row items-center gap-8 bg-[#181818]" style={{ background: '#181818' }}>
           <motion.div
             className="h-40 w-40 rounded-full border-4 border-white/20 shadow-lg flex items-center justify-center bg-gray-300"
             initial={{ scale: 0 }}

@@ -59,6 +59,16 @@ export const AudioProvider = ({ children }) => {
     playAudio(audioNotes[idx], idx);
   };
 
+  const resetAudio = () => {
+    setCurrentAudio(null);
+    setIsPlaying(false);
+    setCurrentIndex(-1);
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current.src = '';
+    }
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -73,6 +83,7 @@ export const AudioProvider = ({ children }) => {
         nextTrack,
         prevTrack,
         shuffleTrack,
+        resetAudio,
       }}
     >
       {children}

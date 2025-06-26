@@ -3,13 +3,13 @@ body {
 }
 
 .profile-container {
-  background: linear-gradient(135deg, #1f1f1f 0%, #121212 100%);
+  background: #181818 !important;
   color: #fff;
   font-family: 'Inter', sans-serif;
 }
 
 .profile-header {
-  background: linear-gradient(to bottom, rgba(75, 0, 110, 0.5), transparent);
+  background: #181818 !important;
   padding: 4rem 2rem;
   display: flex;
   align-items: center;

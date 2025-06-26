@@ -104,4 +104,10 @@ body {
 .time-display {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+.has-back-btn main,
+.has-back-btn .main-content,
+.has-back-btn .page-content {
+  margin-top: 64px !important;
 } 

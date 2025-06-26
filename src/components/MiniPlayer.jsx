@@ -3,12 +3,16 @@ import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle, FiList, FiMusic } from 'react-icons/fi';
 
 const MiniPlayer = () => {
-  const { currentAudio, isPlaying, playAudio, pauseAudio, togglePlay, audioElementRef } = useAudio();
+  const { currentAudio, isPlaying, playAudio, pauseAudio, togglePlay, audioElementRef, nextTrack, prevTrack, shuffleTrack } = useAudio();
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [imgError, setImgError] = useState(false);
+
+  // Volume drag state
+  const volumeBarRef = useRef();
+  const isDraggingVolume = useRef(false);
 
   useEffect(() => {
     const audioElement = audioElementRef.current;
@@ -57,6 +61,37 @@ const MiniPlayer = () => {
     setImgError(false);
   }, [currentAudio]);
 
+  // Handle drag events for volume
+  useEffect(() => {
+    const handleMove = (e) => {
+      if (!isDraggingVolume.current || !volumeBarRef.current) return;
+      const rect = volumeBarRef.current.getBoundingClientRect();
+      let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      let newVolume = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      setVolume(newVolume);
+      if (isMuted) setIsMuted(false);
+    };
+    const handleUp = () => {
+      isDraggingVolume.current = false;
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchend', handleUp);
+    };
+    if (isDraggingVolume.current) {
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('touchmove', handleMove);
+      window.addEventListener('mouseup', handleUp);
+      window.addEventListener('touchend', handleUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchend', handleUp);
+    };
+  }, [isMuted]);
+
   const handlePlayPause = () => {
     if (!currentAudio) return;
     togglePlay();
@@ -77,9 +112,6 @@ const MiniPlayer = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handlePrev = () => console.log('Previous track');
-  const handleNext = () => console.log('Next track');
-  const handleShuffle = () => console.log('Shuffle clicked');
   const handleQueue = () => console.log('Queue clicked');
 
   const audioTitle = currentAudio?.title || 'No audio selected';
@@ -152,8 +184,8 @@ const MiniPlayer = () => {
         <div className="flex-1 flex flex-col items-center justify-center gap-1 sm:gap-2 min-w-0">
           {/* Row 1: Playback Controls */}
           <div className="flex items-center justify-center gap-2 sm:gap-4">
-            <button onClick={handleShuffle} className="text-neutral-400 text-lg sm:text-xl hover:text-white"><FiShuffle /></button>
-            <button onClick={handlePrev} className="text-neutral-400 text-xl sm:text-2xl hover:text-white"><FiSkipBack /></button>
+            <button onClick={shuffleTrack} className="text-neutral-400 text-lg sm:text-xl hover:text-white"><FiShuffle /></button>
+            <button onClick={prevTrack} className="text-neutral-400 text-xl sm:text-2xl hover:text-white"><FiSkipBack /></button>
             <button
               onClick={handlePlayPause}
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
@@ -161,11 +193,10 @@ const MiniPlayer = () => {
             >
               {isPlaying ? <FiPause className="text-xl sm:text-2xl" /> : <FiPlay className="text-xl sm:text-2xl ml-1" />}
             </button>
-            <button onClick={handleNext} className="text-neutral-400 text-xl sm:text-2xl hover:text-white"><FiSkipForward /></button>
-            <button onClick={handleQueue} className="text-neutral-400 text-lg sm:text-xl hover:text-white"><FiList /></button>
+            <button onClick={nextTrack} className="text-neutral-400 text-xl sm:text-2xl hover:text-white"><FiSkipForward /></button>
           </div>
           {/* Row 2: Progress Bar */}
-          <div className="hidden sm:flex items-center gap-2 w-full max-w-md">
+          <div className="flex items-center gap-2 w-full max-w-md">
             <span className="text-xs text-neutral-400 w-10 text-right">{formatTime(progress)}</span>
             <div className="flex-1 h-1 bg-neutral-700 rounded-full relative cursor-pointer group" onClick={handleSeek}>
               <div className="h-full bg-white rounded-full relative" style={{ width: duration ? `${(progress / duration) * 100}%` : '0%' }}>
@@ -181,12 +212,22 @@ const MiniPlayer = () => {
           <button onClick={() => setIsMuted((m) => !m)} className="text-neutral-400 hover:text-white" title={isMuted || volume === 0 ? 'Unmute' : 'Mute'}>
             {isMuted || volume === 0 ? <FiVolumeX className="text-xl" /> : <FiVolume2 className="text-xl" />}
           </button>
-          <div className="w-16 sm:w-24 h-1 bg-neutral-700 rounded-full relative cursor-pointer group" onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const newVolume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            setVolume(newVolume);
-            if (isMuted) setIsMuted(false);
-          }}>
+          <div
+            ref={volumeBarRef}
+            className="w-16 sm:w-24 h-1 bg-neutral-700 rounded-full relative cursor-pointer group"
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const newVolume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              setVolume(newVolume);
+              if (isMuted) setIsMuted(false);
+            }}
+            onMouseDown={(e) => {
+              isDraggingVolume.current = true;
+            }}
+            onTouchStart={(e) => {
+              isDraggingVolume.current = true;
+            }}
+          >
             <div className="h-full bg-white rounded-full relative" style={{ width: `${(isMuted ? 0 : volume) * 100}%` }}>
               <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>

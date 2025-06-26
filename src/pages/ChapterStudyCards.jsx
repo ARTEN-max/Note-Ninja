@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import BackToPrevious from '../components/BackToPrevious';
 
 const StudyCard = ({ title, content, imageUrl }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -136,49 +137,52 @@ const ChapterStudyCards = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Chapter {chapter.chapterNumber}: {chapter.title}
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{chapter.description}</p>
-        </div>
-
-        {/* Study Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {studyCards.map((card, index) => (
-            <motion.div
-              key={card.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <StudyCard
-                title={card.title}
-                content={card.content}
-                imageUrl={card.imageUrl}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {studyCards.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Study Cards Yet</h3>
-            <p className="text-gray-600 mb-6">Start by adding study cards to this chapter.</p>
-            <button
-              onClick={() => navigate(`/study-guide/${studyGuideId}/chapter/${chapterId}/add-card`)}
-              className="px-6 py-2 bg-[#880E4F] text-white rounded-full hover:bg-[#6B0D3D] transition-colors"
-            >
-              Add First Study Card
-            </button>
+    <>
+      <BackToPrevious />
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Chapter {chapter.chapterNumber}: {chapter.title}
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">{chapter.description}</p>
           </div>
-        )}
+
+          {/* Study Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {studyCards.map((card, index) => (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <StudyCard
+                  title={card.title}
+                  content={card.content}
+                  imageUrl={card.imageUrl}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {studyCards.length === 0 && (
+            <div className="text-center py-12">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Study Cards Yet</h3>
+              <p className="text-gray-600 mb-6">Start by adding study cards to this chapter.</p>
+              <button
+                onClick={() => navigate(`/study-guide/${studyGuideId}/chapter/${chapterId}/add-card`)}
+                className="px-6 py-2 bg-[#880E4F] text-white rounded-full hover:bg-[#6B0D3D] transition-colors"
+              >
+                Add First Study Card
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -6,6 +6,8 @@ import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, serverTimestam
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiClock, FiUser, FiHeart, FiUpload, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
+import Skeleton from '../components/Skeleton';
+import BackToPrevious from '../components/BackToPrevious';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"];
 
@@ -79,6 +81,7 @@ const AudioNotesPage = () => {
 
         Promise.all(notes.map(getAudioDuration)).then((notesWithDurations) => {
           setAudioNotesLocal(notesWithDurations);
+          setAudioNotes(notesWithDurations);
           console.log('AudioNotes set in context:', notesWithDurations.length, 'notes');
         });
       } catch (error) {
@@ -299,39 +302,39 @@ const AudioNotesPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e3b8f9]/20 to-white p-6">
         <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12">
-          <div className="bg-gray-300 rounded-2xl w-80 h-80 animate-pulse mb-6 md:mb-0" />
+          <Skeleton variant="rect" width={320} height={320} className="mb-6 md:mb-0" />
           <div className="flex-1 flex flex-col gap-4">
-            <div className="bg-gray-300 rounded w-2/3 h-10 animate-pulse mb-2" />
-            <div className="bg-gray-300 rounded w-1/3 h-6 animate-pulse mb-2" />
-            <div className="bg-gray-300 rounded w-1/2 h-6 animate-pulse mb-2" />
+            <Skeleton variant="text" width="66%" height={40} className="mb-2" />
+            <Skeleton variant="text" width="33%" height={24} className="mb-2" />
+            <Skeleton variant="text" width="50%" height={24} className="mb-2" />
             <div className="flex gap-2 mt-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-gray-300 rounded-full w-10 h-10 animate-pulse" />
+                <Skeleton key={i} variant="circle" width={40} height={40} />
               ))}
             </div>
           </div>
         </div>
         <div className="w-full mt-8">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center px-10 py-4 border-b border-[#b266ff]/10 animate-pulse">
+            <div key={i} className="flex items-center px-10 py-4 border-b border-[#b266ff]/10">
               <div className="w-8 text-left">
-                <div className="bg-gray-300 rounded h-6 w-6" />
+                <Skeleton variant="circle" width={24} height={24} />
               </div>
               <div className="flex-1 min-w-0 flex items-center gap-4">
-                <div className="bg-gray-300 rounded w-10 h-10" />
+                <Skeleton variant="circle" width={40} height={40} />
                 <div className="flex flex-col gap-2">
-                  <div className="bg-gray-300 rounded w-32 h-4" />
-                  <div className="bg-gray-300 rounded w-20 h-3" />
+                  <Skeleton variant="text" width={128} height={16} />
+                  <Skeleton variant="text" width={80} height={12} />
                 </div>
               </div>
               <div className="w-56 hidden md:block">
-                <div className="bg-gray-300 rounded w-24 h-4" />
+                <Skeleton variant="text" width={96} height={16} />
               </div>
               <div className="w-40 hidden md:block">
-                <div className="bg-gray-300 rounded w-20 h-4" />
+                <Skeleton variant="text" width={80} height={16} />
               </div>
               <div className="w-24 text-right">
-                <div className="bg-gray-300 rounded w-12 h-4" />
+                <Skeleton variant="text" width={48} height={16} />
               </div>
             </div>
           ))}
@@ -341,220 +344,223 @@ const AudioNotesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#2a0845] to-[#1a1028]">
-      <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12"
-        style={{
-          background: 'linear-gradient(135deg, #4b006e 0%, #b266ff 100%)',
-          minHeight: 400,
-        }}
-      >
-        {/* Playlist Image/Icon Card */}
-        <img 
-          src="/goose-radio.png" 
-          alt="Note Ninja Radio"
-          className="w-80 h-80 rounded-2xl shadow-xl object-cover mr-0 md:mr-10 mb-6 md:mb-0"
-        />
-        {/* Playlist Info & Actions */}
-        <div className="flex-1 flex flex-col justify-center items-start text-left">
-          <div className="uppercase text-xs text-purple-200 mb-2 tracking-widest">Public Playlist</div>
-          <div className="text-6xl md:text-7xl font-extrabold text-white mb-2 tracking-tight leading-tight">NOTE NINJA RADIO</div>
-          <div className="text-purple-200 text-base mb-3">For efficient review before exams</div>
-          <div className="flex items-center gap-2 text-purple-100 text-sm font-medium mb-6">
-            <span className="font-bold text-white">Note Ninja</span>
-            <span>• {episodeCount} episodes</span>
-            <span>• {durationString}</span>
-          </div>
-          <div className="flex items-center gap-4 mt-2">
-            <button
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform"
-              onClick={() => {
-                const first = audioNotesLocal[0];
-                if (first && first.url) {
-                  playAudio({ ...first, artist: first.uploaderName || 'Unknown Artist' });
-                }
-              }}
-              aria-label="Play first audio"
-            >
-              <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff" fillOpacity=".08"/><polygon points="11,8 21,14 11,20" fill="#fff"/></svg>
-            </button>
-            <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><span className="text-2xl">+</span></button>
-            <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 3v10m0 0l-3-3m3 3l3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="15" width="14" height="2" rx="1" fill="currentColor"/></svg></button>
-            <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2" fill="currentColor"/><circle cx="16" cy="10" r="2" fill="currentColor"/><circle cx="4" cy="10" r="2" fill="currentColor"/></svg></button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Admin Upload Form */}
-      {isAdmin && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="px-10 py-6 bg-[#1a1028]/50 mb-8"
+    <>
+      <BackToPrevious />
+      <div className="absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-gradient-to-b md:from-[#2a0845] md:to-[#1a1028]">
+        <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12"
+          style={{
+            background: 'linear-gradient(135deg, #4b006e 0%, #b266ff 100%)',
+            minHeight: 400,
+          }}
         >
-          <h3 className="text-2xl font-bold text-white mb-4 border-b border-purple-400/30 pb-2">Upload New Audio Note</h3>
-          <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="col-span-1">
-              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="title">Title</label>
-              <input type="text" name="title" id="title" value={form.title} onChange={handleInputChange} required className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none" />
+          {/* Playlist Image/Icon Card */}
+          <img 
+            src="/goose-radio.png" 
+            alt="Note Ninja Radio"
+            className="w-80 h-80 rounded-2xl shadow-xl object-cover mr-0 md:mr-10 mb-6 md:mb-0"
+          />
+          {/* Playlist Info & Actions */}
+          <div className="flex-1 flex flex-col justify-center items-start text-left">
+            <div className="uppercase text-xs text-purple-200 mb-2 tracking-widest">Public Playlist</div>
+            <div className="text-6xl md:text-7xl font-extrabold text-white mb-2 tracking-tight leading-tight">NOTE NINJA RADIO</div>
+            <div className="text-purple-200 text-base mb-3">For efficient review before exams</div>
+            <div className="flex items-center gap-2 text-purple-100 text-sm font-medium mb-6">
+              <span className="font-bold text-white">Note Ninja</span>
+              <span>• {episodeCount} episodes</span>
+              <span>• {durationString}</span>
             </div>
-            <div className="col-span-1">
-              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="subject">Subject</label>
-              <input type="text" name="subject" id="subject" value={form.subject} onChange={handleInputChange} required className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none" />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="description">Description</label>
-              <textarea name="description" id="description" value={form.description} onChange={handleInputChange} rows="3" className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none"></textarea>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="audioFile">Audio File</label>
-              <input type="file" name="audioFile" id="audioFile" onChange={handleInputChange} required accept="audio/*" className="w-full text-sm text-purple-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-600" />
-            </div>
-            <div className="col-span-2 flex justify-end items-center">
-              {uploadError && <p className="text-red-400 text-sm mr-4">{uploadError}</p>}
-              {uploadSuccess && <p className="text-green-400 text-sm mr-4">{uploadSuccess}</p>}
-              <button type="submit" disabled={uploading} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed">
-                {uploading ? 'Uploading...' : 'Upload'}
+            <div className="flex items-center gap-4 mt-2">
+              <button
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform"
+                onClick={() => {
+                  const first = audioNotesLocal[0];
+                  if (first && first.url) {
+                    playAudio({ ...first, artist: first.uploaderName || 'Unknown Artist' });
+                  }
+                }}
+                aria-label="Play first audio"
+              >
+                <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff" fillOpacity=".08"/><polygon points="11,8 21,14 11,20" fill="#fff"/></svg>
               </button>
+              <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><span className="text-2xl">+</span></button>
+              <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 3v10m0 0l-3-3m3 3l3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="15" width="14" height="2" rx="1" fill="currentColor"/></svg></button>
+              <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2" fill="currentColor"/><circle cx="16" cy="10" r="2" fill="currentColor"/><circle cx="4" cy="10" r="2" fill="currentColor"/></svg></button>
             </div>
-          </form>
-        </motion.div>
-      )}
-
-      {/* Audio Notes Table - Spotify Style */}
-      <div className="w-full bg-gradient-to-b from-[#1a1028] to-[#2a0845] pt-2 pb-24 min-h-[400px]">
-        <div className="flex items-center px-10 py-3 text-sm font-semibold text-purple-200 uppercase tracking-widest border-b border-[#b266ff]/30">
-          <div className="w-8 text-left">#</div>
-          <div className="flex-1">Title</div>
-          <div className="w-56 hidden md:block">Subject</div>
-          <div className="w-16 flex items-center justify-center"> </div>
-          <div className="w-40 hidden md:block">Date added</div>
-          <div className="w-24 text-right">Duration</div>
+          </div>
         </div>
-        {audioNotesLocal.length === 0 ? (
-          <div className="text-center py-16 text-purple-200">No Audio Notes Yet</div>
-        ) : (
-          audioNotesLocal.map((note, index) => (
-            <div
-              key={note.id}
-              className={`flex items-center px-10 py-4 border-b border-[#b266ff]/10 transition group
-                ${note.url ? "hover:bg-[#2a1a3a] cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
-              onClick={() => note.url && handlePlayClick(note)}
-            >
-              {/* Index */}
-              <div className="w-8 text-left text-purple-300 font-mono">{index + 1}</div>
-              {/* Title and Info */}
-              <div className="flex-1 min-w-0 flex items-center gap-4">
-                <img src={note.albumArt} alt={note.title} className="w-10 h-10 rounded-sm object-cover"/>
-                <div>
-                  <div className="font-bold text-white truncate">{note.title}</div>
-                  <div className="text-xs text-purple-300 truncate">{note.subject}</div>
+        
+        {/* Admin Upload Form */}
+        {isAdmin && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="px-10 py-6 bg-[#1a1028]/50 mb-8"
+          >
+            <h3 className="text-2xl font-bold text-white mb-4 border-b border-purple-400/30 pb-2">Upload New Audio Note</h3>
+            <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="title">Title</label>
+                <input type="text" name="title" id="title" value={form.title} onChange={handleInputChange} required className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none" />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="subject">Subject</label>
+                <input type="text" name="subject" id="subject" value={form.subject} onChange={handleInputChange} required className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="description">Description</label>
+                <textarea name="description" id="description" value={form.description} onChange={handleInputChange} rows="3" className="w-full bg-[#2a1a3a] text-white border border-purple-400/50 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:outline-none"></textarea>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-purple-200 mb-1" htmlFor="audioFile">Audio File</label>
+                <input type="file" name="audioFile" id="audioFile" onChange={handleInputChange} required accept="audio/*" className="w-full text-sm text-purple-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-600" />
+              </div>
+              <div className="col-span-2 flex justify-end items-center">
+                {uploadError && <p className="text-red-400 text-sm mr-4">{uploadError}</p>}
+                {uploadSuccess && <p className="text-green-400 text-sm mr-4">{uploadSuccess}</p>}
+                <button type="submit" disabled={uploading} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed">
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+
+        {/* Audio Notes Table - Spotify Style */}
+        <div className="w-full bg-gradient-to-b from-[#1a1028] to-[#2a0845] pt-2 pb-24 min-h-[400px]">
+          <div className="flex items-center px-10 py-3 text-sm font-semibold text-purple-200 uppercase tracking-widest border-b border-[#b266ff]/30">
+            <div className="w-8 text-left">#</div>
+            <div className="flex-1">Title</div>
+            <div className="w-56 hidden md:block">Subject</div>
+            <div className="w-16 flex items-center justify-center"> </div>
+            <div className="w-40 hidden md:block">Date added</div>
+            <div className="w-24 text-right">Duration</div>
+          </div>
+          {audioNotesLocal.length === 0 ? (
+            <div className="text-center py-16 text-purple-200">No Audio Notes Yet</div>
+          ) : (
+            audioNotesLocal.map((note, index) => (
+              <div
+                key={note.id}
+                className={`flex items-center px-10 py-4 border-b border-[#b266ff]/10 transition group
+                  ${note.url ? "hover:bg-[#2a1a3a] cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
+                onClick={() => note.url && handlePlayClick(note)}
+              >
+                {/* Index */}
+                <div className="w-8 text-left text-purple-300 font-mono">{index + 1}</div>
+                {/* Title and Info */}
+                <div className="flex-1 min-w-0 flex items-center gap-4">
+                  <img src={note.albumArt} alt={note.title} className="w-10 h-10 rounded-sm object-cover"/>
+                  <div>
+                    <div className="font-bold text-white truncate">{note.title}</div>
+                    <div className="text-xs text-purple-300 truncate">{note.subject}</div>
+                  </div>
+                </div>
+                {/* Subject */}
+                <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.subject}</div>
+                {/* + Button Column */}
+                <div className="w-16 flex items-center justify-center relative">
+                  <button
+                    className="text-purple-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
+                    title="Add to playlist"
+                    onClick={e => { e.stopPropagation(); setPlaylistMenuNoteId(note.id); setMenuAnchor(e.currentTarget); }}
+                    style={{ minWidth: 32, minHeight: 32 }}
+                  >
+                    <FiPlus size={18} />
+                  </button>
+                  {/* Playlist menu */}
+                  {playlistMenuNoteId === note.id && (
+                    <div ref={menuRef} className="absolute z-50 top-12 right-0 bg-[#2a0845] border border-purple-700 rounded-lg shadow-lg p-2 min-w-[180px]">
+                      {playlists.length === 0 ? (
+                        <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
+                          Add to saved playlist
+                        </button>
+                      ) : (
+                        <>
+                          <div className="mb-1 text-xs text-purple-200 px-4 py-1">Add to playlist</div>
+                          {playlists.map(pl => (
+                            <button key={pl.id} className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={async e => {
+                              e.stopPropagation();
+                              // Add audio note to existing playlist
+                              const playlistDoc = doc(db, 'audioPlaylists', pl.id);
+                              const playlistSnap = await getDoc(playlistDoc);
+                              let audios = (playlistSnap.data()?.audios || []);
+                              if (!audios.includes(note.id)) {
+                                audios.push(note.id);
+                                await updateDoc(playlistDoc, { audios });
+                              }
+                              setPlaylistMenuNoteId(null);
+                              setSuccessMessage('Added to playlist!');
+                              setTimeout(() => setSuccessMessage(''), 2000);
+                              await fetchPlaylists();
+                            }}>
+                              {pl.name}
+                            </button>
+                          ))}
+                          <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition mt-1" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
+                            + Create new playlist
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {/* Date added (placeholder for now) */}
+                <div className="w-40 text-purple-200 text-sm hidden md:block truncate">{note.uploadDate ? formatDate(note.uploadDate) : ''}</div>
+                {/* Duration */}
+                <div className="w-24 text-right text-white font-mono flex items-center justify-end gap-4">
+                  <span>{note.duration ? formatDuration(note.duration) : '--:--'}</span>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(note);
+                      }}
+                      className="text-purple-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Delete this note"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
-              {/* Subject */}
-              <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.subject}</div>
-              {/* + Button Column */}
-              <div className="w-16 flex items-center justify-center relative">
-                <button
-                  className="text-purple-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
-                  title="Add to playlist"
-                  onClick={e => { e.stopPropagation(); setPlaylistMenuNoteId(note.id); setMenuAnchor(e.currentTarget); }}
-                  style={{ minWidth: 32, minHeight: 32 }}
-                >
-                  <FiPlus size={18} />
+            ))
+          )}
+        </div>
+
+        {/* Playlist Creation Modal */}
+        {showPlaylistModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-[#1a1028] rounded-xl shadow-2xl p-8 w-full max-w-md relative">
+              <button className="absolute top-4 right-4 text-purple-200 hover:text-white" onClick={() => { setShowPlaylistModal(false); setNewPlaylistName(""); setPendingNoteId(null); }}>
+                <FiX size={24} />
+              </button>
+              <h2 className="text-2xl font-bold text-white mb-4">Create Playlist</h2>
+              <form onSubmit={handleCreatePlaylist}>
+                <input
+                  type="text"
+                  className="w-full bg-[#2a0845] text-white border border-purple-700 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  placeholder="Enter playlist name"
+                  value={newPlaylistName}
+                  onChange={e => setNewPlaylistName(e.target.value)}
+                  autoFocus
+                />
+                {modalError && <div className="text-red-400 mb-2">{modalError}</div>}
+                <button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform">
+                  Save
                 </button>
-                {/* Playlist menu */}
-                {playlistMenuNoteId === note.id && (
-                  <div ref={menuRef} className="absolute z-50 top-12 right-0 bg-[#2a0845] border border-purple-700 rounded-lg shadow-lg p-2 min-w-[180px]">
-                    {playlists.length === 0 ? (
-                      <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
-                        Add to saved playlist
-                      </button>
-                    ) : (
-                      <>
-                        <div className="mb-1 text-xs text-purple-200 px-4 py-1">Add to playlist</div>
-                        {playlists.map(pl => (
-                          <button key={pl.id} className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={async e => {
-                            e.stopPropagation();
-                            // Add audio note to existing playlist
-                            const playlistDoc = doc(db, 'audioPlaylists', pl.id);
-                            const playlistSnap = await getDoc(playlistDoc);
-                            let audios = (playlistSnap.data()?.audios || []);
-                            if (!audios.includes(note.id)) {
-                              audios.push(note.id);
-                              await updateDoc(playlistDoc, { audios });
-                            }
-                            setPlaylistMenuNoteId(null);
-                            setSuccessMessage('Added to playlist!');
-                            setTimeout(() => setSuccessMessage(''), 2000);
-                            await fetchPlaylists();
-                          }}>
-                            {pl.name}
-                          </button>
-                        ))}
-                        <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition mt-1" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
-                          + Create new playlist
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-              {/* Date added (placeholder for now) */}
-              <div className="w-40 text-purple-200 text-sm hidden md:block truncate">{note.uploadDate ? formatDate(note.uploadDate) : ''}</div>
-              {/* Duration */}
-              <div className="w-24 text-right text-white font-mono flex items-center justify-end gap-4">
-                <span>{note.duration ? formatDuration(note.duration) : '--:--'}</span>
-                {isAdmin && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(note);
-                    }}
-                    className="text-purple-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Delete this note"
-                  >
-                    <FiTrash2 size={16} />
-                  </button>
-                )}
-              </div>
+              </form>
             </div>
-          ))
+          </div>
+        )}
+        {/* Success Toast */}
+        {successMessage && (
+          <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg text-lg font-semibold animate-fade-in-out">
+            {successMessage}
+          </div>
         )}
       </div>
-
-      {/* Playlist Creation Modal */}
-      {showPlaylistModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-          <div className="bg-[#1a1028] rounded-xl shadow-2xl p-8 w-full max-w-md relative">
-            <button className="absolute top-4 right-4 text-purple-200 hover:text-white" onClick={() => { setShowPlaylistModal(false); setNewPlaylistName(""); setPendingNoteId(null); }}>
-              <FiX size={24} />
-            </button>
-            <h2 className="text-2xl font-bold text-white mb-4">Create Playlist</h2>
-            <form onSubmit={handleCreatePlaylist}>
-              <input
-                type="text"
-                className="w-full bg-[#2a0845] text-white border border-purple-700 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-purple-400 focus:outline-none"
-                placeholder="Enter playlist name"
-                value={newPlaylistName}
-                onChange={e => setNewPlaylistName(e.target.value)}
-                autoFocus
-              />
-              {modalError && <div className="text-red-400 mb-2">{modalError}</div>}
-              <button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform">
-                Save
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Success Toast */}
-      {successMessage && (
-        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg text-lg font-semibold animate-fade-in-out">
-          {successMessage}
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

@@ -6,6 +6,12 @@ body {
   color: #222;
 }
 
+@media (max-width: 767px) {
+  body {
+    background: #181818 !important;
+  }
+}
+
 .bg-sour-lavender {
   background: #e3b8f9;
 }

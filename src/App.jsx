@@ -23,7 +23,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import MobileNav from "./components/MobileNav";
 import SetupStudyGuides from "./components/SetupStudyGuides";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { AudioProvider, useAudio } from './contexts/AudioContext';
 import "./App.css";
 import { onAuthStateChanged } from "firebase/auth";
@@ -72,6 +72,7 @@ function RedirectToAccountProfile() {
 function AppContent() {
   const location = useLocation();
   const { currentAudio } = useAudio();
+  const { currentUser } = useAuth();
   const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
   return (
@@ -191,10 +192,10 @@ function AppContent() {
               }
             />
           </Routes>
-          {currentAudio && <MiniPlayer />}
+          {currentUser && currentAudio && <MiniPlayer />}
         </div>
       </div>
-      <MobileNav />
+      {currentUser && <MobileNav />}
     </div>
   );
 }

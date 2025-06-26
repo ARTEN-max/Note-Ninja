@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
+import { useAudio } from '../contexts/AudioContext';
 
 const navItems = [
   { label: "Dashboard", to: "/", icon: (
@@ -104,13 +105,14 @@ const libraryItems = [
 
 const extraItems = [
   { label: "User Search", to: "/search-users", icon: (
-    <span role="img" aria-label="Search">🔍</span>
+    <span role="img" aria-label="Search">��</span>
   ) },
 ];
 
-function Sidebar() {
-  const navigate = useNavigate();
+export default function Sidebar(props) {
   const { currentUser } = useAuth();
+  const { resetAudio } = useAudio();
+  const navigate = useNavigate();
   const [userName, setUserName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
 
@@ -141,6 +143,16 @@ function Sidebar() {
 
     fetchUserName();
   }, [currentUser]);
+
+  const handleLogout = async () => {
+    try {
+      resetAudio(); // Reset audio state before logging out
+      await signOut(auth);
+      navigate('/signin');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <div
@@ -227,10 +239,7 @@ function Sidebar() {
       </div>
       {/* Logout Button at the bottom for desktop/tablet */}
       <button
-        onClick={async () => {
-          await signOut(auth);
-          navigate('/signin');
-        }}
+        onClick={handleLogout}
         className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-none bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
         style={{ boxShadow: '0 0 0 8px rgba(178,102,255,0.10), 0 4px 16px 0 rgba(138,43,226,0.18)' }}
       >
@@ -238,6 +247,4 @@ function Sidebar() {
       </button>
     </div>
   );
-}
-
-export default Sidebar; 
+} 

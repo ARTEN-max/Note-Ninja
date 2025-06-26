@@ -14,11 +14,15 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
+      if (!user && currentUser) {
+        // User is logging out, reset audio state
+        // We'll handle this in the AudioContext
+      }
       setCurrentUser(user);
       setLoading(false);
     });
     return unsubscribe;
-  }, []);
+  }, [currentUser]);
 
   const value = {
     currentUser,

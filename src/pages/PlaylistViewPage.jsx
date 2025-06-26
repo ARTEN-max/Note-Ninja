@@ -93,7 +93,7 @@ const PlaylistViewPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#2a0845] to-[#1a1028]">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#181818]">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-400 mb-6"></div>
         <div className="text-white text-2xl font-bold mb-2">Loading your playlist...</div>
         <div className="text-purple-200 text-lg">Getting your study vibes ready!</div>
@@ -103,14 +103,14 @@ const PlaylistViewPage = () => {
 
   if (!playlist) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white text-2xl">Playlist not found.</div>
+      <div className="min-h-screen flex items-center justify-center text-white text-2xl bg-[#181818]">Playlist not found.</div>
     );
   }
 
   return (
     <>
       <BackToPrevious />
-      <div className="min-h-screen bg-gradient-to-b from-[#2a0845] to-[#1a1028]">
+      <div className="absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-gradient-to-b md:from-[#2a0845] md:to-[#1a1028]">
         <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12"
           style={{ background: 'linear-gradient(135deg, #4b006e 0%, #b266ff 100%)', minHeight: 320 }}
         >

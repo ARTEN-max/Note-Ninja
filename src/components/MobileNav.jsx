@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { HomeIcon, BookOpenIcon, ArrowUpOnSquareIcon, UserIcon, MusicalNoteIcon } from "@heroicons/react/24/outline";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { useAuth } from '../contexts/AuthContext';
+import { useAudio } from '../contexts/AudioContext';
 
 const navItems = [
   { label: "Home", to: "/", icon: <HomeIcon className="w-6 h-6" /> },
@@ -12,6 +14,8 @@ const navItems = [
 ];
 
 export default function MobileNav() {
+  const { currentUser } = useAuth();
+  const { resetAudio } = useAudio();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,6 +24,16 @@ export default function MobileNav() {
 
   // Helper to detect mobile
   const isMobile = () => window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+
+  const handleLogout = async () => {
+    try {
+      resetAudio(); // Reset audio state before logging out
+      await signOut(auth);
+      navigate('/signin');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-pink-200 flex justify-around items-center py-2 md:hidden z-50">
@@ -44,10 +58,7 @@ export default function MobileNav() {
         ))}
         {!hideLogout && (
           <button
-            onClick={async () => {
-              await signOut(auth);
-              navigate('/signin');
-            }}
+            onClick={handleLogout}
             className="flex flex-row items-center gap-1 bg-[#880E4F] text-white rounded-full px-4 py-2 font-bold text-sm shadow-md ml-2"
             style={{ minWidth: 0 }}
             aria-label="Logout"

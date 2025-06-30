@@ -20,58 +20,6 @@ interface StudyGuide {
   imageUrl: string;
 }
 
-// Update mock data to include coursePrefix
-const studyGuides: StudyGuide[] = [
-  {
-    id: 1,
-    courseCode: "CS246",
-    coursePrefix: "CS",
-    title: "Study Guide 1",
-    description: "Description of playlist",
-    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/36526b27cd6c189d1bfdb806f5ceb1322060cbad?placeholderIfAbsent=true",
-  },
-  {
-    id: 2,
-    courseCode: "MATH137",
-    coursePrefix: "MATH",
-    title: "Study Guide 2",
-    description: "Description of playlist",
-    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/6fae324141d1039bf2b81b3ec7dc2f228cce8544?placeholderIfAbsent=true",
-  },
-  {
-    id: 3,
-    courseCode: "STAT230",
-    coursePrefix: "STAT",
-    title: "Study Guide 3",
-    description: "Description of playlist",
-    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true",
-  },
-  {
-    id: 4,
-    courseCode: "MATH135",
-    coursePrefix: "MATH",
-    title: "Study Guide 4",
-    description: "Description of playlist",
-    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/b5a7a6e7eb860dca445df9a3c409eb7da483cae0?placeholderIfAbsent=true",
-  },
-  {
-    id: 5,
-    courseCode: "PHYS121",
-    coursePrefix: "PHYS",
-    title: "Study Guide 5",
-    description: "Description of playlist",
-    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/2a20d44e6ae70f49483a0c767b1644249e9ca8a3?placeholderIfAbsent=true",
-  },
-  {
-    id: 6,
-    courseCode: "CHEM120",
-    coursePrefix: "CHEM",
-    title: "Study Guide 6",
-    description: "Description of playlist",
-    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/409c53ce05e6a99f769c7cd21d30ed60ddfb1230?placeholderIfAbsent=true",
-  },
-];
-
 // Add faculty-based course mappings
 const facultyCourseMappings = {
   "Mathematics": ["MATH", "CS", "STAT", "CO"],
@@ -95,109 +43,88 @@ const BrowsePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useAuth();
+  const [allStudyGuides, setAllStudyGuides] = useState<StudyGuide[]>([]);
   const [recommendedGuides, setRecommendedGuides] = useState<StudyGuide[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<'studyGuides' | 'profiles'>("studyGuides");
   const [profileResults, setProfileResults] = useState<any[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(false);
 
+  // Fetch all study guides from Firestore on mount
   useEffect(() => {
-    // Fetch like counts and user likes for all study guides
+    const fetchAllStudyGuides = async () => {
+      const guidesSnapshot = await getDocs(collection(db, "studyGuides"));
+      const guides: StudyGuide[] = guidesSnapshot.docs.map(doc => {
+        const data = doc.data();
+        const coursePrefix = data.courseCode?.match(/^[A-Z]+/)?.[0] || "";
+        return {
+          id: doc.id,
+          courseCode: data.courseCode || "",
+          title: data.title || "",
+          description: data.description || "",
+          imageUrl: data.imageUrl || "",
+          coursePrefix
+        };
+      });
+      setAllStudyGuides(guides);
+    };
+    fetchAllStudyGuides();
+  }, []);
+
+  // Update like counts and user likes for all study guides
+  useEffect(() => {
     const fetchLikes = async () => {
       const counts = {};
-      for (const guide of studyGuides) {
+      for (const guide of allStudyGuides) {
         counts[guide.courseCode] = await getLikeCount(guide.courseCode);
       }
       setLikeCounts(counts);
       if (currentUser) {
         const userLikes = await getUserLikes(currentUser.uid);
         const likedMap = {};
-        for (const guide of studyGuides) {
+        for (const guide of allStudyGuides) {
           likedMap[guide.id] = userLikes.includes(guide.courseCode);
         }
         setLiked(likedMap);
       }
     };
-    fetchLikes();
-  }, [currentUser]);
+    if (allStudyGuides.length > 0) fetchLikes();
+  }, [currentUser, allStudyGuides]);
 
+  // Fetch recommended guides (or all guides if not logged in)
   useEffect(() => {
     const fetchRecommended = async () => {
       setLoadingRecs(true);
       if (!currentUser) {
-        setRecommendedGuides(studyGuides);
+        setRecommendedGuides(allStudyGuides);
         setLoadingRecs(false);
         return;
       }
-
       const userDoc = await getDoc(doc(db, "students", currentUser.uid));
       if (!userDoc.exists()) {
-        setRecommendedGuides(studyGuides);
+        setRecommendedGuides(allStudyGuides);
         setLoadingRecs(false);
         return;
       }
-
       const userData = userDoc.data();
       const courseCodes = userData.courseCodes || [];
       const faculty = userData.faculty || "";
       let guides: StudyGuide[] = [];
       let fetched = false;
-
-      // Firestore does not support 'or' with 'in', so fetch separately and merge
       if (courseCodes.length > 0) {
-        const courseCodeQuery = query(collection(db, "studyGuides"), where("courseCode", "in", courseCodes));
-        await new Promise<void>((resolve) => {
-          onSnapshot(courseCodeQuery, (snapshot) => {
-            guides = guides.concat(snapshot.docs.map(doc => {
-              const data = doc.data();
-              const coursePrefix = data.courseCode?.match(/^[A-Z]+/)?.[0] || "";
-              return {
-                id: doc.id,
-                courseCode: data.courseCode || "",
-                title: data.title || "",
-                description: data.description || "",
-                imageUrl: data.imageUrl || "",
-                coursePrefix
-              };
-            }));
-            resolve();
-          }, () => resolve());
-        });
+        guides = allStudyGuides.filter(g => courseCodes.includes(g.courseCode));
         fetched = true;
       }
-      if (faculty && facultyCourseMappings[faculty]) {
-        const prefixes = facultyCourseMappings[faculty];
-        const prefixQuery = query(collection(db, "studyGuides"), where("coursePrefix", "in", prefixes));
-        await new Promise<void>((resolve) => {
-          onSnapshot(prefixQuery, (snapshot) => {
-            guides = guides.concat(snapshot.docs.map(doc => {
-              const data = doc.data();
-              const coursePrefix = data.courseCode?.match(/^[A-Z]+/)?.[0] || "";
-              return {
-                id: doc.id,
-                courseCode: data.courseCode || "",
-                title: data.title || "",
-                description: data.description || "",
-                imageUrl: data.imageUrl || "",
-                coursePrefix
-              };
-            }));
-            resolve();
-          }, () => resolve());
-        });
-        fetched = true;
-      }
-      // Remove duplicates by courseCode
-      guides = guides.filter((g, i, arr) => arr.findIndex(x => x.courseCode === g.courseCode) === i);
+      // Optionally, add faculty-based filtering here if needed
       if (!fetched || guides.length === 0) {
-        setRecommendedGuides(studyGuides);
+        setRecommendedGuides(allStudyGuides);
       } else {
         setRecommendedGuides(guides);
       }
       setLoadingRecs(false);
     };
-    fetchRecommended();
-  }, [currentUser]);
+    if (allStudyGuides.length > 0) fetchRecommended();
+  }, [currentUser, allStudyGuides]);
 
   // Profile search logic
   useEffect(() => {
@@ -272,7 +199,7 @@ const BrowsePage = () => {
   };
 
   const filteredSuggestions = search.trim()
-    ? studyGuides.filter(
+    ? allStudyGuides.filter(
         guide =>
           guide.courseCode.toLowerCase().includes(search.trim().toLowerCase()) ||
           guide.title.toLowerCase().includes(search.trim().toLowerCase())
@@ -282,7 +209,7 @@ const BrowsePage = () => {
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && search.trim()) {
       const query = search.trim().toLowerCase();
-      const match = studyGuides.find(
+      const match = allStudyGuides.find(
         guide =>
           guide.courseCode.toLowerCase() === query ||
           guide.title.toLowerCase().includes(query)
@@ -428,7 +355,7 @@ const BrowsePage = () => {
         <div className="w-full max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold font-inknut mb-6 text-center md:text-left"
               style={{ fontFamily: 'Inknut Antiqua, serif', color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}>
-            {recommendedGuides === studyGuides ? "Popular Study Guides" : "Recommended for You"}
+            {recommendedGuides === allStudyGuides ? "Popular Study Guides" : "Recommended for You"}
           </h2>
           {loadingRecs ? (
             <div className="flex flex-col items-center justify-center py-16">

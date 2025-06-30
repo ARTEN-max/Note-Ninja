@@ -8,7 +8,6 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import studyGuides from '../data/studyGuides';
 import { FiEdit2 } from 'react-icons/fi';
 import { FiPlay } from 'react-icons/fi';
-import BackToPrevious from '../components/BackToPrevious';
 
 const topCourses = [
   { name: 'Advanced Calculus', thumbnail: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?auto=format&fit=crop&w=200&q=80' },
@@ -352,7 +351,6 @@ const NewUserProfilePage = () => {
 
   return (
     <>
-      <BackToPrevious />
       <motion.div
         className="profile-container absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-[#181818] md:max-w-none md:mx-0 p-0"
         initial={{ opacity: 0 }}
@@ -370,7 +368,7 @@ const NewUserProfilePage = () => {
             {renderProfileImage()}
           </motion.div>
           <div>
-            <h1 className="text-6xl font-extrabold">{user.name}</h1>
+            <h1 className="text-6xl font-extrabold">@{user.username}</h1>
             <div className="flex space-x-6 mt-4 text-lg text-gray-300">
               <span><strong>{courseCount}</strong> Courses</span>
               <span><strong>{user.stats.followers}</strong> Followers</span>

@@ -5,6 +5,7 @@ import { db, storage } from "../firebase";
 import { collection, addDoc, onSnapshot, serverTimestamp, query, where, orderBy } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
+import BackToPrevious from './BackToPrevious';
 
 const ADMIN_EMAILS = ['abdul.rahman78113@gmail.com', 'kingbronfan23@gmail.com'];
 
@@ -93,6 +94,7 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-sour-lavender relative overflow-hidden px-2 py-8">
+      <BackToPrevious />
       {/* Animation: Heading at the top, scales and fades in */}
       <motion.h1
         className="text-4xl md:text-6xl font-bold mt-12 mb-8 note-ninja-heading"

@@ -7,7 +7,6 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiClock, FiUser, FiHeart, FiUpload, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
 import Skeleton from '../components/Skeleton';
-import BackToPrevious from '../components/BackToPrevious';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"];
 
@@ -345,7 +344,6 @@ const AudioNotesPage = () => {
 
   return (
     <>
-      <BackToPrevious />
       <div className="absolute left-0 top-0 min-h-screen w-screen bg-[#181818] overflow-y-auto md:static md:w-full md:bg-gradient-to-b md:from-[#2a0845] md:to-[#1a1028]">
         <div className="w-full flex flex-col md:flex-row items-center gap-10 px-10 pt-8 pb-12"
           style={{

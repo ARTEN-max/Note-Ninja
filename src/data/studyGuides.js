@@ -40,6 +40,13 @@ const studyGuides = [
     title: "CHEM120",
     description: "Description of playlist",
     imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/409c53ce05e6a99f769c7cd21d30ed60ddfb1230?placeholderIfAbsent=true"
+  },
+  {
+    id: "CS245",
+    courseCode: "CS245",
+    title: "CS245",
+    description: "Description of playlist",
+    imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/7e8b9c2d4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c?placeholderIfAbsent=true"
   }
 ];
 

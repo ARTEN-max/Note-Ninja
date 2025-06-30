@@ -130,7 +130,7 @@ export default function Sidebar(props) {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setUserName(data.name || "");
+            setUserName(data.username || "");
             setProfileImageUrl(data.profileImageUrl || "");
           } else {
             setProfileImageUrl("");
@@ -169,7 +169,7 @@ export default function Sidebar(props) {
         {userName && (
           <div className="w-[240px] absolute left-2 top-[78px] flex flex-col gap-1 items-start">
             <div className="px-4 py-2 text-lg font-semibold text-black" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>
-              Hello {capitalizeName(userName)}!
+              Hello @{userName}!
             </div>
           </div>
         )}
@@ -180,7 +180,7 @@ export default function Sidebar(props) {
             <NavLink
               key={item.label}
               to={item.to}
-              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
+              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'} font-inter`}
               tabIndex={0}
               style={{ minHeight: 44 }}
             >
@@ -195,7 +195,7 @@ export default function Sidebar(props) {
             <NavLink
               key={item.label}
               to={item.to}
-              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
+              className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'} font-inter`}
               tabIndex={0}
               style={{ minHeight: 44 }}
             >
@@ -206,7 +206,7 @@ export default function Sidebar(props) {
           {/* Profile Button */}
           <NavLink
             to="/profile"
-            className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
+            className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'} font-inter`}
             tabIndex={0}
             style={{ minHeight: 44 }}
           >
@@ -218,7 +218,7 @@ export default function Sidebar(props) {
           {/* Account Button */}
           <NavLink
             to="/account"
-            className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#c895f2]'} font-inter`}
+            className={({ isActive }) => `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition-colors duration-200 ${isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'} font-inter`}
             tabIndex={0}
             style={{ minHeight: 44 }}
           >

@@ -33,6 +33,7 @@ import { db } from "./firebase";
 import MiniPlayer from "./components/MiniPlayer";
 import NewUserProfilePage from "./pages/NewUserProfilePage";
 import PlaylistViewPage from "./pages/PlaylistViewPage";
+import { Analytics } from "@vercel/analytics/react";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -181,6 +182,7 @@ function AppContent() {
             />
           </Routes>
           {currentUser && currentAudio && <MiniPlayer />}
+          <Analytics />
         </div>
       </div>
       {currentUser && <MobileNav />}

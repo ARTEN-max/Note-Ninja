@@ -34,6 +34,7 @@ import MiniPlayer from "./components/MiniPlayer";
 import NewUserProfilePage from "./pages/NewUserProfilePage";
 import PlaylistViewPage from "./pages/PlaylistViewPage";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -183,6 +184,7 @@ function AppContent() {
           </Routes>
           {currentUser && currentAudio && <MiniPlayer />}
           <Analytics />
+          <SpeedInsights />
         </div>
       </div>
       {currentUser && <MobileNav />}

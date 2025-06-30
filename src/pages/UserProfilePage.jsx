@@ -6,7 +6,6 @@ import { db, storage } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FiUser, FiEdit2, FiSave, FiX, FiBook, FiAward, FiCamera, FiMail, FiHome } from 'react-icons/fi';
-import BackToPrevious from '../components/BackToPrevious';
 
 const UserProfilePage = () => {
   const { currentUser } = useAuth();
@@ -198,7 +197,6 @@ const UserProfilePage = () => {
 
   return (
     <>
-      <BackToPrevious />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -253,17 +251,44 @@ const UserProfilePage = () => {
               transition={{ delay: 0.3 }}
               className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 flex flex-col items-center lg:items-start"
             >
-              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-lg mb-4 border-4 border-purple-100">
-                {userData?.profileImageUrl ? (
-                  <img
-                    src={userData.profileImageUrl}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <FiUser className="w-16 h-16 text-white" />
-                  </div>
+              <div className={`relative group ${currentUser && userData && currentUser.uid === userData.uid ? 'cursor-pointer' : ''}`}
+                   onClick={currentUser && userData && currentUser.uid === userData.uid ? () => fileInputRef.current && fileInputRef.current.click() : undefined}>
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-lg mb-4 border-4 border-purple-100">
+                  {userData?.profileImageUrl ? (
+                    <img
+                      src={userData.profileImageUrl}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#e3b8f9] to-[#5E2A84]">
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="12" fill="#e3b8f9" />
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#fff" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                {currentUser && userData && currentUser.uid === userData.uid && (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onClick={e => e.stopPropagation()}
+                      onChange={handleImageUpload}
+                    />
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <span style={{ pointerEvents: 'auto' }}>
+                        <FiEdit2 size={36} color="#fff" />
+                      </span>
+                      <span className="text-white font-semibold mt-2" style={{ pointerEvents: 'auto' }}>Choose photo</span>
+                    </div>
+                  </>
                 )}
               </div>
               <div className="flex flex-col items-center lg:items-start w-full">
@@ -285,7 +310,7 @@ const UserProfilePage = () => {
               <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/50">
                 <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
                   <FiEdit2 className="w-6 h-6 text-pink-500" />
-                  <span>Edit Profile</span>
+                  <span>Set Profile <span style={{ fontSize: '1rem', fontWeight: 400, color: '#888', marginLeft: 8 }}>(optional)</span></span>
                 </h3>
                 
                 <div className="space-y-6">

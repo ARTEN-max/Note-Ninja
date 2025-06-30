@@ -40,27 +40,15 @@ function PlaceholderPage() {
 
 function ProtectedRoute({ children }) {
   const [user, setUser] = useState(undefined);
-  const [studentInfoChecked, setStudentInfoChecked] = useState(false);
-  const [hasStudentInfo, setHasStudentInfo] = useState(true);
   const location = useLocation();
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      if (user) {
-        // Check if student info exists
-        const docRef = doc(db, "students", user.uid);
-        const docSnap = await getDoc(docRef);
-        setHasStudentInfo(docSnap.exists());
-        setStudentInfoChecked(true);
-      } else {
-        setStudentInfoChecked(true);
-      }
     });
     return () => unsubscribe();
   }, []);
-  if (user === undefined || !studentInfoChecked) return <div style={{textAlign:'center',marginTop:100}}>Loading...</div>;
+  if (user === undefined) return <div style={{textAlign:'center',marginTop:100}}>Loading...</div>;
   if (!user) return <Navigate to="/signin" state={{ from: location }} replace />;
-  if (!hasStudentInfo && location.pathname !== "/student-info") return <Navigate to="/student-info" replace />;
   return children;
 }
 

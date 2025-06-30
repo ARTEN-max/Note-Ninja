@@ -8,11 +8,11 @@ import "./Register.css";
 import { motion } from "framer-motion";
 
 const Register = () => {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
   const vantaRef = useRef(null);
   const vantaEffect = useRef(null);
@@ -93,16 +93,16 @@ const Register = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Save the user's name to Firestore
+      // Save the user's username and email to Firestore
       await setDoc(doc(db, "students", user.uid), {
-        name,
+        username: username.toLowerCase(),
+        displayUsername: username,
         email: user.email,
         uid: user.uid,
-        // We'll let them fill in faculty and year in the student info page
       });
 
-      // Redirect directly to student info page
-      navigate("/student-info");
+      // Redirect to dashboard or home page
+      navigate("/");
     } catch (err) {
       setError(err.message.replace("Firebase:", "").replace("(auth/", "").replace(")", "").trim());
     }
@@ -166,58 +166,53 @@ const Register = () => {
             borderRadius: '20px'
           }}>
             <p className="title" style={{ fontSize: '1.75rem', marginBottom: '1rem', color: '#7E44A3' }}>SIGN UP</p>
-            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-                <label className="sub_title" htmlFor="name" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Name</label>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">
+                  Username <span className="text-red-500">*</span>
+                </label>
                 <input
-                  placeholder="Enter your full name"
-                  className="form_style"
                   type="text"
-                  id="name"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-colors"
+                  disabled={loading}
                   required
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
                 />
               </div>
-              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-                <label className="sub_title" htmlFor="email" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Email</label>
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">
+                  Email <span className="text-red-500">*</span>
+                </label>
                 <input
-                  placeholder="Enter your email"
-                  className="form_style"
                   type="email"
-                  id="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-colors"
+                  disabled={loading}
                   required
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
                 />
               </div>
-              <div className="form_group" style={{ marginBottom: '0.75rem' }}>
-                <label className="sub_title" htmlFor="password" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Password</label>
+              <div className="space-y-2">
+                <label className="block text-gray-700 font-medium">
+                  Password <span className="text-red-500">*</span>
+                </label>
                 <input
-                  placeholder="Enter your password"
-                  className="form_style"
                   type="password"
-                  id="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-colors"
+                  disabled={loading}
                   required
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.95rem' }}
                 />
               </div>
-              <button 
-                className="btn bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold" 
-                type="submit" 
+              <button
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold text-lg mt-4 shadow-lg hover:from-[#a259e6] hover:to-[#7c1fa2] transition-colors"
+                type="submit"
                 disabled={loading}
-                style={{ 
-                  width: '100%',
-                  padding: '0.75rem',
-                  fontSize: '1rem',
-                  marginTop: '0.5rem',
-                  marginBottom: '0.75rem',
-                  boxShadow: '0 2px 16px #e3b8f9'
-                }}
               >
                 {loading ? "Signing Up..." : "SIGN UP"}
               </button>

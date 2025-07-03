@@ -221,17 +221,17 @@ const NoteDashboard = () => {
             </>
           ) : (
             <>
-              <div className="w-full flex justify-center">
+              <div className="w-full text-center mb-2">
                 <h1
                   className="text-4xl font-bold mb-1 note-ninja-heading pl-0"
                   style={{ color: '#5E2A84', textShadow: '0 2px 16px #F5F3FF, 0 1px 0 #fff' }}
                 >
                   NOTE NINJA
                 </h1>
-              </div>
-              <div className="mb-2">
-                <h2 className="text-2xl font-bold mb-1 pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
-                <div className="text-lg pl-0 md:ml-2 text-left" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
+                <div className="w-full md:w-auto mx-auto text-left md:text-left md:pl-4">
+                  <h2 className="text-2xl font-bold mb-1 pl-0" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '600' }}>Dashboard</h2>
+                  <div className="text-lg pl-0" style={{ color: '#7E44A3', fontFamily: 'Inter, Arial, sans-serif', fontWeight: '400' }}>Today's top study guides...</div>
+                </div>
               </div>
               <motion.div
                 className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8"

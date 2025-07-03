@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCourseCode } from "../utils/courseUtils";
-import { FiHeart } from 'react-icons/fi';
+import { FiHeart, FiTrash2 } from 'react-icons/fi';
 
 const StudyGuideCard = ({
   courseCode,
@@ -15,6 +15,9 @@ const StudyGuideCard = ({
   minimal = false,
   onAddToMyNotes,
   addNoteStatus,
+  pdfUrl,
+  showDelete = false,
+  onDelete = () => {},
   ...props
 }) => {
   const [hovered, setHovered] = useState(false);
@@ -178,24 +181,44 @@ const StudyGuideCard = ({
       >
         <div className="font-bold text-lg text-black text-center" style={{ fontFamily: "'Inknut Antiqua', serif" }}>{formatCourseCode(courseCode)}</div>
         <div className="text-sm text-gray-600 text-center mt-1 mb-3">{description}</div>
+        {pdfUrl ? (
+          <>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 flex items-center justify-center gap-2"
+              style={{ textDecoration: 'none' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <span role="img" aria-label="Download">📥</span> Download PDF
+            </a>
+            {showDelete && (
+              <button
+                onClick={e => { e.stopPropagation(); onDelete(); }}
+                className="w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors bg-purple-100 text-purple-700 hover:bg-purple-200 flex items-center justify-center gap-2"
+              >
+                <FiTrash2 className="mr-1" /> Delete
+              </button>
+            )}
+          </>
+        ) : (
+          <button
+            onClick={e => { e.stopPropagation(); onAddToMyNotes(); }}
+            className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
+              addNoteStatus === 'added'
+                ? "bg-green-200 text-green-800 cursor-not-allowed"
+                : addNoteStatus === 'adding'
+                ? "bg-yellow-200 text-yellow-800 cursor-wait"
+                : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
+            }`}
+            disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
+          >
+            {addNoteStatus === 'added' ? "Added to My Notes" : 
+             addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
+          </button>
+        )}
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onAddToMyNotes();
-        }}
-        className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
-          addNoteStatus === 'added'
-            ? "bg-green-200 text-green-800 cursor-not-allowed"
-            : addNoteStatus === 'adding'
-            ? "bg-yellow-200 text-yellow-800 cursor-wait"
-            : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
-        }`}
-        disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
-      >
-        {addNoteStatus === 'added' ? "Added to My Notes" : 
-         addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
-      </button>
     </div>
   );
 };

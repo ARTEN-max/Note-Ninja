@@ -142,7 +142,7 @@ export default function Sidebar(props) {
     };
 
     fetchUserName();
-  }, [currentUser]);
+  }, [currentUser, props.usernameUpdated]);
 
   const handleLogout = async () => {
     try {

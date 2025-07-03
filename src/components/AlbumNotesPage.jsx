@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import StudyGuideCard from "./StudyGuideCard";
 import { db, storage } from "../firebase";
-import { collection, addDoc, onSnapshot, serverTimestamp, query, where, orderBy } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, onSnapshot, serverTimestamp, query, where, orderBy, doc, deleteDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject, ref as storageRef } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
 import BackToPrevious from './BackToPrevious';
 
@@ -92,6 +92,25 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
     }
   };
 
+  // Delete handler
+  const handleDelete = async (note) => {
+    if (!window.confirm("Are you sure you want to delete this note?")) return;
+    try {
+      await deleteDoc(doc(db, "albumNotes", note.id));
+      if (note.pdfUrl) {
+        try {
+          const fileRef = storageRef(storage, note.pdfUrl);
+          await deleteObject(fileRef);
+        } catch (err) {
+          // Ignore storage errors
+        }
+      }
+      setAlbumNotes(prev => prev.filter(n => n.id !== note.id));
+    } catch (err) {
+      alert("Failed to delete note.");
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-sour-lavender relative overflow-hidden px-2 py-8">
       <BackToPrevious />
@@ -173,7 +192,9 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
               title={note.title}
               description={note.description}
               imageUrl={note.imageUrl || defaultImage || "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80"}
-              onClick={() => window.open(note.pdfUrl, '_blank')}
+              pdfUrl={note.pdfUrl}
+              showDelete={currentUser && note.uploaderId === currentUser.uid}
+              onDelete={() => handleDelete(note)}
             />
           ))}
         </motion.div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { db, storage } from "../firebase";
@@ -7,6 +7,8 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiClock, FiUser, FiHeart, FiUpload, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
 import Skeleton from '../components/Skeleton';
+import AudioNoteRow from '../components/AudioNoteRow';
+import { FixedSizeList as List } from 'react-window';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"];
 
@@ -43,10 +45,135 @@ const AudioNotesPage = () => {
   const [modalError, setModalError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Optimized row play handler to prevent unnecessary re-renders
+  const onRowPlay = useCallback((note) => {
+    const index = audioNotesLocal.findIndex(n => n.id === note.id);
+    playAudio(note, index);
+  }, [audioNotesLocal, playAudio]);
+
+  // Handle delete function
+  const handleDelete = useCallback(async (note) => {
+    if (!window.confirm("Are you sure you want to delete this audio note?")) return;
+    
+    try {
+      // Delete from Firestore
+      await deleteDoc(doc(db, "audioNotes", note.id));
+      
+      // Delete from Storage
+      if (note.audioUrl) {
+          try {
+            const fileRef = ref(storage, note.audioUrl);
+            await deleteObject(fileRef);
+          } catch(storageError) {
+              console.warn("Could not delete file from storage. It might have been already deleted or the URL is incorrect.", storageError);
+          }
+      }
+
+      setAudioNotesLocal(prev => prev.filter(n => n.id !== note.id));
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete audio note. Check console for details.");
+    }
+  }, []);
+
+  // Handle add to playlist function
+  const handleAddToPlaylist = useCallback(async (note, playlistId) => {
+    try {
+      const playlistDoc = doc(db, 'audioPlaylists', playlistId);
+      const playlistSnap = await getDoc(playlistDoc);
+      let audios = (playlistSnap.data()?.audios || []);
+      if (!audios.includes(note.id)) {
+        audios.push(note.id);
+        await updateDoc(playlistDoc, { audios });
+      }
+      setPlaylistMenuNoteId(null);
+      setSuccessMessage('Added to playlist!');
+      setTimeout(() => setSuccessMessage(''), 2000);
+      // Refresh playlists after adding
+      if (currentUser) {
+        const playlistsRef = collection(db, 'audioPlaylists');
+        const q = query(playlistsRef, where('userId', '==', currentUser.uid));
+        const snapshot = await getDocs(q);
+        setPlaylists(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }
+    } catch (error) {
+      console.error('Error adding to playlist:', error);
+      setSuccessMessage('Failed to add to playlist');
+      setTimeout(() => setSuccessMessage(''), 2000);
+    }
+  }, [currentUser]);
+
+  // Utility functions
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return 'Unknown date';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString();
+  };
+
+  // Virtualized list item renderer for better performance
+  const renderRow = useCallback(({ index, style }) => {
+    const note = audioNotesLocal[index];
+    if (!note) return null;
+    
+    return (
+      <div style={style}>
+        <AudioNoteRow
+          key={note.id}
+          note={note}
+          index={index}
+          isAdmin={isAdmin}
+          handleDelete={handleDelete}
+          formatDate={formatDate}
+          formatDuration={formatDuration}
+          onAddToPlaylist={n => { setPlaylistMenuNoteId(n.id); setMenuAnchor(null); }}
+          onRowPlay={onRowPlay}
+          closePlaylistMenu={() => setPlaylistMenuNoteId(null)}
+        />
+        {playlistMenuNoteId === note.id && (
+          <div className="relative">
+            <div className="absolute right-0 top-0 z-50 bg-[#1a1a1a] border border-purple-500/30 rounded-lg shadow-xl p-2 min-w-[200px]">
+              <div className="text-white text-sm font-semibold mb-2">Add to Playlist</div>
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {playlists.map(playlist => (
+                  <button
+                    key={playlist.id}
+                    onClick={() => handleAddToPlaylist(note, playlist.id)}
+                    className="w-full text-left px-2 py-1 text-sm text-purple-200 hover:bg-purple-700/30 rounded transition-colors"
+                  >
+                    {playlist.name}
+                  </button>
+                ))}
+                <button
+                  onClick={() => {
+                    setPendingNoteId(note.id);
+                    setShowPlaylistModal(true);
+                    setPlaylistMenuNoteId(null);
+                  }}
+                  className="w-full text-left px-2 py-1 text-sm text-purple-400 hover:bg-purple-700/30 rounded transition-colors border-t border-purple-500/20 mt-2 pt-2"
+                >
+                  + Create New Playlist
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }, [audioNotesLocal, isAdmin, handleDelete, formatDate, formatDuration, onRowPlay, playlists, playlistMenuNoteId, handleAddToPlaylist]);
+
   // Fetch audio notes from Firestore
   useEffect(() => {
     const fetchAudioNotes = async () => {
       try {
+        console.time('fetchAudioNotes');
         const audioNotesRef = collection(db, 'audioNotes');
         const q = query(audioNotesRef, orderBy('uploadDate', 'desc'));
         const snapshot = await getDocs(q);
@@ -63,26 +190,11 @@ const AudioNotesPage = () => {
           };
         });
 
-        // Get durations for all notes
-        const getAudioDuration = (note) => {
-          return new Promise((resolve) => {
-            if (!note.url) return resolve(note);
-            const audio = new window.Audio();
-            audio.src = note.url;
-            audio.addEventListener('loadedmetadata', () => {
-              resolve({ ...note, duration: audio.duration });
-            });
-            audio.addEventListener('error', () => {
-              resolve({ ...note, duration: null });
-            });
-          });
-        };
-
-        Promise.all(notes.map(getAudioDuration)).then((notesWithDurations) => {
-          setAudioNotesLocal(notesWithDurations);
-          setAudioNotes(notesWithDurations);
-          console.log('AudioNotes set in context:', notesWithDurations.length, 'notes');
-        });
+        // Set notes immediately for instant UI response
+        setAudioNotesLocal(notes);
+        setAudioNotes(notes);
+        console.timeEnd('fetchAudioNotes');
+        console.log('AudioNotes set in context:', notes.length, 'notes');
       } catch (error) {
         console.error('Error fetching audio notes:', error);
       } finally {
@@ -92,6 +204,22 @@ const AudioNotesPage = () => {
 
     fetchAudioNotes();
   }, [setAudioNotes]);
+
+  // Performance optimization: Preload first few audio files when component mounts
+  useEffect(() => {
+    if (audioNotesLocal.length > 0) {
+      // Preload first 3 audio files for instant playback
+      audioNotesLocal.slice(0, 3).forEach(note => {
+        if (note.url) {
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'audio';
+          link.href = note.url;
+          document.head.appendChild(link);
+        }
+      });
+    }
+  }, [audioNotesLocal]);
 
   // Fetch user playlists
   const fetchPlaylists = async () => {
@@ -186,56 +314,6 @@ const AudioNotesPage = () => {
       console.error("Upload error:", error);
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleDelete = async (note) => {
-    if (!window.confirm("Are you sure you want to delete this audio note?")) return;
-    
-    try {
-      // Delete from Firestore
-      await deleteDoc(doc(db, "audioNotes", note.id));
-      
-      // Delete from Storage
-      if (note.audioUrl) {
-          try {
-            const fileRef = ref(storage, note.audioUrl);
-            await deleteObject(fileRef);
-          } catch(storageError) {
-              console.warn("Could not delete file from storage. It might have been already deleted or the URL is incorrect.", storageError);
-          }
-      }
-
-      setAudioNotesLocal(prev => prev.filter(n => n.id !== note.id));
-    } catch (error) {
-      console.error("Delete error:", error);
-      alert("Failed to delete audio note. Check console for details.");
-    }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatDate = (timestamp) => {
-    if (!timestamp) return 'Unknown date';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString();
-  };
-
-  const handlePlayClick = (note) => {
-    if (!note.url) {
-      alert("This note has no audio file to play.");
-      return;
-    }
-    if (currentAudio?.id === note.id) {
-      togglePlay();
-    } else {
-      playAudio({ ...note, artist: note.uploaderName || 'Unknown Artist' });
     }
   };
 
@@ -425,7 +503,7 @@ const AudioNotesPage = () => {
         )}
 
         {/* Audio Notes Table - Spotify Style */}
-        <div className="w-full bg-gradient-to-b from-[#1a1028] to-[#2a0845] pt-2 pb-24 min-h-[400px]">
+        <div className="w-full bg-gradient-to-b from-[#1a1028] to-[#2a0845] pt-2 pb-24 min-h-[400px] audio-notes-container">
           <div className="flex items-center px-10 py-3 text-sm font-semibold text-purple-200 uppercase tracking-widest border-b border-[#b266ff]/30">
             <div className="w-8 text-left">#</div>
             <div className="flex-1">Title</div>
@@ -437,92 +515,15 @@ const AudioNotesPage = () => {
           {audioNotesLocal.length === 0 ? (
             <div className="text-center py-16 text-purple-200">No Audio Notes Yet</div>
           ) : (
-            audioNotesLocal.map((note, index) => (
-              <div
-                key={note.id}
-                className={`flex items-center px-10 py-4 border-b border-[#b266ff]/10 transition group
-                  ${note.url ? "hover:bg-[#2a1a3a] cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
-                onClick={() => note.url && handlePlayClick(note)}
-              >
-                {/* Index */}
-                <div className="w-8 text-left text-purple-300 font-mono">{index + 1}</div>
-                {/* Title and Info */}
-                <div className="flex-1 min-w-0 flex items-center gap-4">
-                  <img src={note.albumArt} alt={note.title} className="w-10 h-10 rounded-sm object-cover"/>
-                  <div>
-                    <div className="font-bold text-white truncate">{note.title}</div>
-                    <div className="text-xs text-purple-300 truncate">{note.subject}</div>
-                  </div>
-                </div>
-                {/* Subject */}
-                <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.subject}</div>
-                {/* + Button Column */}
-                <div className="w-16 flex items-center justify-center relative">
-                  <button
-                    className="text-purple-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
-                    title="Add to playlist"
-                    onClick={e => { e.stopPropagation(); setPlaylistMenuNoteId(note.id); setMenuAnchor(e.currentTarget); }}
-                    style={{ minWidth: 32, minHeight: 32 }}
-                  >
-                    <FiPlus size={18} />
-                  </button>
-                  {/* Playlist menu */}
-                  {playlistMenuNoteId === note.id && (
-                    <div ref={menuRef} className="absolute z-50 top-12 right-0 bg-[#2a0845] border border-purple-700 rounded-lg shadow-lg p-2 min-w-[180px]">
-                      {playlists.length === 0 ? (
-                        <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
-                          Add to saved playlist
-                        </button>
-                      ) : (
-                        <>
-                          <div className="mb-1 text-xs text-purple-200 px-4 py-1">Add to playlist</div>
-                          {playlists.map(pl => (
-                            <button key={pl.id} className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition" onClick={async e => {
-                              e.stopPropagation();
-                              // Add audio note to existing playlist
-                              const playlistDoc = doc(db, 'audioPlaylists', pl.id);
-                              const playlistSnap = await getDoc(playlistDoc);
-                              let audios = (playlistSnap.data()?.audios || []);
-                              if (!audios.includes(note.id)) {
-                                audios.push(note.id);
-                                await updateDoc(playlistDoc, { audios });
-                              }
-                              setPlaylistMenuNoteId(null);
-                              setSuccessMessage('Added to playlist!');
-                              setTimeout(() => setSuccessMessage(''), 2000);
-                              await fetchPlaylists();
-                            }}>
-                              {pl.name}
-                            </button>
-                          ))}
-                          <button className="w-full text-left px-4 py-2 text-white hover:bg-purple-700/30 rounded transition mt-1" onClick={e => { e.stopPropagation(); setShowPlaylistModal(true); setPendingNoteId(note.id); setPlaylistMenuNoteId(null); }}>
-                            + Create new playlist
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {/* Date added (placeholder for now) */}
-                <div className="w-40 text-purple-200 text-sm hidden md:block truncate">{note.uploadDate ? formatDate(note.uploadDate) : ''}</div>
-                {/* Duration */}
-                <div className="w-24 text-right text-white font-mono flex items-center justify-end gap-4">
-                  <span>{note.duration ? formatDuration(note.duration) : '--:--'}</span>
-                  {isAdmin && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(note);
-                      }}
-                      className="text-purple-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Delete this note"
-                    >
-                      <FiTrash2 size={16} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))
+            <List
+              height={600}
+              itemCount={audioNotesLocal.length}
+              itemSize={80}
+              width={"100%"}
+              style={{ background: 'transparent' }}
+            >
+              {renderRow}
+            </List>
           )}
         </div>
 

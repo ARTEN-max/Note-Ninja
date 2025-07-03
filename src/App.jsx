@@ -182,7 +182,7 @@ function AppContent() {
               }
             />
           </Routes>
-          {currentUser && currentAudio && <MiniPlayer />}
+          <MiniPlayer />
           <Analytics />
           <SpeedInsights />
         </div>

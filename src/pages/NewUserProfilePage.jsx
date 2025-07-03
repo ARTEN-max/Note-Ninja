@@ -370,9 +370,7 @@ const NewUserProfilePage = () => {
           <div>
             <h1 className="text-6xl font-extrabold">@{user.username}</h1>
             <div className="flex space-x-6 mt-4 text-lg text-gray-300">
-              <span><strong>{courseCount}</strong> Courses</span>
-              <span><strong>{user.stats.followers}</strong> Followers</span>
-              <span><strong>{user.stats.following}</strong> Following</span>
+              <span><strong>{topCourses.length}</strong> {topCourses.length === 1 ? 'Course' : 'Courses'}</span>
             </div>
           </div>
         </header>

@@ -458,9 +458,6 @@ const AudioNotesPage = () => {
               >
                 <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff" fillOpacity=".08"/><polygon points="11,8 21,14 11,20" fill="#fff"/></svg>
               </button>
-              <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><span className="text-2xl">+</span></button>
-              <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 3v10m0 0l-3-3m3 3l3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="15" width="14" height="2" rx="1" fill="currentColor"/></svg></button>
-              <button className="w-10 h-10 rounded-full bg-[#2a1a3a] flex items-center justify-center text-purple-200 text-xl shadow hover:bg-purple-700/40 transition"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2" fill="currentColor"/><circle cx="16" cy="10" r="2" fill="currentColor"/><circle cx="4" cy="10" r="2" fill="currentColor"/></svg></button>
             </div>
           </div>
         </div>

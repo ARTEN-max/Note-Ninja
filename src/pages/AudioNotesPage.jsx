@@ -504,8 +504,8 @@ const AudioNotesPage = () => {
           <div className="flex items-center px-10 py-3 text-sm font-semibold text-purple-200 uppercase tracking-widest border-b border-[#b266ff]/30">
             <div className="w-8 text-left">#</div>
             <div className="flex-1">Title</div>
+            <div className="w-16 flex items-center justify-start"> </div>
             <div className="w-56 hidden md:block">Subject</div>
-            <div className="w-16 flex items-center justify-center"> </div>
             <div className="w-40 hidden md:block">Date added</div>
             <div className="w-24 text-right">Duration</div>
           </div>

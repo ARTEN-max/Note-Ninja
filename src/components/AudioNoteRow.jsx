@@ -41,7 +41,7 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
           <div className="text-xs text-purple-300 truncate">{note.subject}</div>
         </div>
       </div>
-      <div className="w-24 flex items-center justify-center gap-2 relative add-to-playlist-mobile-col">
+      <div className="w-16 flex items-center justify-start gap-2 relative add-to-playlist-mobile-col">
         <button
           className="add-to-playlist-btn text-purple-200 hover:text-white transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
           title="Add to playlist"
@@ -54,7 +54,7 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
           <FiPlus size={18} />
         </button>
       </div>
-      <div className="w-56 text-purple-200 text-sm hidden md:block truncate">{note.subject}</div>
+      <div className="w-56 text-purple-200 text-sm hidden md:block truncate text-left pl-8">{note.subject}</div>
       <div className="w-40 text-purple-200 text-sm hidden md:block truncate">
         {note.uploadDate ? formatDate(note.uploadDate) : ''}
       </div>

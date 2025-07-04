@@ -47,6 +47,13 @@ const studyGuides = [
     title: "CS245",
     description: "Description of playlist",
     imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/7e8b9c2d4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c?placeholderIfAbsent=true"
+  },
+  {
+    id: "MATH138",
+    courseCode: "MATH138",
+    title: "MATH138",
+    description: "Description of playlist",
+    imageUrl: "/placeholders/math138.jpg"
   }
 ];
 

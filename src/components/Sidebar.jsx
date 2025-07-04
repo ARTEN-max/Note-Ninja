@@ -169,7 +169,7 @@ export default function Sidebar(props) {
         {userName && (
           <div className="w-[240px] absolute left-2 top-[78px] flex flex-col gap-1 items-start">
             <div className="px-4 py-2 text-lg font-semibold text-black" style={{ fontFamily: "'Inter', Arial, sans-serif" }}>
-              Hello @{userName}!
+              Hello {userName}!
             </div>
           </div>
         )}

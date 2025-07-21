@@ -11,14 +11,18 @@ import BackToPrevious from '../components/BackToPrevious';
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"]; // <-- Add more admin emails here
 
 const placeholderImages = [
-  "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=400&q=80", // open book, pen, glasses
-  "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80", // books on desk
-  "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=400&q=80", // study desk, lamp, books
-  "https://images.unsplash.com/photo-1510936111840-6cef99faf2a9?auto=format&fit=crop&w=400&q=80", // library shelves
-  "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=400&q=80", // notebook, pencil, coffee
-  "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80", // blackboard with math
-  "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80", // books and apple
-  "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80", // desk with books and lamp
+  "/placeholders/car.jpg",
+  "/placeholders/city.jpg",
+  "/placeholders/cool.jpg",
+  "/placeholders/dog.jpg",
+  "/placeholders/math138.jpg",
+  "/placeholders/strawberry.jpg",
+  // Add new images here
+  "/placeholders/scene.jpg",
+  "/placeholders/study.jpg",
+  "/placeholders/library.jpg",
+  "/placeholders/bag.jpg",
+  "/placeholders/classroom.jpg"
 ];
 
 const ChapterNotesPage = () => {
@@ -256,7 +260,11 @@ const ChapterNotesPage = () => {
             <h3 className="text-lg font-bold mb-4" style={{ color: '#7E44A3' }}>Uploaded Notes</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note, idx) => {
-                const imgSrc = placeholderImages[idx % placeholderImages.length];
+                // Use note ID and creation time for better variety
+                const noteIdHash = note.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+                const timeHash = note.createdAt ? new Date(note.createdAt).getTime() % 1000 : 0;
+                const imageIndex = (noteIdHash + timeHash + idx) % placeholderImages.length;
+                const imgSrc = placeholderImages[imageIndex];
                 const alreadyAdded = myNotesIds.includes(note.id);
                 return (
                   <div key={note.id} className="bg-white rounded-xl shadow-md p-4 border border-[#e3b8f9] flex flex-col">
@@ -306,4 +314,4 @@ const ChapterNotesPage = () => {
   );
 };
 
-export default ChapterNotesPage; 
+export default ChapterNotesPage;

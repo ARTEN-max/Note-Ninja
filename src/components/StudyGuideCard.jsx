@@ -18,14 +18,31 @@ const StudyGuideCard = ({
   pdfUrl,
   showDelete = false,
   onDelete = () => {},
+  showAddToNotes = false, // NEW PROP
   ...props
 }) => {
   const [hovered, setHovered] = useState(false);
 
+  // Handle card click - download PDF if available, otherwise use original onClick
+  const handleCardClick = (e) => {
+    if (pdfUrl) {
+      e.preventDefault();
+      // Create a temporary link to download the PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `${courseCode}_study_guide.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (onClick) {
+      onClick(e);
+    }
+  };
+
   return (
     <div
       {...props}
-      className="relative flex flex-col items-center cursor-pointer transition-all duration-300"
+      className={`relative flex flex-col items-center transition-all duration-300 ${pdfUrl ? 'cursor-pointer' : 'cursor-pointer'}`}
       style={{
         width: '14.5rem',
         height: '18.75rem',
@@ -40,58 +57,30 @@ const StudyGuideCard = ({
         padding: 0,
         transform: hovered && !minimal ? 'scale(1.05)' : 'scale(1)',
       }}
-      onClick={onClick}
+      onClick={handleCardClick}
       role="button"
       tabIndex={0}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       id={`card-${courseCode}`}
+      title={pdfUrl ? `Click to download ${courseCode} study guide` : undefined}
     >
       <div className="relative" style={{ width: '100%', height: '14.5rem' }}>
         <img
           src={imageUrl}
           alt={`${courseCode} study guide`}
-          className="object-cover"
-          style={{ width: '100%', height: '100%', borderTopLeftRadius: 16, borderTopRightRadius: 16, display: 'block' }}
+          className="object-cover w-full"
+          style={{
+            width: '100%',
+            height: '14.5rem', // fixed height for all cards
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            display: 'block',
+            objectFit: 'cover', // ensures cropping/filling
+          }}
         />
-        {/* Like button (minimal: always bottom left, else overlay) */}
-        {minimal ? (
-          <div className="absolute bottom-3 left-3">
-            <motion.button
-              type="button"
-              onClick={e => { e.stopPropagation(); onLike(); }}
-              className="flex items-center justify-center"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                background: liked ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)' : 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(8px)',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: liked ? '0 4px 12px rgba(255, 107, 107, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-              }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              <motion.svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill={liked ? "#ffffff" : "none"}
-                stroke={liked ? "#ffffff" : "#666666"}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                animate={liked ? { scale: [1, 1.2, 1] } : {}}
-                transition={{ duration: 0.3 }}
-              >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </motion.svg>
-            </motion.button>
-          </div>
-        ) : (
+        {/* Like button - only show when likes are meaningful (dashboard/browse, not album pages) */}
+        {!minimal && onLike && (
           <div className="absolute top-2 left-2">
             <motion.button
               type="button"
@@ -183,16 +172,6 @@ const StudyGuideCard = ({
         <div className="text-sm text-gray-600 text-center mt-1 mb-3">{description}</div>
         {pdfUrl ? (
           <>
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 flex items-center justify-center gap-2"
-              style={{ textDecoration: 'none' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <span role="img" aria-label="Download">📥</span> Download PDF
-            </a>
             {showDelete && (
               <button
                 onClick={e => { e.stopPropagation(); onDelete(); }}
@@ -203,20 +182,22 @@ const StudyGuideCard = ({
             )}
           </>
         ) : (
-          <button
-            onClick={e => { e.stopPropagation(); onAddToMyNotes(); }}
-            className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
-              addNoteStatus === 'added'
-                ? "bg-green-200 text-green-800 cursor-not-allowed"
-                : addNoteStatus === 'adding'
-                ? "bg-yellow-200 text-yellow-800 cursor-wait"
-                : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
-            }`}
-            disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
-          >
-            {addNoteStatus === 'added' ? "Added to My Notes" : 
-             addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
-          </button>
+          showAddToNotes && (
+            <button
+              onClick={e => { e.stopPropagation(); onAddToMyNotes(); }}
+              className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
+                addNoteStatus === 'added'
+                  ? "bg-green-200 text-green-800 cursor-not-allowed"
+                  : addNoteStatus === 'adding'
+                  ? "bg-yellow-200 text-yellow-800 cursor-wait"
+                  : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
+              }`}
+              disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
+            >
+              {addNoteStatus === 'added' ? "Added to My Notes" : 
+                addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
+            </button>
+          )
         )}
       </div>
     </div>

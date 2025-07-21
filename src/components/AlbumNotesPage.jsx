@@ -111,6 +111,15 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
     }
   };
 
+  const placeholders = [
+    '/placeholders/car.jpg',
+    '/placeholders/city.jpg',
+    '/placeholders/cool.jpg',
+    '/placeholders/dog.jpg',
+    '/placeholders/math138.jpg',
+    '/placeholders/strawberry.jpg'
+  ];
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-sour-lavender relative overflow-hidden px-2 py-8">
       <BackToPrevious />
@@ -185,16 +194,17 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.1 } }}
         >
-          {albumNotes.map(note => (
+          {albumNotes.map((note, index) => (
             <StudyGuideCard
               key={note.id}
               courseCode={note.subject}
               title={note.title}
               description={note.description}
-              imageUrl={note.imageUrl || defaultImage || "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80"}
+              imageUrl={note.imageUrl || placeholders[index % placeholders.length]}
               pdfUrl={note.pdfUrl}
               showDelete={currentUser && note.uploaderId === currentUser.uid}
               onDelete={() => handleDelete(note)}
+              minimal={true}
             />
           ))}
         </motion.div>

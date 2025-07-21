@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StudyGuideCard from "./StudyGuideCard";
@@ -10,6 +10,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { getLikeCount, getUserLikes, toggleLike } from '../utils/likeUtils';
 import { FiUser } from "react-icons/fi";
 import Skeleton from './Skeleton';
+import placeholderImages from '../utils/placeholders';
+// Shuffle function
+function shuffleArray(array) {
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 // Move studyGuides outside component to prevent useEffect re-runs
 const studyGuides = [
@@ -17,7 +27,7 @@ const studyGuides = [
     id: 1,
     courseCode: "CS246",
     title: "Study Guide 1",
-    description: "Description of playlist",
+    description: "Logic and Computation",
     imageUrl:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/36526b27cd6c189d1bfdb806f5ceb1322060cbad?placeholderIfAbsent=true",
   },
@@ -25,7 +35,7 @@ const studyGuides = [
     id: 2,
     courseCode: "MATH137",
     title: "Study Guide 2",
-    description: "Description of playlist",
+    description: "Calculus 1",
     imageUrl:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/6fae324141d1039bf2b81b3ec7dc2f228cce8544?placeholderIfAbsent=true",
   },
@@ -33,7 +43,7 @@ const studyGuides = [
     id: 3,
     courseCode: "STAT230",
     title: "Study Guide 3",
-    description: "Description of playlist",
+    description: "Probability",
     imageUrl:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true",
   },
@@ -41,7 +51,7 @@ const studyGuides = [
     id: 4,
     courseCode: "MATH135",
     title: "Study Guide 4",
-    description: "Description of playlist",
+    description: "Algebra",
     imageUrl:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/b5a7a6e7eb860dca445df9a3c409eb7da483cae0?placeholderIfAbsent=true",
   },
@@ -99,6 +109,22 @@ const NoteDashboard = () => {
         "https://cdn.builder.io/api/v1/image/assets/TEMP/bf6ba7aa29f0b15ac581d17766eca054df1912c4?placeholderIfAbsent=true",
     },
   ];
+
+  const guideImageMap = useMemo(() => {
+    const count = studyGuides.length;
+    let images = [];
+    if (placeholderImages.length >= count) {
+      images = shuffleArray(placeholderImages).slice(0, count);
+    } else {
+      const times = Math.ceil(count / placeholderImages.length);
+      images = Array(times).fill(null).flatMap(() => shuffleArray(placeholderImages)).slice(0, count);
+    }
+    const map = {};
+    studyGuides.forEach((guide, idx) => {
+      map[guide.id] = images[idx];
+    });
+    return map;
+  }, [studyGuides.length, placeholderImages.length]);
 
   useEffect(() => {
     // Fetch like counts and user likes for all study guides
@@ -247,24 +273,26 @@ const NoteDashboard = () => {
                     {/* You can add a button here to create a new guide */}
                   </div>
                 ) : (
-                  studyGuides.map((guide) => (
-                    <motion.div
-                      key={guide.id}
-                      variants={cardVariants}
-                      className="flex justify-center mb-2"
-                    >
-                      <StudyGuideCard
-                        courseCode={guide.courseCode}
-                        title={guide.title}
-                        description={guide.description}
-                        imageUrl={guide.imageUrl}
-                        liked={!!liked[guide.id]}
-                        onLike={() => handleLikeClick(guide.id, guide.courseCode)}
-                        likeCount={likeCounts[guide.courseCode] || 0}
-                        onClick={() => handleStudyGuideClick(guide.courseCode)}
-                      />
-                    </motion.div>
-                  ))
+                  studyGuides.map((guide) => {
+                    return (
+                      <motion.div
+                        key={guide.id}
+                        variants={cardVariants}
+                        className="flex justify-center mb-2"
+                      >
+                        <StudyGuideCard
+                          courseCode={guide.courseCode}
+                          title={guide.title}
+                          description={guide.description}
+                          imageUrl={guideImageMap[guide.id]}
+                          liked={!!liked[guide.id]}
+                          onLike={() => handleLikeClick(guide.id, guide.courseCode)}
+                          likeCount={likeCounts[guide.courseCode] || 0}
+                          onClick={() => handleStudyGuideClick(guide.courseCode)}
+                        />
+                      </motion.div>
+                    );
+                  })
                 )}
               </motion.div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-10 justify-items-center">

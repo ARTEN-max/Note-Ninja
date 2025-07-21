@@ -1,5 +1,5 @@
 // If you haven't already, run: npm install react-icons
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FiSearch } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { doc, getDoc, setDoc, increment, collection, query, where, getDocs, or, onSnapshot, QueryFieldFilterConstraint, Query, DocumentData, QueryConstraint } from "firebase/firestore";
@@ -9,6 +9,9 @@ import { useAuth } from './contexts/AuthContext.jsx';
 import { getLikeCount, getUserLikes, toggleLike } from './utils/likeUtils.js';
 import StudyGuideCard from './components/StudyGuideCard';
 import { formatCourseCode } from "./utils/courseUtils";
+import placeholderImages from './utils/placeholders';
+
+
 
 // Add type for study guide document
 interface StudyGuide {
@@ -32,6 +35,16 @@ const facultyCourseMappings = {
 
 // Add type for query conditions
 type QueryCondition = QueryFieldFilterConstraint;
+
+// Shuffle function
+function shuffleArray(array: string[]): string[] {
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 const BrowsePage = () => {
   const [search, setSearch] = useState("");
@@ -230,6 +243,37 @@ const BrowsePage = () => {
     navigate(`/guide/${guide.courseCode}/notes`, { state: { from: location.pathname } });
   };
 
+  // Precompute a random image for each card, only changes on refresh or guide count change
+  const uniqueImages = useMemo(() => {
+    const count = recommendedGuides.length;
+    let images: string[] = [];
+    if (placeholderImages.length >= count) {
+      images = shuffleArray(placeholderImages).slice(0, count);
+    } else {
+      // Not enough images, so repeat after shuffling
+      const times = Math.ceil(count / placeholderImages.length);
+      images = Array(times).fill(null).flatMap(() => shuffleArray(placeholderImages)).slice(0, count);
+    }
+    return images;
+  }, [recommendedGuides.length, placeholderImages.length]);
+
+  const guideImageMap = useMemo(() => {
+    const count = recommendedGuides.length;
+    let images: string[] = [];
+    if (placeholderImages.length >= count) {
+      images = shuffleArray(placeholderImages).slice(0, count);
+    } else {
+      const times = Math.ceil(count / placeholderImages.length);
+      images = Array(times).fill(null).flatMap(() => shuffleArray(placeholderImages)).slice(0, count);
+    }
+    // Map guide.id to image
+    const map: Record<string, string> = {};
+    recommendedGuides.forEach((guide, idx) => {
+      map[guide.id] = images[idx];
+    });
+    return map;
+  }, [recommendedGuides, placeholderImages.length]);
+
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -285,7 +329,7 @@ const BrowsePage = () => {
                   onMouseDown={() => handleSuggestionClick(guide)}
                 >
                   <img
-                    src={guide.imageUrl}
+                    src={guideImageMap[guide.id]}
                     alt={guide.title}
                     className="w-10 h-10 rounded-lg object-cover border border-[#e3b8f9]"
                   />
@@ -309,7 +353,7 @@ const BrowsePage = () => {
                   <img
                     src={user.profileImageUrl || 'https://i.imgur.com/6VBx3io.png'}
                     alt={user.username}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-[#b266ff]"
+                    className="w-10 h-10 rounded-full object-cover border border-[#e3b8f9]"
                   />
                   <div>
                     <div className="font-bold text-[#5E2A84] text-base">{user.username}</div>
@@ -367,7 +411,7 @@ const BrowsePage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-              {recommendedGuides.map((guide) => (
+              {recommendedGuides.map((guide, idx) => (
                 <div
                   key={guide.id}
                   className="bg-white/90 rounded-2xl shadow-lg flex flex-col items-center p-4 transition-all duration-300 hover:shadow-xl cursor-pointer perspective-1000"
@@ -387,7 +431,7 @@ const BrowsePage = () => {
                     style={{ transform: 'translateZ(20px)' }}
                   >
                     <img
-                      src={guide.imageUrl}
+                      src={guideImageMap[guide.id]}
                       alt={guide.title}
                       className="rounded-xl object-cover w-full h-full"
                     />

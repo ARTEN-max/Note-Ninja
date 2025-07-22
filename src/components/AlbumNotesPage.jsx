@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import StudyGuideCard from "./StudyGuideCard";
+import placeholderImages from '../utils/placeholders';
 import { db, storage } from "../firebase";
 import { collection, addDoc, onSnapshot, serverTimestamp, query, where, orderBy, doc, deleteDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject, ref as storageRef } from "firebase/storage";
@@ -111,14 +112,7 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
     }
   };
 
-  const placeholders = [
-    '/placeholders/car.jpg',
-    '/placeholders/city.jpg',
-    '/placeholders/cool.jpg',
-    '/placeholders/dog.jpg',
-    '/placeholders/math138.jpg',
-    '/placeholders/strawberry.jpg'
-  ];
+  // Use all unique placeholders from the imported list
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-sour-lavender relative overflow-hidden px-2 py-8">
@@ -194,19 +188,23 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.1 } }}
         >
-          {albumNotes.map((note, index) => (
-            <StudyGuideCard
-              key={note.id}
-              courseCode={note.subject}
-              title={note.title}
-              description={note.description}
-              imageUrl={note.imageUrl || placeholders[index % placeholders.length]}
-              pdfUrl={note.pdfUrl}
-              showDelete={currentUser && note.uploaderId === currentUser.uid}
-              onDelete={() => handleDelete(note)}
-              minimal={true}
-            />
-          ))}
+          {albumNotes.map((note, index) => {
+            // Assign a unique placeholder to each card, ignore note.imageUrl
+            const imageUrl = placeholderImages[index] || '';
+            return (
+              <StudyGuideCard
+                key={note.id}
+                courseCode={note.subject}
+                title={note.title}
+                description={note.description}
+                imageUrl={imageUrl}
+                pdfUrl={note.pdfUrl}
+                showDelete={currentUser && note.uploaderId === note.uploaderId}
+                onDelete={() => handleDelete(note)}
+                minimal={true}
+              />
+            );
+          })}
         </motion.div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCourseCode } from "../utils/courseUtils";
+import placeholderImages from '../utils/placeholders';
 import { FiHeart, FiTrash2 } from 'react-icons/fi';
 
 const StudyGuideCard = ({
@@ -22,6 +23,9 @@ const StudyGuideCard = ({
   ...props
 }) => {
   const [hovered, setHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  // Pick a random placeholder for fallback
+  const fallbackPlaceholder = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
 
   // Handle card click - download PDF if available, otherwise use original onClick
   const handleCardClick = (e) => {
@@ -67,7 +71,7 @@ const StudyGuideCard = ({
     >
       <div className="relative" style={{ width: '100%', height: '14.5rem' }}>
         <img
-          src={imageUrl}
+          src={imgError ? fallbackPlaceholder : imageUrl}
           alt={`${courseCode} study guide`}
           className="object-cover w-full"
           style={{
@@ -78,6 +82,7 @@ const StudyGuideCard = ({
             display: 'block',
             objectFit: 'cover', // ensures cropping/filling
           }}
+          onError={() => setImgError(true)}
         />
         {/* Like button - only show when likes are meaningful (dashboard/browse, not album pages) */}
         {!minimal && onLike && (

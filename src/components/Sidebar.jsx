@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ConfirmModal from "./ConfirmModal";
 import { NavLink, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
@@ -115,6 +116,8 @@ export default function Sidebar(props) {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
 
   // Function to capitalize first letter of name
   const capitalizeName = (name) => {
@@ -239,12 +242,25 @@ export default function Sidebar(props) {
       </div>
       {/* Logout Button at the bottom for desktop/tablet */}
       <button
-        onClick={handleLogout}
+        onClick={() => setIsConfirmOpen(true)}
         className="absolute bottom-6 left-0 w-full px-6 py-3 rounded-none bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold text-base border-none cursor-pointer shadow-md tracking-wider flex items-center justify-center gap-2 transition-transform duration-150 hover:scale-105 focus:scale-105 focus:outline-none hidden md:flex"
-        style={{ boxShadow: '0 0 0 8px rgba(178,102,255,0.10), 0 4px 16px 0 rgba(138,43,226,0.18)' }}
+        style={{
+          boxShadow: "0 0 0 8px rgba(178,102,255,0.10), 0 4px 16px 0 rgba(138,43,226,0.18)",
+        }}
       >
         <span className="text-xl">🚪</span> Logout
       </button>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={() => {
+          handleLogout();
+          setIsConfirmOpen(false);
+        }}
+        message="Are you sure you want to log out?"
+      />
     </div>
   );
-} 
+}

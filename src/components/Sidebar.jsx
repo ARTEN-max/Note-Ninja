@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ConfirmModal from "./ConfirmModal";
+import ConfirmModal from "./ConfirmModal.jsx";
 import { NavLink, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";

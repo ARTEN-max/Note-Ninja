@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useAudio } from '../contexts/AudioContext';
 import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle, FiList, FiMusic } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import { Listbox } from '@headlessui/react';
+import { FiCheck } from 'react-icons/fi';
 
 const MiniPlayer = () => {
   const { currentAudio, isPlaying, isLoading, playAudio, pauseAudio, togglePlay, audioElementRef, nextTrack, prevTrack, shuffleTrack, shouldPlayRef } = useAudio();
@@ -10,7 +12,9 @@ const MiniPlayer = () => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const { currentUser } = useAuth();
+
 
   // Volume drag state
   const volumeBarRef = useRef();
@@ -81,6 +85,14 @@ const MiniPlayer = () => {
       audioElement.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted, audioElementRef]);
+
+  useEffect(() => {
+    const audioElement = audioElementRef.current;
+    if (audioElement) {
+      audioElement.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed, audioElementRef]);
+
   
   useEffect(() => {
     setImgError(false);
@@ -248,11 +260,47 @@ const MiniPlayer = () => {
                 </div>
               </div>
 
-              {/* Right Section: Volume Control */}
-              <div className="items-center justify-end gap-2 w-1/3 min-w-[80px] sm:min-w-[120px] hidden lg:flex">
+              {/* Right Section: Volume + Speed Control */}
+              <div className="items-center justify-end gap-2 w-1/3 min-w-[120px] sm:min-w-[180px] hidden lg:flex">
+                <Listbox value={playbackSpeed} onChange={setPlaybackSpeed}>
+                  <div className="relative w-[72px]">
+                    <Listbox.Button className="w-full bg-neutral-900 border border-white/10 text-white text-xs rounded-full px-2 py-[2px] text-center font-mono hover:bg-neutral-800 transition-all">
+                      {playbackSpeed.toFixed(2).replace(/\.00$/, '')}x
+                    </Listbox.Button>
+
+                    <Listbox.Options  className="absolute bottom-[calc(100%+4px)] right-0 max-h-60 w-full overflow-auto rounded-md bg-neutral-900 py-1 text-xs text-white shadow-lg ring-1 ring-black/20 focus:outline-none z-50">
+                      {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((speed) => (
+                        <Listbox.Option
+                          key={speed}
+                          value={speed}
+                          className={({ active }) =>
+                            `cursor-pointer select-none relative py-1.5 pl-3 pr-8 ${
+                              active ? 'bg-sour-lavender text-black' : 'text-white'
+                            }`
+                          }
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span className={`block font-mono ${selected ? 'font-bold' : ''}`}>
+                                {speed.toFixed(2).replace(/\.00$/, '')}x
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 right-2 flex items-center text-sour-lavender">
+                                  <FiCheck />
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+
                 <button onClick={() => setIsMuted((m) => !m)} className="text-neutral-400 hover:text-white" title={isMuted || volume === 0 ? 'Unmute' : 'Mute'}>
                   {isMuted || volume === 0 ? <FiVolumeX className="text-xl" /> : <FiVolume2 className="text-xl" />}
                 </button>
+
                 <div
                   ref={volumeBarRef}
                   className="w-16 sm:w-24 h-1 bg-neutral-700 rounded-full relative cursor-pointer group"
@@ -262,10 +310,10 @@ const MiniPlayer = () => {
                     setVolume(newVolume);
                     if (isMuted) setIsMuted(false);
                   }}
-                  onMouseDown={(e) => {
+                  onMouseDown={() => {
                     isDraggingVolume.current = true;
                   }}
-                  onTouchStart={(e) => {
+                  onTouchStart={() => {
                     isDraggingVolume.current = true;
                   }}
                 >
@@ -274,6 +322,7 @@ const MiniPlayer = () => {
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         )

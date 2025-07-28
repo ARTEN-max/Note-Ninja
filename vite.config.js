@@ -24,7 +24,8 @@ export default defineConfig({
         drop_console: true,
         drop_debugger: true
       }
-    }
+    },
+    sourcemap: false
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/performance', 'framer-motion']

@@ -28,7 +28,7 @@ const facultyCourseMappings = {
   "Mathematics": ["MATH", "CS", "STAT", "CO"],
   "Engineering": ["ECE", "ME", "CE", "SYDE"],
   "Science": ["PHYS", "CHEM", "BIOL"],
-  "Arts": ["ARTS", "ENGL", "HIST", "PHIL"],
+  "Arts": ["ARTS", "ENGL", "HIST", "PHIL", "ECON"],
   "Environment": ["ENV", "GEOG", "PLAN"],
   "Health": ["HLTH", "KIN", "REC"]
 };

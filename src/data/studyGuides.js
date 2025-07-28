@@ -17,7 +17,7 @@ const studyGuides = [
     id: "STAT230",
     courseCode: "STAT230",
     title: "STAT230",
-    description: "Probability",
+    description: "Description of playlist",
     imageUrl: "https://cdn.builder.io/api/v1/image/assets/TEMP/b74b14b6b3c5377baeb384c799fd79ddca8803d8?placeholderIfAbsent=true"
   },
   {
@@ -68,6 +68,20 @@ const studyGuides = [
     title: "MATH237",
     description: "Description of playlist",
     imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "ECON101",
+    courseCode: "ECON101",
+    title: "ECON101",
+    description: "Description of playlist",
+    imageUrl: "/placeholders/coffee.jpg"
+  },
+  {
+    id: "ECON102",
+    courseCode: "ECON102",
+    title: "ECON102",
+    description: "Description of playlist",
+    imageUrl: "/placeholders/library.jpg"
   }
 ];
 

@@ -38,5 +38,14 @@ export default defineConfig({
     hmr: {
       overlay: false
     }
+  },
+  experimental: {
+    renderBuiltUrl(filename, { hostType }) {
+      if (hostType === 'js') {
+        return { js: filename }
+      } else {
+        return { relative: true }
+      }
+    }
   }
 }) 

@@ -261,7 +261,7 @@ const ChapterNotesPage = () => {
               {notes.map((note, idx) => {
                 // Use a simpler, more reliable image selection
                 const imageIndex = idx % placeholderImages.length;
-                const imgSrc = placeholderImages[imageIndex];
+                const imgSrc = placeholderImages[imageIndex]();
                 const alreadyAdded = myNotesIds.includes(note.id);
                 return (
                   <div key={note.id} className="bg-white rounded-xl shadow-md p-4 border border-[#e3b8f9] flex flex-col">
@@ -274,11 +274,11 @@ const ChapterNotesPage = () => {
                         onError={(e) => {
                           // Fallback to a different image if the current one fails
                           const fallbackIndex = (imageIndex + 1) % placeholderImages.length;
-                          e.target.src = placeholderImages[fallbackIndex];
+                          e.target.src = placeholderImages[fallbackIndex]();
                           // If the fallback also fails, try a third image
                           e.target.onerror = () => {
                             const thirdIndex = (fallbackIndex + 1) % placeholderImages.length;
-                            e.target.src = placeholderImages[thirdIndex];
+                            e.target.src = placeholderImages[thirdIndex]();
                           };
                         }}
                       />

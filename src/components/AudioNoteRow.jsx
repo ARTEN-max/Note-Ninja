@@ -12,9 +12,16 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
 
   // Play audio when row is clicked (except + button)
   const handleRowClick = (e) => {
-    if (e.target.closest('.add-to-playlist-btn')) return;
+    console.log('🎵 Row clicked:', note.title);
+    if (e.target.closest('.add-to-playlist-btn')) {
+      console.log('🎵 Add to playlist button clicked, ignoring');
+      return;
+    }
     if (closePlaylistMenu) closePlaylistMenu();
-    if (onRowPlay) onRowPlay(note);
+    if (onRowPlay) {
+      console.log('🎵 Calling onRowPlay for:', note.title);
+      onRowPlay(note);
+    }
     // Removed direct play call; let MiniPlayer handle playback after DOM update
   };
 

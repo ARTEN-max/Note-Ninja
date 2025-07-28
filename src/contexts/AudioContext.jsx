@@ -41,18 +41,24 @@ export const AudioProvider = ({ children }) => {
 
   // Optimized play function with immediate response
   const playAudio = useCallback(async (audioNote, index = null, retryCount = 0) => {
-    if (!audioNote?.url) return;
+    console.log('🎵 playAudio called with:', { audioNote, index, retryCount });
+    if (!audioNote?.url) {
+      console.error('❌ No audio URL provided:', audioNote);
+      return;
+    }
     const playStartTime = performance.now();
     // Ensure audio element is mounted before proceeding
     const audioElement = audioElementRef.current;
     if (!audioElement) {
+      console.warn('⚠️ Audio element not found, retrying...');
       if (retryCount < 5) {
         setTimeout(() => playAudio(audioNote, index, retryCount + 1), 50);
       } else {
-        console.error('Audio element not mounted after retries');
+        console.error('❌ Audio element not mounted after retries');
       }
       return;
     }
+    console.log('🎵 Setting up audio playback...');
     setIsLoading(true);
     // Set ref to trigger play after DOM update
     shouldPlayRef.current = true;
@@ -77,12 +83,15 @@ export const AudioProvider = ({ children }) => {
       };
       audioElement.addEventListener('playing', onPlaying);
       if (audioElement.src !== audioNote.url) {
+        console.log('🎵 Loading new audio URL:', audioNote.url);
         // Attach event listener BEFORE setting src
         const onReady = async () => {
+          console.log('🎵 Audio metadata loaded, attempting to play...');
           try {
             await audioElement.play();
+            console.log('✅ Audio play successful');
           } catch (error) {
-            console.error('Failed to play audio:', error);
+            console.error('❌ Failed to play audio:', error);
             audioPerformanceMonitor.trackError(audioNote.url, error);
             setIsPlaying(false);
             setIsLoading(false);
@@ -95,6 +104,7 @@ export const AudioProvider = ({ children }) => {
         needsToWait = true;
       }
       if (!needsToWait) {
+        console.log('🎵 Playing existing audio...');
         await audioElement.play();
       }
       // Preload next few tracks in background

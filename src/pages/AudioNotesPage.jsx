@@ -126,7 +126,7 @@ const AudioNotesPage = () => {
     return (
       <div style={style}>
         <AudioNoteRow
-          key={note.id}
+          key={note.id || index}
           note={note}
           index={index}
           isAdmin={isAdmin}
@@ -518,6 +518,9 @@ const AudioNotesPage = () => {
               itemSize={80}
               width={"100%"}
               style={{ background: 'transparent' }}
+              overscanCount={5}
+              useIsScrolling={false}
+              className="scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-transparent"
             >
               {renderRow}
             </List>

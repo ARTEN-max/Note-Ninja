@@ -28,7 +28,7 @@ const extraItems = [
   ) },
 ];
 
-export default function Sidebar(props) {
+const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
   const { currentUser } = useAuth();
   const { resetAudio } = useAudio();
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ export default function Sidebar(props) {
     };
 
     fetchUserName();
-  }, [currentUser, props.usernameUpdated]);
+  }, [currentUser, usernameUpdated]);
 
   const handleLogout = async () => {
     try {
@@ -170,5 +170,7 @@ export default function Sidebar(props) {
     message="Are you sure you want to log out?"
   />
 </div>
-);
+  );
 }
+
+export default React.memo(Sidebar);

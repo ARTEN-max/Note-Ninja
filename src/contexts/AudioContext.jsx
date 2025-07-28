@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import audioPerformanceMonitor from '../utils/audioPerformance';
 
 const AudioContext = createContext();
@@ -12,6 +12,8 @@ export const AudioProvider = ({ children }) => {
   const audioElementRef = useRef(null);
   const audioCacheRef = useRef(new Map()); // Cache for preloaded audio elements
   const shouldPlayRef = useRef(false); // NEW: tracks if play should be triggered after DOM update
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   // Preload audio metadata for faster loading
   const preloadAudio = useCallback((audioNote) => {
@@ -199,6 +201,36 @@ export const AudioProvider = ({ children }) => {
     console.log('[STATE] isLoading:', isLoading, 'isPlaying:', isPlaying, 'currentAudio:', currentAudio?.title);
   }, [isLoading, isPlaying, currentAudio]);
 
+  useEffect(() => {
+    const audioElement = audioElementRef.current;
+    if (!audioElement) return;
+
+    const updateProgress = () => setProgress(audioElement.currentTime);
+    const updateDuration = () => {
+      if (!isNaN(audioElement.duration) && isFinite(audioElement.duration)) {
+        setDuration(audioElement.duration);
+      }
+    };
+
+    audioElement.addEventListener('timeupdate', updateProgress);
+    audioElement.addEventListener('loadedmetadata', updateDuration);
+    audioElement.addEventListener('ended', () => {
+      // Auto-play next track when current ends
+      nextTrack();
+    });
+
+    return () => {
+      audioElement.removeEventListener('timeupdate', updateProgress);
+      audioElement.removeEventListener('loadedmetadata', updateDuration);
+      audioElement.removeEventListener('ended', nextTrack);
+      // Cleanup audio element to prevent memory leaks
+      if (audioElement.src) {
+        audioElement.src = '';
+        audioElement.load();
+      }
+    };
+  }, [currentAudio, audioElementRef, nextTrack, progress, duration]);
+
   return (
     <AudioContext.Provider
       value={{
@@ -217,6 +249,8 @@ export const AudioProvider = ({ children }) => {
         resetAudio,
         preloadAudio,
         shouldPlayRef, // NEW: expose ref
+        progress,
+        duration,
       }}
     >
       {children}

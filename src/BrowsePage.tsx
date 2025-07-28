@@ -1,5 +1,5 @@
 // If you haven't already, run: npm install react-icons
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { FiSearch } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { doc, getDoc, setDoc, increment, collection, query, where, getDocs, or, onSnapshot, QueryFieldFilterConstraint, Query, DocumentData, QueryConstraint } from "firebase/firestore";
@@ -46,8 +46,26 @@ function shuffleArray(array: string[]): string[] {
   return arr;
 }
 
+// Debounce hook for search optimization
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 const BrowsePage = () => {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [liked, setLiked] = useState({});
   const [likeCounts, setLikeCounts] = useState({});
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -211,13 +229,17 @@ const BrowsePage = () => {
     visible: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
   };
 
-  const filteredSuggestions = search.trim()
-    ? allStudyGuides.filter(
-        guide =>
-          guide.courseCode.toLowerCase().includes(search.trim().toLowerCase()) ||
-          guide.title.toLowerCase().includes(search.trim().toLowerCase())
-      )
-    : [];
+  // Use debounced search for filtering
+  const filteredGuides = useMemo(() => {
+    if (!debouncedSearch.trim()) return recommendedGuides;
+    
+    const searchLower = debouncedSearch.toLowerCase();
+    return recommendedGuides.filter(guide => 
+      guide.courseCode.toLowerCase().includes(searchLower) ||
+      guide.title.toLowerCase().includes(searchLower) ||
+      guide.description.toLowerCase().includes(searchLower)
+    );
+  }, [recommendedGuides, debouncedSearch]);
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && search.trim()) {
@@ -320,9 +342,9 @@ const BrowsePage = () => {
             style={{ fontFamily: 'Inter, Arial, sans-serif' }}
           />
           {/* Study Guide Suggestions Dropdown */}
-          {showSuggestions && search.trim().length > 0 && selectedFilter === 'studyGuides' && filteredSuggestions.length > 0 && (
+          {showSuggestions && debouncedSearch.trim().length > 0 && selectedFilter === 'studyGuides' && filteredGuides.length > 0 && (
             <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-20 max-h-64 overflow-y-auto border border-pink-100">
-              {filteredSuggestions.map(guide => (
+              {filteredGuides.map(guide => (
                 <div
                   key={guide.id}
                   className="px-4 py-3 cursor-pointer hover:bg-[#f3e8ff] transition flex items-center gap-3"

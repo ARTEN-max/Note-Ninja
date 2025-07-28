@@ -74,6 +74,8 @@ const StudyGuideCard = ({
           src={imgError ? fallbackPlaceholder : imageUrl}
           alt={`${courseCode} study guide`}
           className="object-cover w-full"
+          loading="lazy"
+          decoding="async"
           style={{
             width: '100%',
             height: '14.5rem', // fixed height for all cards

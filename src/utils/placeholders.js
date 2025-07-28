@@ -9,7 +9,7 @@ const placeholderImages = [
   "/placeholders/library.jpg",
   "/placeholders/bag.jpg",
   "/placeholders/classroom.jpg",
-  "/placeholders/coffee.jpg"
+  
 
   // Add any new images you upload here!
 ];

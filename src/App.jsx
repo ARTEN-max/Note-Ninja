@@ -1,25 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
-import NoteDashboard from "./components/NoteDashboard";
-import SignIn from "./SignIn";
-import Register from "./Register";
-import ForgotPassword from "./ForgotPassword";
-import StudentInfoPage from "./StudentInfoPage";
-import BrowsePage from "./BrowsePage";
 import DownloadNotesPage from "./DownloadNotesPage";
-import UploadPage from "./UploadPage";
-import MyNotesPage from "./MyNotesPage";
-import CramModePage from "./CramModePage";
-import DeepDivePage from "./DeepDivePage";
-import ExamReviewPage from "./ExamReviewPage";
-import QuickRecapPage from "./QuickRecapPage";
-import NightOwlPage from "./NightOwlPage";
-import ChillReviewPage from "./ChillReviewPage";
-import ChapterStudyCards from "./pages/ChapterStudyCards";
-import ChapterNotesPage from "./pages/ChapterNotesPage";
-import AudioNotesPage from "./pages/AudioNotesPage";
-import UserProfilePage from "./pages/UserProfilePage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import MobileNav from "./components/MobileNav";
 import SetupStudyGuides from "./components/SetupStudyGuides";
@@ -31,10 +13,39 @@ import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import MiniPlayer from "./components/MiniPlayer";
-import NewUserProfilePage from "./pages/NewUserProfilePage";
-import PlaylistViewPage from "./pages/PlaylistViewPage";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+
+// Lazy load components
+const StudentInfoPage = lazy(() => import('./StudentInfoPage'));
+const SignIn = lazy(() => import('./SignIn'));
+const Register = lazy(() => import('./Register'));
+const NoteDashboard = lazy(() => import('./components/NoteDashboard'));
+const BrowsePage = lazy(() => import('./BrowsePage'));
+const UploadPage = lazy(() => import('./UploadPage'));
+const AudioNotesPage = lazy(() => import('./pages/AudioNotesPage'));
+const MyNotesPage = lazy(() => import('./MyNotesPage'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const NewUserProfilePage = lazy(() => import('./pages/NewUserProfilePage'));
+const CramModePage = lazy(() => import('./CramModePage'));
+const DeepDivePage = lazy(() => import('./DeepDivePage'));
+const ExamReviewPage = lazy(() => import('./ExamReviewPage'));
+const QuickRecapPage = lazy(() => import('./QuickRecapPage'));
+const NightOwlPage = lazy(() => import('./NightOwlPage'));
+const ChillReviewPage = lazy(() => import('./ChillReviewPage'));
+const PlaylistViewPage = lazy(() => import('./pages/PlaylistViewPage'));
+const ChapterPage = lazy(() => import('./pages/ChapterPage'));
+const ChapterNotesPage = lazy(() => import('./pages/ChapterNotesPage'));
+const ChapterStudyCards = lazy(() => import('./pages/ChapterStudyCards'));
+const StudyGuideChapters = lazy(() => import('./pages/StudyGuideChapters'));
+const ForgotPassword = lazy(() => import('./ForgotPassword'));
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+  </div>
+);
 
 function PlaceholderPage() {
   return <div style={{ fontSize: 32, textAlign: 'center', marginTop: 100 }}>Placeholder Page</div>;
@@ -71,22 +82,64 @@ function AppContent() {
       <div className={showSidebar ? 'w-full md:ml-[240px] transition-all duration-300' : 'w-full'} style={{ width: '100%' }}>
         <div className="px-4 md:px-0 w-full">
           <Routes>
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot" element={<ForgotPassword />} />
-            <Route path="/student-info" element={<StudentInfoPage />} />
+            <Route path="/signin" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <SignIn />
+              </Suspense>
+            } />
+            <Route path="/register" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <Register />
+              </Suspense>
+            } />
+            <Route path="/forgot-password" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <ForgotPassword />
+              </Suspense>
+            } />
+            <Route path="/student-info" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <StudentInfoPage />
+              </Suspense>
+            } />
             <Route path="/download/:id" element={<DownloadNotesPage />} />
-            <Route path="/cram-mode" element={<CramModePage />} />
-            <Route path="/deep-dive" element={<DeepDivePage />} />
-            <Route path="/exam-review" element={<ExamReviewPage />} />
-            <Route path="/quick-recap" element={<QuickRecapPage />} />
-            <Route path="/night-owl" element={<NightOwlPage />} />
-            <Route path="/chill-review" element={<ChillReviewPage />} />
+            <Route path="/cram-mode" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <CramModePage />
+              </Suspense>
+            } />
+            <Route path="/deep-dive" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <DeepDivePage />
+              </Suspense>
+            } />
+            <Route path="/exam-review" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <ExamReviewPage />
+              </Suspense>
+            } />
+            <Route path="/quick-recap" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <QuickRecapPage />
+              </Suspense>
+            } />
+            <Route path="/night-owl" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <NightOwlPage />
+              </Suspense>
+            } />
+            <Route path="/chill-review" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <ChillReviewPage />
+              </Suspense>
+            } />
             <Route
               path="/guide/:guideId/notes"
               element={
                 <ProtectedRoute>
-                  <ChapterNotesPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ChapterNotesPage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -94,7 +147,9 @@ function AppContent() {
               path="/guide/:guideId/chapter/:chapterId"
               element={
                 <ProtectedRoute>
-                  <ChapterStudyCards />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ChapterStudyCards />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -102,7 +157,9 @@ function AppContent() {
               path="/upload"
               element={
                 <ProtectedRoute>
-                  <UploadPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <UploadPage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -118,7 +175,9 @@ function AppContent() {
               path="/browse"
               element={
                 <ProtectedRoute>
-                  <BrowsePage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <BrowsePage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -126,7 +185,9 @@ function AppContent() {
               path="/my-notes"
               element={
                 <ProtectedRoute>
-                  <MyNotesPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <MyNotesPage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -142,7 +203,9 @@ function AppContent() {
               path="/audio-notes"
               element={
                 <ProtectedRoute>
-                  <AudioNotesPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <AudioNotesPage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -150,7 +213,9 @@ function AppContent() {
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <UserProfilePage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <UserProfilePage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -158,16 +223,24 @@ function AppContent() {
               path="/account"
               element={
                 <ProtectedRoute>
-                  <NewUserProfilePage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <NewUserProfilePage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
-            <Route path="/u/:username" element={<NewUserProfilePage />} />
+            <Route path="/u/:username" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <NewUserProfilePage />
+              </Suspense>
+            } />
             <Route
               path="/playlist/:playlistId"
               element={
                 <ProtectedRoute>
-                  <PlaylistViewPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <PlaylistViewPage />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -176,7 +249,9 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
-                    <NoteDashboard />
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <NoteDashboard />
+                    </Suspense>
                   </div>
                 </ProtectedRoute>
               }

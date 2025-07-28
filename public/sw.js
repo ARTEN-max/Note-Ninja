@@ -2,17 +2,7 @@ const CACHE_NAME = 'note-ninja-v1';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/placeholders/car.jpg',
-  '/placeholders/city.jpg',
-  '/placeholders/cool.jpg',
-  '/placeholders/dog.jpg',
-  '/placeholders/strawberry.jpg',
-  '/placeholders/scene.jpg',
-  '/placeholders/study.jpg',
-  '/placeholders/library.jpg',
-  '/placeholders/bag.jpg',
-  '/placeholders/classroom.jpg'
+  '/static/css/main.css'
 ];
 
 self.addEventListener('install', (event) => {

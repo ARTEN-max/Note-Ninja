@@ -248,54 +248,50 @@ const ChapterNotesPage = () => {
               {notes.map((note, idx) => {
                 // Use a simpler, more reliable image selection
                 const imageIndex = idx % placeholderImages.length;
-                const imgSrc = placeholderImages[imageIndex]();
+                const imgSrc = placeholderImages[imageIndex];
                 const alreadyAdded = myNotesIds.includes(note.id);
                 return (
-                  <div key={note.id} className="bg-white rounded-xl shadow-md p-4 border border-[#e3b8f9] flex flex-col">
-                    <div className="relative w-full h-40 mb-3">
-                      <img
-                        src={imgSrc}
-                        alt={note.title}
-                        className="rounded-lg object-cover w-full h-full"
-                        loading="lazy"
-                        onError={(e) => {
-                          // Fallback to a different image if the current one fails
-                          const fallbackIndex = (imageIndex + 1) % placeholderImages.length;
-                          e.target.src = placeholderImages[fallbackIndex]();
-                          // If the fallback also fails, try a third image
-                          e.target.onerror = () => {
-                            const thirdIndex = (fallbackIndex + 1) % placeholderImages.length;
-                            e.target.src = placeholderImages[thirdIndex]();
-                          };
-                        }}
-                      />
-                      <div className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm">
-                        {formatCourseCode(subjectName)}
-                      </div>
-                    </div>
-                    <h3 className="font-bold text-lg text-gray-800 mb-1">{note.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-2">{note.description || note.fileName}</p>
-                    <button
-                      className="w-full py-2 rounded-2xl font-bold text-base bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white shadow-lg transition-transform hover:scale-105 focus:outline-none mb-2"
-                      onClick={() => window.open(note.fileUrl, '_blank')}
-                    >
-                      <span className="mr-2">📥</span>Download PDF
-                    </button>
-                    <button
-                      className={`w-full py-1 rounded-2xl text-sm font-semibold mt-1 mb-2 transition-colors ${alreadyAdded ? 'bg-green-200 text-green-800 cursor-not-allowed' : 'bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#c895f2]'}`}
-                      onClick={() => handleAddToMyNotes(note)}
-                      disabled={alreadyAdded}
-                    >
-                      {alreadyAdded ? 'Added to My Notes' : 'Add to My Notes'}
-                    </button>
-                    {isAdmin && (
+                  <div key={note.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img
+                      src={imgSrc}
+                      alt={note.title}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        // Fallback to a different image if the current one fails
+                        const fallbackIndex = (imageIndex + 1) % placeholderImages.length;
+                        e.target.src = placeholderImages[fallbackIndex];
+                        // If the fallback also fails, try a third image
+                        e.target.onerror = () => {
+                          const thirdIndex = (fallbackIndex + 1) % placeholderImages.length;
+                          e.target.src = placeholderImages[thirdIndex];
+                        };
+                      }}
+                    />
+                    <div className="p-4">
+                      <h3 className="font-bold text-lg text-gray-800 mb-1">{note.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">{note.description || note.fileName}</p>
                       <button
-                        className="w-full py-2 rounded-2xl font-bold text-base bg-[#e3b8f9] text-[#5E2A84] shadow transition-transform hover:bg-[#c895f2] focus:outline-none"
-                        onClick={() => handleDelete(note)}
+                        className="w-full py-2 rounded-2xl font-bold text-base bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white shadow-lg transition-transform hover:scale-105 focus:outline-none mb-2"
+                        onClick={() => window.open(note.fileUrl, '_blank')}
                       >
-                        <span className="mr-2">🗑️</span>Delete
+                        <span className="mr-2">📥</span>Download PDF
                       </button>
-                    )}
+                      <button
+                        className={`w-full py-1 rounded-2xl text-sm font-semibold mt-1 mb-2 transition-colors ${alreadyAdded ? 'bg-green-200 text-green-800 cursor-not-allowed' : 'bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#c895f2]'}`}
+                        onClick={() => handleAddToMyNotes(note)}
+                        disabled={alreadyAdded}
+                      >
+                        {alreadyAdded ? 'Added to My Notes' : 'Add to My Notes'}
+                      </button>
+                      {isAdmin && (
+                        <button
+                          className="w-full py-2 rounded-2xl font-bold text-base bg-[#e3b8f9] text-[#5E2A84] shadow transition-transform hover:bg-[#c895f2] focus:outline-none"
+                          onClick={() => handleDelete(note)}
+                        >
+                          <span className="mr-2">🗑️</span>Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

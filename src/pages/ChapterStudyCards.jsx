@@ -137,12 +137,12 @@ const ChapterStudyCards = () => {
   }
 
   const placeholders = [
-    () => '/placeholders/car.jpg',
-    () => '/placeholders/city.jpg',
-    () => '/placeholders/cool.jpg',
-    () => '/placeholders/dog.jpg',
-    () => '/placeholders/math138.jpg',
-    () => '/placeholders/strawberry.jpg'
+    '/placeholders/car.jpg',
+    '/placeholders/city.jpg',
+    '/placeholders/cool.jpg',
+    '/placeholders/dog.jpg',
+    '/placeholders/math138.jpg',
+    '/placeholders/strawberry.jpg'
   ];
 
   return (
@@ -170,7 +170,7 @@ const ChapterStudyCards = () => {
                 <StudyCard
                   title={card.title}
                   content={card.content}
-                  imageUrl={card.imageUrl || placeholders[index % placeholders.length]()}
+                  imageUrl={card.imageUrl || placeholders[index % placeholders.length]}
                 />
               </motion.div>
             ))}

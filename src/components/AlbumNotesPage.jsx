@@ -190,7 +190,7 @@ const AlbumNotesPage = ({ type, welcomeMessage, defaultImage }) => {
         >
           {albumNotes.map((note, index) => {
             // Assign a unique placeholder to each card, ignore note.imageUrl
-            const imageUrl = placeholderImages[index]() || '';
+            const imageUrl = placeholderImages[index] || '';
             return (
               <StudyGuideCard
                 key={note.id}

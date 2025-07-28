@@ -25,7 +25,7 @@ const StudyGuideCard = ({
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   // Pick a random placeholder for fallback
-  const fallbackPlaceholder = placeholderImages[Math.floor(Math.random() * placeholderImages.length)]();
+  const fallbackPlaceholder = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
 
   // Handle card click - download PDF if available, otherwise use original onClick
   const handleCardClick = (e) => {

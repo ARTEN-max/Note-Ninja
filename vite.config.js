@@ -39,6 +39,7 @@ export default defineConfig({
       overlay: false
     }
   },
+  assetsInclude: ['**/*.jpg', '**/*.png', '**/*.gif', '**/*.svg'],
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
       if (hostType === 'js') {

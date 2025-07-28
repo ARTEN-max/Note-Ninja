@@ -180,7 +180,7 @@ const AudioNotesPage = () => {
         
         const notes = snapshot.docs.map(doc => {
           const data = doc.data();
-          return {
+          const note = {
             id: doc.id,
             title: data.title || '',
             subject: data.subject || '',
@@ -188,6 +188,8 @@ const AudioNotesPage = () => {
             albumArt: `https://picsum.photos/seed/${doc.id}/40/40`,
             ...data
           };
+          console.log('🎵 Audio note loaded:', { id: note.id, title: note.title, url: note.url });
+          return note;
         });
 
         // Set notes immediately for instant UI response
@@ -195,6 +197,13 @@ const AudioNotesPage = () => {
         setAudioNotes(notes);
         console.timeEnd('fetchAudioNotes');
         console.log('AudioNotes set in context:', notes.length, 'notes');
+        
+        // Check if any notes have valid URLs
+        const notesWithUrls = notes.filter(note => note.url && note.url !== '');
+        console.log('🎵 Notes with valid URLs:', notesWithUrls.length, 'out of', notes.length);
+        if (notesWithUrls.length === 0) {
+          console.warn('⚠️ No audio files found with valid URLs. You may need to upload some audio files first.');
+        }
       } catch (error) {
         console.error('Error fetching audio notes:', error);
       } finally {

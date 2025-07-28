@@ -12,9 +12,13 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
 
   // Play audio when row is clicked (except + button)
   const handleRowClick = (e) => {
-    console.log('🎵 Row clicked:', note.title);
+    console.log('🎵 Row clicked:', note.title, 'URL:', note.url);
     if (e.target.closest('.add-to-playlist-btn')) {
       console.log('🎵 Add to playlist button clicked, ignoring');
+      return;
+    }
+    if (!note.url || note.url === '') {
+      console.warn('⚠️ Cannot play audio - no URL provided for:', note.title);
       return;
     }
     if (closePlaylistMenu) closePlaylistMenu();

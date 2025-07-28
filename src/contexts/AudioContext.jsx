@@ -41,9 +41,21 @@ export const AudioProvider = ({ children }) => {
 
   // Optimized play function with immediate response
   const playAudio = useCallback(async (audioNote, index = null, retryCount = 0) => {
-    console.log('🎵 playAudio called with:', { audioNote, index, retryCount });
+    console.log('🎵 playAudio called with:', { 
+      audioNote: { 
+        id: audioNote?.id, 
+        title: audioNote?.title, 
+        url: audioNote?.url 
+      }, 
+      index, 
+      retryCount 
+    });
     if (!audioNote?.url) {
       console.error('❌ No audio URL provided:', audioNote);
+      return;
+    }
+    if (audioNote.url === '') {
+      console.error('❌ Empty audio URL provided for:', audioNote.title);
       return;
     }
     const playStartTime = performance.now();

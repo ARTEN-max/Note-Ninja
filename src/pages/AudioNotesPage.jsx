@@ -47,7 +47,10 @@ const AudioNotesPage = () => {
 
   // Optimized row play handler to prevent unnecessary re-renders
   const onRowPlay = useCallback((note) => {
+    console.log('🎵 onRowPlay called with note:', note);
     const index = audioNotesLocal.findIndex(n => n.id === note.id);
+    console.log('🎵 Found note at index:', index);
+    console.log('🎵 Note from audioNotesLocal:', audioNotesLocal[index]);
     playAudio(note, index);
   }, [audioNotesLocal, playAudio]);
 
@@ -180,14 +183,19 @@ const AudioNotesPage = () => {
         
         const notes = snapshot.docs.map(doc => {
           const data = doc.data();
+          console.log('🎵 Raw Firestore data for', doc.id, ':', data);
+          const audioUrl = data.audioUrl || data.url || data.fileUrl || '';
           const note = {
             id: doc.id,
             title: data.title || '',
             subject: data.subject || '',
-            url: data.audioUrl || '',
+            url: audioUrl,
+            audioUrl: audioUrl, // Also set audioUrl field for compatibility
             albumArt: `https://picsum.photos/seed/${doc.id}/40/40`,
             ...data
           };
+          // Ensure url field is not overridden by spread
+          note.url = audioUrl;
           console.log('🎵 Audio note loaded:', { id: note.id, title: note.title, url: note.url });
           return note;
         });
@@ -203,6 +211,11 @@ const AudioNotesPage = () => {
         console.log('🎵 Notes with valid URLs:', notesWithUrls.length, 'out of', notes.length);
         if (notesWithUrls.length === 0) {
           console.warn('⚠️ No audio files found with valid URLs. You may need to upload some audio files first.');
+        } else {
+          console.log('🎵 Available audio files:');
+          notesWithUrls.forEach((note, index) => {
+            console.log(`  ${index + 1}. ${note.title} - URL: ${note.url}`);
+          });
         }
       } catch (error) {
         console.error('Error fetching audio notes:', error);
@@ -519,7 +532,18 @@ const AudioNotesPage = () => {
             <div className="w-24 text-right">Duration</div>
           </div>
           {audioNotesLocal.length === 0 ? (
-            <div className="text-center py-16 text-purple-200">No Audio Notes Yet</div>
+            <div className="text-center py-16 text-purple-200">
+              <div className="mb-4">No Audio Notes Yet</div>
+              {isAdmin ? (
+                <div className="text-sm text-purple-300">
+                  Use the upload form above to add your first audio note
+                </div>
+              ) : (
+                <div className="text-sm text-purple-300">
+                  Contact an admin to upload audio notes
+                </div>
+              )}
+            </div>
           ) : (
             <List
               height={600}

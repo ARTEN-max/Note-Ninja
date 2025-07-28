@@ -35,7 +35,7 @@ export const AudioProvider = ({ children }) => {
     
     audio.addEventListener('error', (error) => {
       console.warn('Failed to preload audio:', audioNote.url);
-      audioPerformanceMonitor.trackError(audioNote.url, error);
+      audioPerformanceMonitor.trackError(audioNote.url || audioNote.audioUrl || '', error);
     });
   }, []);
 
@@ -45,19 +45,29 @@ export const AudioProvider = ({ children }) => {
       audioNote: { 
         id: audioNote?.id, 
         title: audioNote?.title, 
-        url: audioNote?.url 
+        url: audioNote?.url,
+        audioUrl: audioNote?.audioUrl
       }, 
       index, 
       retryCount 
     });
-    if (!audioNote?.url) {
-      console.error('❌ No audio URL provided:', audioNote);
-      return;
-    }
-    if (audioNote.url === '') {
-      console.error('❌ Empty audio URL provided for:', audioNote.title);
-      return;
-    }
+          // Check for audio URL in multiple possible fields
+      const audioUrl = audioNote?.url || audioNote?.audioUrl || '';
+      if (!audioUrl) {
+        console.error('❌ No audio URL provided:', audioNote);
+        return;
+      }
+      if (audioUrl === '') {
+        console.error('❌ Empty audio URL provided for:', audioNote.title);
+        return;
+      }
+      
+      // Safeguard against invalid URLs
+      if (audioUrl.includes('localhost') && !audioUrl.includes('firebasestorage')) {
+        console.error('❌ Invalid audio URL detected (localhost page URL):', audioUrl);
+        return;
+      }
+      
     const playStartTime = performance.now();
     // Ensure audio element is mounted before proceeding
     const audioElement = audioElementRef.current;
@@ -90,34 +100,89 @@ export const AudioProvider = ({ children }) => {
       const onPlaying = () => {
         setIsLoading(false);
         setIsPlaying(true);
-        audioPerformanceMonitor.trackPlayTime(audioNote.url, playStartTime);
+        audioPerformanceMonitor.trackPlayTime(audioUrl, playStartTime);
         audioElement.removeEventListener('playing', onPlaying);
       };
       audioElement.addEventListener('playing', onPlaying);
-      if (audioElement.src !== audioNote.url) {
-        console.log('🎵 Loading new audio URL:', audioNote.url);
+      if (audioElement.src !== audioUrl) {
+        console.log('🎵 Loading new audio URL:', audioUrl);
+        console.log('🎵 Current audio element src:', audioElement.src);
+        console.log('🎵 Audio note object:', audioNote);
+        
+        // Check if the URL is valid
+        if (!audioUrl || audioUrl === '') {
+          console.error('❌ Invalid audio URL:', audioUrl);
+          setIsPlaying(false);
+          setIsLoading(false);
+          return;
+        }
+        
         // Attach event listener BEFORE setting src
         const onReady = async () => {
           console.log('🎵 Audio metadata loaded, attempting to play...');
+          console.log('🎵 Audio element details:', {
+            src: audioElement.src,
+            duration: audioElement.duration,
+            readyState: audioElement.readyState,
+            networkState: audioElement.networkState
+          });
           try {
             await audioElement.play();
             console.log('✅ Audio play successful');
           } catch (error) {
             console.error('❌ Failed to play audio:', error);
-            audioPerformanceMonitor.trackError(audioNote.url, error);
+            console.error('❌ Error details:', {
+              name: error.name,
+              message: error.message,
+              code: error.code
+            });
+            audioPerformanceMonitor.trackError(audioUrl, error);
             setIsPlaying(false);
             setIsLoading(false);
           }
           audioElement.removeEventListener('loadedmetadata', onReady);
         };
-        audioElement.addEventListener('loadedmetadata', onReady);
-        audioElement.src = audioNote.url;
-        audioElement.preload = 'auto';
-        needsToWait = true;
+        
+        // Add error handling for the audio element
+        const onError = (error) => {
+          console.error('❌ Audio element error:', error);
+          console.error('❌ Audio element error details:', {
+            error: audioElement.error,
+            networkState: audioElement.networkState,
+            readyState: audioElement.readyState,
+            src: audioElement.src
+          });
+          setIsPlaying(false);
+          setIsLoading(false);
+        };
+        
+                  audioElement.addEventListener('error', onError);
+          audioElement.addEventListener('loadedmetadata', onReady);
+          console.log('🎵 Setting audio element src to:', audioUrl);
+          audioElement.src = audioUrl;
+          audioElement.preload = 'auto';
+          needsToWait = true;
+        
+        // Clean up error listener when metadata loads
+        audioElement.addEventListener('loadedmetadata', () => {
+          audioElement.removeEventListener('error', onError);
+        }, { once: true });
       }
       if (!needsToWait) {
         console.log('🎵 Playing existing audio...');
-        await audioElement.play();
+        try {
+          await audioElement.play();
+          console.log('✅ Direct play successful');
+        } catch (error) {
+          console.error('❌ Direct play failed:', error);
+          console.error('❌ Direct play error details:', {
+            name: error.name,
+            message: error.message,
+            code: error.code
+          });
+          setIsPlaying(false);
+          setIsLoading(false);
+        }
       }
       // Preload next few tracks in background
       const currentIdx = index !== null ? index : audioNotes.findIndex(n => n.id === audioNote.id);
@@ -129,7 +194,7 @@ export const AudioProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Failed to play audio:', error);
-      audioPerformanceMonitor.trackError(audioNote.url, error);
+      audioPerformanceMonitor.trackError(audioUrl, error);
       setIsPlaying(false);
       setIsLoading(false);
     }
@@ -143,14 +208,44 @@ export const AudioProvider = ({ children }) => {
   }, []);
 
   const togglePlay = useCallback(async () => {
-    if (!currentAudio || !currentAudio.url) return;
-    
+    if (!currentAudio || !(currentAudio.url || currentAudio.audioUrl)) return;
+    const audioElement = audioElementRef.current;
+    const audioUrl = currentAudio.url || currentAudio.audioUrl || '';
+    if (!audioElement) return;
+
+    // Safeguard against invalid URLs
+    if (audioUrl.includes('localhost') && !audioUrl.includes('firebasestorage')) {
+      console.error('❌ Invalid audio URL detected (localhost page URL):', audioUrl);
+      return;
+    }
+
     if (isPlaying) {
       pauseAudio();
     } else {
       try {
-        await audioElementRef.current?.play();
-        setIsPlaying(true);
+        // If src is not set or is different, set it and wait for loadedmetadata
+        if (!audioElement.src || audioElement.src !== audioUrl) {
+          console.log('togglePlay: setting src to', audioUrl);
+          console.log('togglePlay: current audio element src was', audioElement.src);
+          audioElement.src = audioUrl;
+          audioElement.preload = 'auto';
+          // Wait for loadedmetadata before playing
+          const playAfterLoad = () => {
+            console.log('togglePlay: loadedmetadata, now playing');
+            console.log('togglePlay: final audio element src is', audioElement.src);
+            audioElement.play().then(() => {
+              setIsPlaying(true);
+            }).catch((error) => {
+              console.error('Failed to resume audio after loadedmetadata:', error);
+            });
+            audioElement.removeEventListener('loadedmetadata', playAfterLoad);
+          };
+          audioElement.addEventListener('loadedmetadata', playAfterLoad);
+        } else {
+          console.log('togglePlay: audioElement.src =', audioElement.src);
+          await audioElement.play();
+          setIsPlaying(true);
+        }
       } catch (error) {
         console.error('Failed to resume audio:', error);
       }
@@ -192,7 +287,7 @@ export const AudioProvider = ({ children }) => {
     
     // Preload first few audio files
     notes.slice(0, 5).forEach(note => {
-      if (note.url) {
+      if (note.url || note.audioUrl) {
         preloadAudio(note);
       }
     });
@@ -202,13 +297,28 @@ export const AudioProvider = ({ children }) => {
   React.useEffect(() => {
     const audioElement = audioElementRef.current;
     if (!audioElement) return;
-    const logEvent = (e) => console.log('[AUDIO EVENT]', e.type);
+    const logEvent = (e) => {
+      console.log('[AUDIO EVENT]', e.type);
+      if (e.type === 'error') {
+        console.error('❌ Audio error details:', {
+          error: e.target.error,
+          networkState: e.target.networkState,
+          readyState: e.target.readyState,
+          src: e.target.src,
+          currentTime: e.target.currentTime,
+          duration: e.target.duration
+        });
+      }
+    };
     audioElement.addEventListener('play', logEvent);
     audioElement.addEventListener('playing', logEvent);
     audioElement.addEventListener('pause', logEvent);
     audioElement.addEventListener('waiting', logEvent);
     audioElement.addEventListener('loadedmetadata', logEvent);
     audioElement.addEventListener('error', logEvent);
+    audioElement.addEventListener('stalled', logEvent);
+    audioElement.addEventListener('suspend', logEvent);
+    audioElement.addEventListener('abort', logEvent);
     return () => {
       audioElement.removeEventListener('play', logEvent);
       audioElement.removeEventListener('playing', logEvent);
@@ -216,6 +326,9 @@ export const AudioProvider = ({ children }) => {
       audioElement.removeEventListener('waiting', logEvent);
       audioElement.removeEventListener('loadedmetadata', logEvent);
       audioElement.removeEventListener('error', logEvent);
+      audioElement.removeEventListener('stalled', logEvent);
+      audioElement.removeEventListener('suspend', logEvent);
+      audioElement.removeEventListener('abort', logEvent);
     };
   }, []);
 
@@ -245,8 +358,9 @@ export const AudioProvider = ({ children }) => {
       audioElement.removeEventListener('timeupdate', updateProgress);
       audioElement.removeEventListener('loadedmetadata', updateDuration);
       audioElement.removeEventListener('ended', nextTrack);
-      // Cleanup audio element to prevent memory leaks
-      if (audioElement.src) {
+      // Only cleanup if we're actually unmounting or switching audio
+      // Don't clear src during normal playback
+      if (!currentAudio) {
         audioElement.src = '';
         audioElement.load();
       }

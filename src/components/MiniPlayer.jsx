@@ -58,29 +58,6 @@ const MiniPlayer = () => {
   
   useEffect(() => {
     const audioElement = audioElementRef.current;
-    if (!audioElement) return;
-    
-    if (currentAudio && currentAudio.url) {
-      let playOnReady = false;
-      if (audioElement.src !== currentAudio.url) {
-        audioElement.src = currentAudio.url;
-        audioElement.preload = 'auto';
-        if (isPlaying) playOnReady = true;
-      } else if (isPlaying) {
-        audioElement.play().catch(e => console.error("Audio play failed:", e));
-      }
-      if (playOnReady) {
-        const onReady = () => {
-          audioElement.play().catch(e => console.error("Audio play failed:", e));
-          audioElement.removeEventListener('loadedmetadata', onReady);
-        };
-        audioElement.addEventListener('loadedmetadata', onReady);
-      }
-    }
-  }, [currentAudio, isPlaying, audioElementRef]);
-
-  useEffect(() => {
-    const audioElement = audioElementRef.current;
     if (audioElement) {
       audioElement.volume = isMuted ? 0 : volume;
     }
@@ -130,6 +107,8 @@ const MiniPlayer = () => {
   }, [isMuted]);
 
   const handlePlayPause = () => {
+    console.log('🎵 MiniPlayer: handlePlayPause called');
+    console.log('🎵 MiniPlayer: currentAudio:', currentAudio);
     if (!currentAudio) return;
     togglePlay();
   };
@@ -156,18 +135,18 @@ const MiniPlayer = () => {
   const albumArt = currentAudio?.albumArt || '/path/to/default/art.jpg';
 
   // When currentAudio changes, if shouldPlayRef.current is true, play after loadedmetadata
-  useEffect(() => {
-    const audioElement = audioElementRef.current;
-    if (!audioElement || !currentAudio || !currentAudio.url) return;
-    if (!shouldPlayRef?.current) return;
-    const onReady = () => {
-      audioElement.play().catch(() => {});
-      shouldPlayRef.current = false;
-      audioElement.removeEventListener('loadedmetadata', onReady);
-    };
-    audioElement.addEventListener('loadedmetadata', onReady);
-    return () => audioElement.removeEventListener('loadedmetadata', onReady);
-  }, [currentAudio, audioElementRef, shouldPlayRef]);
+  // useEffect(() => {
+  //   const audioElement = audioElementRef.current;
+  //   if (!audioElement || !currentAudio || !(currentAudio.url || currentAudio.audioUrl)) return;
+  //   if (!shouldPlayRef?.current) return;
+  //   const onReady = () => {
+  //     audioElement.play().catch(() => {});
+  //     shouldPlayRef.current = false;
+  //     audioElement.removeEventListener('loadedmetadata', onReady);
+  //   };
+  //   audioElement.addEventListener('loadedmetadata', onReady);
+  //   return () => audioElement.removeEventListener('loadedmetadata', onReady);
+  // }, [currentAudio, audioElementRef, shouldPlayRef]);
 
   const handleMobileProgressBarTap = () => {
     setShowTimeTooltip(true);
@@ -181,9 +160,40 @@ const MiniPlayer = () => {
     };
   }, []);
 
+  // Add mutation observer to track audio element src changes
+  useEffect(() => {
+    const audioElement = audioElementRef.current;
+    if (!audioElement) return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+          const newSrc = audioElement.getAttribute('src');
+          console.log('🎵 Audio element src changed to:', newSrc);
+          if (newSrc && newSrc.includes('localhost') && !newSrc.includes('firebasestorage')) {
+            console.error('❌ Audio element src was set to invalid URL:', newSrc);
+          }
+        }
+      });
+    });
+
+    observer.observe(audioElement, { attributes: true, attributeFilter: ['src'] });
+
+    return () => observer.disconnect();
+  }, [audioElementRef]);
+
   return (
     <>
-      <audio ref={audioElementRef} preload="auto" style={{ display: 'none' }} />
+      {/* Hidden audio element for the AudioContext to control */}
+      <audio
+        ref={audioElementRef}
+        preload="metadata"
+        style={{ display: 'none' }}
+        onPlay={() => console.log('🎵 Audio play event')}
+        onPause={() => console.log('🎵 Audio pause event')}
+        onLoadedMetadata={() => console.log('🎵 Audio metadata loaded')}
+        onError={(e) => console.error('🎵 Audio error:', e)}
+      />
       {currentUser && currentAudio && (
         isMobile ? (
           <div className="miniplayer-mobile-spotify">
@@ -236,7 +246,7 @@ const MiniPlayer = () => {
                   <button
                     onClick={handlePlayPause}
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:scale-105 transition-transform disabled:opacity-50"
-                    disabled={!currentAudio || !currentAudio.url || isLoading}
+                    disabled={!currentAudio || !(currentAudio.url || currentAudio.audioUrl) || isLoading}
                   >
                     {isLoading && !isPlaying ? (
                       <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>

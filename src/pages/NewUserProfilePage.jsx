@@ -150,11 +150,11 @@ const NewUserProfilePage = () => {
     setLoading(true);
     setError("");
     const placeholderPool = [
-      "/placeholders/city.jpg",
-      "/placeholders/strawberry.jpg",
-      "/placeholders/dog.jpg",
-      "/placeholders/car.jpg",
-      "/placeholders/cool.jpg"
+      () => "/placeholders/city.jpg",
+      () => "/placeholders/strawberry.jpg",
+      () => "/placeholders/dog.jpg",
+      () => "/placeholders/car.jpg",
+      () => "/placeholders/cool.jpg"
     ];
     const notesQuery = query(collection(db, 'savedNotes'), where('userId', '==', user.uid));
     const unsubscribe = onSnapshot(notesQuery, (querySnapshot) => {
@@ -179,7 +179,7 @@ const NewUserProfilePage = () => {
         // Shuffle placeholders and assign unique images
         const shuffled = [...placeholderPool].sort(() => Math.random() - 0.5);
         uniqueCourses.forEach((course, idx) => {
-          course.randomPlaceholder = shuffled[idx % shuffled.length];
+          course.randomPlaceholder = shuffled[idx % shuffled.length]();
         });
         setTopCourses(uniqueCourses);
         setCourseCount(courses.length);
@@ -307,11 +307,11 @@ const NewUserProfilePage = () => {
   };
 
   const placeholderPool = [
-    "/placeholders/city.jpg",
-    "/placeholders/strawberry.jpg",
-    "/placeholders/dog.jpg",
-    "/placeholders/car.jpg",
-    "/placeholders/cool.jpg"
+    () => "/placeholders/city.jpg",
+    () => "/placeholders/strawberry.jpg",
+    () => "/placeholders/dog.jpg",
+    () => "/placeholders/car.jpg",
+    () => "/placeholders/cool.jpg"
   ];
   const showCourses = topCourses && topCourses.length > 0;
 
@@ -418,7 +418,7 @@ const NewUserProfilePage = () => {
                   })
                 : placeholderPool.map((src, i) => (
                     <div key={i} className="flex flex-col items-center">
-                      <img src={src} alt="Placeholder" className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto" />
+                      <img src={src()} alt="Placeholder" className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto" />
                       <div className="bg-gray-700 rounded-lg w-32 mb-1 py-1 px-2 flex items-center justify-center mx-auto">
                         <span className="text-white text-base font-bold truncate w-full text-center">&nbsp;</span>
                       </div>

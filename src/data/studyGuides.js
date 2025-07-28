@@ -53,7 +53,7 @@ const studyGuides = [
     courseCode: "MATH138",
     title: "MATH138",
     description: "Description of playlist",
-    imageUrl: "/placeholders/math138.jpg"
+    imageUrl: () => "/placeholders/math138.jpg"
   },
   {
     id: "MATH235",
@@ -74,14 +74,14 @@ const studyGuides = [
     courseCode: "ECON101",
     title: "ECON101",
     description: "Description of playlist",
-    imageUrl: "/placeholders/coffee.jpg"
+    imageUrl: () => "/placeholders/coffee.jpg"
   },
   {
     id: "ECON102",
     courseCode: "ECON102",
     title: "ECON102",
     description: "Description of playlist",
-    imageUrl: "/placeholders/library.jpg"
+    imageUrl: () => "/placeholders/library.jpg"
   }
 ];
 

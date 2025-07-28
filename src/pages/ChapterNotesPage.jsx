@@ -7,22 +7,9 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import studyGuides from '../data/studyGuides';
 import { formatCourseCode } from "../utils/courseUtils";
 import BackToPrevious from '../components/BackToPrevious';
+import placeholderImages from '../utils/placeholders';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"]; // <-- Add more admin emails here
-
-const placeholderImages = [
-  "/placeholders/car.jpg",
-  "/placeholders/city.jpg",
-  "/placeholders/cool.jpg",
-  "/placeholders/dog.jpg",
-  "/placeholders/strawberry.jpg",
-  "/placeholders/scene.jpg",
-  "/placeholders/study.jpg",
-  "/placeholders/library.jpg",
-  "/placeholders/bag.jpg",
-  "/placeholders/classroom.jpg",
-  "/placeholders/coffee.jpg"
-];
 
 const ChapterNotesPage = () => {
   const { guideId, chapterNumber } = useParams();

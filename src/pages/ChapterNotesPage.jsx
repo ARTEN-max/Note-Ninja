@@ -15,14 +15,13 @@ const placeholderImages = [
   "/placeholders/city.jpg",
   "/placeholders/cool.jpg",
   "/placeholders/dog.jpg",
-  "/placeholders/math138.jpg",
   "/placeholders/strawberry.jpg",
-  // Add new images here
   "/placeholders/scene.jpg",
   "/placeholders/study.jpg",
   "/placeholders/library.jpg",
   "/placeholders/bag.jpg",
-  "/placeholders/classroom.jpg"
+  "/placeholders/classroom.jpg",
+  "/placeholders/coffee.jpg"
 ];
 
 const ChapterNotesPage = () => {
@@ -260,10 +259,8 @@ const ChapterNotesPage = () => {
             <h3 className="text-lg font-bold mb-4" style={{ color: '#7E44A3' }}>Uploaded Notes</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note, idx) => {
-                // Use note ID and creation time for better variety
-                const noteIdHash = note.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-                const timeHash = note.createdAt ? new Date(note.createdAt).getTime() % 1000 : 0;
-                const imageIndex = (noteIdHash + timeHash + idx) % placeholderImages.length;
+                // Use a simpler, more reliable image selection
+                const imageIndex = idx % placeholderImages.length;
                 const imgSrc = placeholderImages[imageIndex];
                 const alreadyAdded = myNotesIds.includes(note.id);
                 return (
@@ -273,6 +270,17 @@ const ChapterNotesPage = () => {
                         src={imgSrc}
                         alt={note.title}
                         className="rounded-lg object-cover w-full h-full"
+                        loading="lazy"
+                        onError={(e) => {
+                          // Fallback to a different image if the current one fails
+                          const fallbackIndex = (imageIndex + 1) % placeholderImages.length;
+                          e.target.src = placeholderImages[fallbackIndex];
+                          // If the fallback also fails, try a third image
+                          e.target.onerror = () => {
+                            const thirdIndex = (fallbackIndex + 1) % placeholderImages.length;
+                            e.target.src = placeholderImages[thirdIndex];
+                          };
+                        }}
                       />
                       <div className="absolute top-2 left-2 bg-[#e3b8f9] text-[#5E2A84] font-bold px-3 py-1 rounded-lg text-sm">
                         {formatCourseCode(subjectName)}

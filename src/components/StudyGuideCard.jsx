@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatCourseCode } from "../utils/courseUtils";
 import placeholderImages from '../utils/placeholders';
 import { FiHeart, FiTrash2 } from 'react-icons/fi';
+import OptimizedImage from './OptimizedImage';
 
 const StudyGuideCard = ({
   courseCode,
@@ -44,38 +45,30 @@ const StudyGuideCard = ({
   };
 
   return (
-    <div
-      {...props}
-      className={`relative flex flex-col items-center transition-all duration-300 ${pdfUrl ? 'cursor-pointer' : 'cursor-pointer'}`}
-      style={{
-        width: '14.5rem',
-        height: '18.75rem',
-        borderRadius: '16px',
-        boxShadow: hovered && !minimal
-          ? '0 0 20px 4px #e3b8f9, 0 4px 16px rgba(94,42,132,0.10)'
-          : '0 4px 16px rgba(94,42,132,0.10)',
-        border: '2px solid #e3b8f9',
-        background: '#fff',
-        transition: 'all 0.3s cubic-bezier(.4,2,.6,1)',
-        overflow: 'hidden',
-        padding: 0,
-        transform: hovered && !minimal ? 'scale(1.05)' : 'scale(1)',
-      }}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
+    <motion.div
+      className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl ${
+        minimal ? 'w-full' : 'w-full'
+      }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      id={`card-${courseCode}`}
+      onClick={handleCardClick}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      style={{ 
+        maxWidth: minimal ? 'none' : '400px',
+        minHeight: minimal ? 'auto' : '300px'
+      }}
       title={pdfUrl ? `Click to download ${courseCode} study guide` : undefined}
     >
       <div className="relative" style={{ width: '100%', height: '14.5rem' }}>
-        <img
+        <OptimizedImage
           src={imgError ? fallbackPlaceholder : imageUrl}
           alt={`${courseCode} study guide`}
           className="object-cover w-full"
-          loading="lazy"
-          decoding="async"
+          width={400}
+          height={232}
+          fallbackSrc={fallbackPlaceholder}
+          priority={true}
           style={{
             width: '100%',
             height: '14.5rem', // fixed height for all cards
@@ -207,7 +200,7 @@ const StudyGuideCard = ({
           )
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

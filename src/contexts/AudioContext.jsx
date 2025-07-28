@@ -14,8 +14,9 @@ export const AudioProvider = ({ children }) => {
   const shouldPlayRef = useRef(false); // NEW: tracks if play should be triggered after DOM update
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const preloadQueueRef = useRef([]); // Queue for preloading audio files
 
-  // Preload audio metadata for faster loading
+  // Enhanced preload audio with queue management
   const preloadAudio = useCallback((audioNote) => {
     if (!audioNote?.url || audioCacheRef.current.has(audioNote.url)) return;
     
@@ -28,16 +29,51 @@ export const AudioProvider = ({ children }) => {
     audio.addEventListener('loadedmetadata', () => {
       audioCacheRef.current.set(audioNote.url, {
         duration: audio.duration,
-        element: audio
+        element: audio,
+        loadedAt: Date.now()
       });
       audioPerformanceMonitor.trackLoadTime(audioNote.url, startTime);
+      
+      // Remove from preload queue
+      const index = preloadQueueRef.current.findIndex(item => item.url === audioNote.url);
+      if (index > -1) {
+        preloadQueueRef.current.splice(index, 1);
+      }
     });
     
     audio.addEventListener('error', (error) => {
       console.warn('Failed to preload audio:', audioNote.url);
       audioPerformanceMonitor.trackError(audioNote.url || audioNote.audioUrl || '', error);
+      
+      // Remove from preload queue on error
+      const index = preloadQueueRef.current.findIndex(item => item.url === audioNote.url);
+      if (index > -1) {
+        preloadQueueRef.current.splice(index, 1);
+      }
     });
+    
+    // Add to preload queue
+    preloadQueueRef.current.push({ url: audioNote.url, audio });
   }, []);
+
+  // Batch preload function for multiple audio files
+  const preloadAudioBatch = useCallback((audioNotes, maxConcurrent = 3) => {
+    const validNotes = audioNotes.filter(note => note?.url && !audioCacheRef.current.has(note.url));
+    
+    // Process in batches to avoid overwhelming the browser
+    const processBatch = (startIndex) => {
+      const batch = validNotes.slice(startIndex, startIndex + maxConcurrent);
+      batch.forEach(note => preloadAudio(note));
+      
+      if (startIndex + maxConcurrent < validNotes.length) {
+        setTimeout(() => processBatch(startIndex + maxConcurrent), 100);
+      }
+    };
+    
+    if (validNotes.length > 0) {
+      processBatch(0);
+    }
+  }, [preloadAudio]);
 
   // Optimized play function with immediate response
   const playAudio = useCallback(async (audioNote, index = null, retryCount = 0) => {
@@ -51,23 +87,24 @@ export const AudioProvider = ({ children }) => {
       index, 
       retryCount 
     });
-          // Check for audio URL in multiple possible fields
-      const audioUrl = audioNote?.url || audioNote?.audioUrl || '';
-      if (!audioUrl) {
-        console.error('❌ No audio URL provided:', audioNote);
-        return;
-      }
-      if (audioUrl === '') {
-        console.error('❌ Empty audio URL provided for:', audioNote.title);
-        return;
-      }
-      
-      // Safeguard against invalid URLs
-      if (audioUrl.includes('localhost') && !audioUrl.includes('firebasestorage')) {
-        console.error('❌ Invalid audio URL detected (localhost page URL):', audioUrl);
-        return;
-      }
-      
+    
+    // Check for audio URL in multiple possible fields
+    const audioUrl = audioNote?.url || audioNote?.audioUrl || '';
+    if (!audioUrl) {
+      console.error('❌ No audio URL provided:', audioNote);
+      return;
+    }
+    if (audioUrl === '') {
+      console.error('❌ Empty audio URL provided for:', audioNote.title);
+      return;
+    }
+    
+    // Safeguard against invalid URLs
+    if (audioUrl.includes('localhost') && !audioUrl.includes('firebasestorage')) {
+      console.error('❌ Invalid audio URL detected (localhost page URL):', audioUrl);
+      return;
+    }
+    
     const playStartTime = performance.now();
     // Ensure audio element is mounted before proceeding
     const audioElement = audioElementRef.current;
@@ -80,6 +117,7 @@ export const AudioProvider = ({ children }) => {
       }
       return;
     }
+    
     console.log('🎵 Setting up audio playback...');
     setIsLoading(true);
     // Set ref to trigger play after DOM update
@@ -92,10 +130,12 @@ export const AudioProvider = ({ children }) => {
       const idx = audioNotes.findIndex(n => n.id === audioNote.id);
       setCurrentIndex(idx);
     }
+    
     try {
       // Check if we have cached metadata
       const cached = audioCacheRef.current.get(audioNote.url);
       let needsToWait = false;
+      
       // Add 'playing' event listener to clear loading as soon as playback starts
       const onPlaying = () => {
         setIsLoading(false);
@@ -104,6 +144,7 @@ export const AudioProvider = ({ children }) => {
         audioElement.removeEventListener('playing', onPlaying);
       };
       audioElement.addEventListener('playing', onPlaying);
+      
       if (audioElement.src !== audioUrl) {
         console.log('🎵 Loading new audio URL:', audioUrl);
         console.log('🎵 Current audio element src:', audioElement.src);
@@ -156,18 +197,19 @@ export const AudioProvider = ({ children }) => {
           setIsLoading(false);
         };
         
-                  audioElement.addEventListener('error', onError);
-          audioElement.addEventListener('loadedmetadata', onReady);
-          console.log('🎵 Setting audio element src to:', audioUrl);
-          audioElement.src = audioUrl;
-          audioElement.preload = 'auto';
-          needsToWait = true;
+        audioElement.addEventListener('error', onError);
+        audioElement.addEventListener('loadedmetadata', onReady);
+        console.log('🎵 Setting audio element src to:', audioUrl);
+        audioElement.src = audioUrl;
+        audioElement.preload = 'auto';
+        needsToWait = true;
         
         // Clean up error listener when metadata loads
         audioElement.addEventListener('loadedmetadata', () => {
           audioElement.removeEventListener('error', onError);
         }, { once: true });
       }
+      
       if (!needsToWait) {
         console.log('🎵 Playing existing audio...');
         try {
@@ -184,13 +226,18 @@ export const AudioProvider = ({ children }) => {
           setIsLoading(false);
         }
       }
+      
       // Preload next few tracks in background
       const currentIdx = index !== null ? index : audioNotes.findIndex(n => n.id === audioNote.id);
+      const nextNotes = [];
       for (let i = 1; i <= 3; i++) {
         const nextIdx = (currentIdx + i) % audioNotes.length;
         if (audioNotes[nextIdx]) {
-          preloadAudio(audioNotes[nextIdx]);
+          nextNotes.push(audioNotes[nextIdx]);
         }
+      }
+      if (nextNotes.length > 0) {
+        preloadAudioBatch(nextNotes, 2);
       }
     } catch (error) {
       console.error('Failed to play audio:', error);
@@ -198,7 +245,7 @@ export const AudioProvider = ({ children }) => {
       setIsPlaying(false);
       setIsLoading(false);
     }
-  }, [audioNotes, preloadAudio]);
+  }, [audioNotes, preloadAudio, preloadAudioBatch]);
 
   const pauseAudio = useCallback(() => {
     setIsPlaying(false);
@@ -253,45 +300,71 @@ export const AudioProvider = ({ children }) => {
   }, [currentAudio, isPlaying, pauseAudio]);
 
   const nextTrack = useCallback(() => {
-    if (!audioNotes.length) return;
-    let nextIdx = (currentIndex + 1) % audioNotes.length;
-    playAudio(audioNotes[nextIdx], nextIdx);
+    if (audioNotes.length === 0) return;
+    const nextIndex = (currentIndex + 1) % audioNotes.length;
+    const nextAudio = audioNotes[nextIndex];
+    if (nextAudio) {
+      playAudio(nextAudio, nextIndex);
+    }
   }, [audioNotes, currentIndex, playAudio]);
 
   const prevTrack = useCallback(() => {
-    if (!audioNotes.length) return;
-    let prevIdx = (currentIndex - 1 + audioNotes.length) % audioNotes.length;
-    playAudio(audioNotes[prevIdx], prevIdx);
+    if (audioNotes.length === 0) return;
+    const prevIndex = currentIndex <= 0 ? audioNotes.length - 1 : currentIndex - 1;
+    const prevAudio = audioNotes[prevIndex];
+    if (prevAudio) {
+      playAudio(prevAudio, prevIndex);
+    }
   }, [audioNotes, currentIndex, playAudio]);
 
   const shuffleTrack = useCallback(() => {
-    if (!audioNotes.length) return;
-    let idx = Math.floor(Math.random() * audioNotes.length);
-    playAudio(audioNotes[idx], idx);
+    if (audioNotes.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * audioNotes.length);
+    const randomAudio = audioNotes[randomIndex];
+    if (randomAudio) {
+      playAudio(randomAudio, randomIndex);
+    }
   }, [audioNotes, playAudio]);
 
   const resetAudio = useCallback(() => {
     setCurrentAudio(null);
     setIsPlaying(false);
-    setCurrentIndex(-1);
     setIsLoading(false);
+    setCurrentIndex(-1);
+    setProgress(0);
+    setDuration(0);
     if (audioElementRef.current) {
       audioElementRef.current.pause();
-      audioElementRef.current.src = '';
+      audioElementRef.current.currentTime = 0;
     }
   }, []);
 
-  // Preload audio notes when they're set
   const setAudioNotesWithPreload = useCallback((notes) => {
     setAudioNotes(notes);
+    // Preload first few audio files for instant playback
+    if (notes.length > 0) {
+      const firstFew = notes.slice(0, 3);
+      preloadAudioBatch(firstFew, 2);
+    }
+  }, [preloadAudioBatch]);
+
+  // Cleanup function for audio cache
+  const cleanupAudioCache = useCallback(() => {
+    const now = Date.now();
+    const maxAge = 30 * 60 * 1000; // 30 minutes
     
-    // Preload first few audio files
-    notes.slice(0, 5).forEach(note => {
-      if (note.url || note.audioUrl) {
-        preloadAudio(note);
+    for (const [url, data] of audioCacheRef.current.entries()) {
+      if (now - data.loadedAt > maxAge) {
+        audioCacheRef.current.delete(url);
       }
-    });
-  }, [preloadAudio]);
+    }
+  }, []);
+
+  // Cleanup cache periodically
+  useEffect(() => {
+    const interval = setInterval(cleanupAudioCache, 5 * 60 * 1000); // Every 5 minutes
+    return () => clearInterval(interval);
+  }, [cleanupAudioCache]);
 
   // Add event listeners for debugging
   React.useEffect(() => {

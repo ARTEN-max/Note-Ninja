@@ -11,9 +11,10 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/performance'],
-          ui: ['framer-motion', 'react-icons', 'lucide-react'],
+          ui: ['framer-motion', 'react-icons', 'lucide-react', '@headlessui/react'],
           routing: ['react-router-dom'],
-          utils: ['react-window', 'three', 'vanta']
+          utils: ['react-window', 'three', 'vanta'],
+          analytics: ['@vercel/analytics/react', '@vercel/speed-insights/react']
         }
       }
     },
@@ -22,13 +23,35 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2
+      },
+      mangle: {
+        toplevel: true
       }
     },
-    sourcemap: false
+    sourcemap: false,
+    target: 'es2015',
+    cssCodeSplit: true,
+    reportCompressedSize: false
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/performance', 'framer-motion']
+    include: [
+      'react', 
+      'react-dom', 
+      'firebase/app', 
+      'firebase/auth', 
+      'firebase/firestore', 
+      'firebase/storage', 
+      'firebase/performance', 
+      'framer-motion',
+      'react-router-dom',
+      'react-icons',
+      'lucide-react',
+      '@headlessui/react'
+    ],
+    exclude: ['@vercel/analytics/react', '@vercel/speed-insights/react']
   },
   resolve: {
     alias: {
@@ -40,7 +63,7 @@ export default defineConfig({
       overlay: false
     }
   },
-  assetsInclude: ['**/*.jpg', '**/*.png', '**/*.gif', '**/*.svg'],
+  assetsInclude: ['**/*.jpg', '**/*.png', '**/*.gif', '**/*.svg', '**/*.webp'],
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
       if (hostType === 'js') {
@@ -49,5 +72,8 @@ export default defineConfig({
         return { relative: true }
       }
     }
+  },
+  define: {
+    __DEV__: false
   }
 }) 

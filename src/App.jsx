@@ -15,8 +15,9 @@ import { db } from "./firebase";
 import MiniPlayer from "./components/MiniPlayer";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import imageOptimizer from "./utils/imageOptimizer";
 
-// Lazy load components
+// Lazy load components with preloading hints
 const StudentInfoPage = lazy(() => import('./StudentInfoPage'));
 const SignIn = lazy(() => import('./SignIn'));
 const Register = lazy(() => import('./Register'));
@@ -40,10 +41,13 @@ const ChapterStudyCards = lazy(() => import('./pages/ChapterStudyCards'));
 const StudyGuideChapters = lazy(() => import('./pages/StudyGuideChapters'));
 const ForgotPassword = lazy(() => import('./ForgotPassword'));
 
-// Loading component
+// Optimized loading component with skeleton
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+    <div className="flex flex-col items-center space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="text-purple-600 font-medium">Loading...</div>
+    </div>
   </div>
 );
 
@@ -54,13 +58,15 @@ function PlaceholderPage() {
 function ProtectedRoute({ children }) {
   const [user, setUser] = useState(undefined);
   const location = useLocation();
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
     });
     return () => unsubscribe();
   }, []);
-  if (user === undefined) return <div style={{textAlign:'center',marginTop:100}}>Loading...</div>;
+  
+  if (user === undefined) return <LoadingSpinner />;
   if (!user) return <Navigate to="/signin" state={{ from: location }} replace />;
   return children;
 }
@@ -76,6 +82,35 @@ function AppContent() {
   const { currentUser } = useAuth();
   const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
+
+  // Preload critical images on app mount
+  useEffect(() => {
+    imageOptimizer.preloadCriticalImages();
+  }, []);
+
+  // Preload components based on current route
+  useEffect(() => {
+    const preloadComponents = () => {
+      // Preload components based on current path
+      if (location.pathname.startsWith('/browse')) {
+        import('./BrowsePage');
+      }
+      if (location.pathname.startsWith('/audio-notes')) {
+        import('./pages/AudioNotesPage');
+      }
+      if (location.pathname.startsWith('/my-notes')) {
+        import('./MyNotesPage');
+      }
+      if (location.pathname.startsWith('/profile') || location.pathname.startsWith('/account')) {
+        import('./pages/NewUserProfilePage');
+      }
+    };
+
+    // Small delay to avoid blocking initial render
+    const timer = setTimeout(preloadComponents, 1000);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   return (
     <div className="bg-sour-lavender flex flex-col md:flex-row min-h-screen w-full">
       {showSidebar && <Sidebar showMinimize={showMinimize} />}

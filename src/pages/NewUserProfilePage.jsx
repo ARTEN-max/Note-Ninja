@@ -8,6 +8,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import studyGuides from '../data/studyGuides';
 import { FiEdit2 } from 'react-icons/fi';
 import { FiPlay } from 'react-icons/fi';
+import OptimizedImage from '../components/OptimizedImage';
 
 const topCourses = [
   { name: 'Advanced Calculus', thumbnail: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?auto=format&fit=crop&w=200&q=80' },
@@ -269,10 +270,13 @@ const NewUserProfilePage = () => {
       <div className={`relative group ${isOwnProfile ? 'cursor-pointer' : ''}`}
            onClick={isOwnProfile ? handleProfilePicClick : undefined}>
         {user.profileImageUrl && user.profileImageUrl.trim() ? (
-          <img
+          <OptimizedImage
             src={user.profileImageUrl}
             alt="Profile"
             className="h-40 w-40 rounded-full object-cover"
+            width={160}
+            height={160}
+            priority={true}
           />
         ) : (
           <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -404,10 +408,13 @@ const NewUserProfilePage = () => {
                         }}
                       >
                         <div className="flex flex-col items-center">
-                          <img
+                          <OptimizedImage
                             src={imgSrc}
                             alt={name}
                             className="rounded-full w-32 h-32 object-cover mb-2 border-2 border-gray-700 mx-auto group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200"
+                            width={128}
+                            height={128}
+                            fallbackSrc={course.randomPlaceholder}
                           />
                           <div className="bg-gray-700 rounded-lg w-32 mt-1 mb-1 py-1 px-2 flex items-center justify-center mx-auto group-hover:bg-gray-600 group-hover:scale-105 group-hover:shadow-lg transition-all duration-200">
                             <span className="text-white text-base font-bold truncate w-full text-center">{name}</span>
@@ -444,12 +451,14 @@ const NewUserProfilePage = () => {
                   >
                     {/* Playlist cover image */}
                     <div className="relative w-full h-40 mb-4">
-                      <img
-                        src={playlist.coverImage || `https://picsum.photos/seed/${encodeURIComponent(playlist.id || playlist.name)}/400/200`}
-                        alt={playlist.name}
-                        className="rounded-md w-full h-40 object-cover"
-                        onError={e => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80'; }}
-                      />
+                                          <OptimizedImage
+                      src={playlist.coverImage || `https://picsum.photos/seed/${encodeURIComponent(playlist.id || playlist.name)}/400/200`}
+                      alt={playlist.name}
+                      className="rounded-md w-full h-40 object-cover"
+                      width={400}
+                      height={200}
+                      fallbackSrc="https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80"
+                    />
                     </div>
                     <h3 className="font-bold text-lg mb-1 text-white">{playlist.name}</h3>
                     <div className="text-sm text-gray-300 mb-2">By {user.name}</div>

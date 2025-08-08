@@ -10,10 +10,10 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/performance'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
           ui: ['framer-motion', 'react-icons', 'lucide-react', '@headlessui/react'],
           routing: ['react-router-dom'],
-          utils: ['react-window', 'three', 'vanta'],
+          utils: ['react-window'],
           analytics: ['@vercel/analytics/react', '@vercel/speed-insights/react']
         }
       }
@@ -32,9 +32,10 @@ export default defineConfig({
       }
     },
     sourcemap: false,
-    target: 'es2015',
+    target: 'es2019',
     cssCodeSplit: true,
-    reportCompressedSize: false
+    reportCompressedSize: true,
+    assetsInlineLimit: 4096
   },
   optimizeDeps: {
     include: [
@@ -44,14 +45,12 @@ export default defineConfig({
       'firebase/auth', 
       'firebase/firestore', 
       'firebase/storage', 
-      'firebase/performance', 
       'framer-motion',
       'react-router-dom',
       'react-icons',
       'lucide-react',
       '@headlessui/react'
-    ],
-    exclude: ['@vercel/analytics/react', '@vercel/speed-insights/react']
+    ]
   },
   resolve: {
     alias: {

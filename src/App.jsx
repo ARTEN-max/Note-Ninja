@@ -85,6 +85,14 @@ function AppContent() {
   const showSidebar = !['/signin', '/register', '/student-info', '/', '/about'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
 
+  // Redirect authenticated users away from landing to dashboard
+  useEffect(() => {
+    if (location.pathname === '/' && currentUser) {
+      // Send to dashboard (default route -> NoteDashboard)
+      window.history.replaceState(null, '', '/browse');
+    }
+  }, [location.pathname, currentUser]);
+
   // Preload critical images on app mount
   useEffect(() => {
     imageOptimizer.preloadCriticalImages();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
@@ -10,6 +10,8 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state && location.state.from && location.state.from.pathname) ? location.state.from.pathname : '/browse';
   const vantaRef = useRef(null);
   const vantaEffect = useRef(null);
 
@@ -87,7 +89,7 @@ const SignIn = () => {
     setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message.replace("Firebase:", "").replace("(auth/", "").replace(")", "").trim());
       setLoading(false);

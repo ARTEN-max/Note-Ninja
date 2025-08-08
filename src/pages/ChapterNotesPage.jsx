@@ -43,7 +43,6 @@ const ChapterNotesPage = () => {
       }
     };
     fetchNotes();
-    // eslint-disable-next-line
   }, [guideId, chapterNumber]);
 
   useEffect(() => {

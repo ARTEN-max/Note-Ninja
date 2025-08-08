@@ -71,7 +71,6 @@ const PlaylistViewPage = () => {
         setDurations(prev => ({ ...prev, [note.id]: audio.duration }));
       });
     });
-    // eslint-disable-next-line
   }, [audioNotes]);
 
   // Handle image upload

@@ -5,7 +5,7 @@ import DownloadNotesPage from "./DownloadNotesPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import MobileNav from "./components/MobileNav";
 import SetupStudyGuides from "./components/SetupStudyGuides";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { useAuth } from "./contexts/AuthContext";
 import { AudioProvider, useAudio } from './contexts/AudioContext';
 import "./App.css";
 import { onAuthStateChanged } from "firebase/auth";
@@ -305,11 +305,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AudioProvider>
-          <AppContent />
-        </AudioProvider>
-      </AuthProvider>
+      <AudioProvider>
+        <AppContent />
+      </AudioProvider>
     </BrowserRouter>
   );
 }

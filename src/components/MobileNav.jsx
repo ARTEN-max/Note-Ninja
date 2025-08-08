@@ -8,7 +8,7 @@ import { useAudio } from '../contexts/AudioContext';
 import ConfirmModal from "../components/ConfirmModal"; // 
 
 const navItems = [
-  { label: "Home", to: "/", icon: <HomeIcon className="w-6 h-6" /> },
+  { label: "Home", to: "/dashboard", icon: <HomeIcon className="w-6 h-6" /> },
   { label: "Browse", to: "/browse", icon: <BookOpenIcon className="w-6 h-6" /> },
   { label: "Audio", to: "/audio-notes", icon: <MusicalNoteIcon className="w-6 h-6" /> },
   { label: "Profile", to: "/profile", icon: <UserIcon className="w-6 h-6" /> },

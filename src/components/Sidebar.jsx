@@ -11,7 +11,7 @@ import { Home, Search, Headphones, Upload, FileText, User } from "lucide-react";
 
 
 const navItems = [
-  { label: "Dashboard", to: "/", icon: <Home size={20} /> },
+  { label: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
   { label: "Browse & Discover", to: "/browse", icon: <Search size={20} /> },
   { label: "Audio Notes", to: "/audio-notes", icon: <Headphones size={20} /> },
   { label: "Request", to: "/upload", icon: <Upload size={20} /> },

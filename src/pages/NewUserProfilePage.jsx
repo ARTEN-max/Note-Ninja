@@ -129,11 +129,10 @@ const NewUserProfilePage = () => {
           faculty: userData.faculty || '',
         });
         setError("");
-        if (user && currentUser) {
-          setIsOwnProfile(
-            (!username && user.uid === currentUser.uid) ||
-            (username && user.username && currentUser && user.username.toLowerCase() === currentUser.email?.split('@')[0]?.toLowerCase())
-          );
+        if (currentUser) {
+          const computedOwn = (!username && userUid === currentUser.uid) ||
+            (username && userData.username && userData.username.toLowerCase() === currentUser.email?.split('@')[0]?.toLowerCase());
+          setIsOwnProfile(!!computedOwn);
         } else {
           setIsOwnProfile(false);
         }

@@ -245,7 +245,7 @@ export const AudioProvider = ({ children }) => {
       setIsPlaying(false);
       setIsLoading(false);
     }
-  }, [audioNotes, preloadAudio, preloadAudioBatch]);
+  }, [audioNotes, preloadAudioBatch]);
 
   const pauseAudio = useCallback(() => {
     setIsPlaying(false);

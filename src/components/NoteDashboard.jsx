@@ -124,7 +124,7 @@ const NoteDashboard = () => {
       map[guide.id] = images[idx];
     });
     return map;
-  }, [studyGuides.length, placeholderImages.length]);
+  }, []);
 
   useEffect(() => {
     // Fetch like counts and user likes for all study guides

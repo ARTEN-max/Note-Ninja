@@ -60,7 +60,7 @@ const ChapterNotesPage = () => {
       }
     };
     fetchChapterTitle();
-  }, [guideId]);
+  }, [guideId, chapterNumber]);
 
   useEffect(() => {
     // Fetch user's myNotes from localStorage

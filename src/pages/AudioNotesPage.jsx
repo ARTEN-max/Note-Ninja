@@ -115,11 +115,11 @@ const AudioNotesPage = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatDate = (timestamp) => {
+  const formatDate = useCallback((timestamp) => {
     if (!timestamp) return 'Unknown date';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString();
-  };
+  }, []);
 
   // Virtualized list item renderer for better performance
   const renderRow = useCallback(({ index, style }) => {
@@ -135,7 +135,6 @@ const AudioNotesPage = () => {
           isAdmin={isAdmin}
           handleDelete={handleDelete}
           formatDate={formatDate}
-          formatDuration={formatDuration}
           onAddToPlaylist={n => { setPlaylistMenuNoteId(n.id); setMenuAnchor(null); }}
           onRowPlay={onRowPlay}
           closePlaylistMenu={() => setPlaylistMenuNoteId(null)}
@@ -170,7 +169,7 @@ const AudioNotesPage = () => {
         )}
       </div>
     );
-  }, [audioNotesLocal, isAdmin, handleDelete, formatDate, formatDuration, onRowPlay, playlists, playlistMenuNoteId, handleAddToPlaylist]);
+  }, [audioNotesLocal, isAdmin, handleDelete, formatDate, onRowPlay, playlists, playlistMenuNoteId, handleAddToPlaylist]);
 
   // Fetch audio notes from Firestore
   useEffect(() => {
@@ -244,16 +243,16 @@ const AudioNotesPage = () => {
   }, [audioNotesLocal]);
 
   // Fetch user playlists
-  const fetchPlaylists = async () => {
+  const fetchPlaylists = useCallback(async () => {
     if (!currentUser) return;
     const playlistsRef = collection(db, 'audioPlaylists');
     const q = query(playlistsRef, where('userId', '==', currentUser.uid));
     const snapshot = await getDocs(q);
     setPlaylists(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  };
+  }, [currentUser]);
   useEffect(() => {
     fetchPlaylists();
-  }, [currentUser]);
+  }, [fetchPlaylists]);
 
   // Close menu on outside click
   useEffect(() => {

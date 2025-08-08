@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams, useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import DownloadNotesPage from "./DownloadNotesPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
@@ -80,6 +80,7 @@ function RedirectToAccountProfile() {
 
 function AppContent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { currentAudio } = useAudio();
   const { currentUser } = useAuth();
   const showSidebar = !['/signin', '/register', '/student-info', '/', '/about'].includes(location.pathname);
@@ -88,9 +89,9 @@ function AppContent() {
   // Redirect authenticated users away from landing to dashboard
   useEffect(() => {
     if (location.pathname === '/' && currentUser) {
-      window.history.replaceState(null, '', '/dashboard');
+      navigate('/dashboard', { replace: true });
     }
-  }, [location.pathname, currentUser]);
+  }, [location.pathname, currentUser, navigate]);
 
   // Preload critical images on app mount
   useEffect(() => {

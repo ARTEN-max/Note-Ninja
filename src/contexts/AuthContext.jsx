@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
     return unsubscribe;
-  }, [currentUser]);
+  }, []);
 
   const value = {
     currentUser,

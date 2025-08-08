@@ -40,6 +40,8 @@ const ChapterNotesPage = lazy(() => import('./pages/ChapterNotesPage'));
 const ChapterStudyCards = lazy(() => import('./pages/ChapterStudyCards'));
 const StudyGuideChapters = lazy(() => import('./pages/StudyGuideChapters'));
 const ForgotPassword = lazy(() => import('./ForgotPassword'));
+const LandingPage = lazy(() => import('./LandingPage'));
+const AboutPage = lazy(() => import('./pages/About'));
 
 // Optimized loading component with skeleton
 const LoadingSpinner = () => (
@@ -80,7 +82,7 @@ function AppContent() {
   const location = useLocation();
   const { currentAudio } = useAudio();
   const { currentUser } = useAuth();
-  const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
+  const showSidebar = !['/signin', '/register', '/student-info', '/', '/about'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
 
   // Preload critical images on app mount
@@ -279,6 +281,16 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <LandingPage />
+              </Suspense>
+            } />
+            <Route path="/about" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <AboutPage />
+              </Suspense>
+            } />
             <Route
               path="/*"
               element={
@@ -292,12 +304,12 @@ function AppContent() {
               }
             />
           </Routes>
-          <MiniPlayer />
+          {showSidebar && <MiniPlayer />}
           <Analytics />
           <SpeedInsights />
         </div>
       </div>
-      {currentUser && <MobileNav />}
+      {currentUser && showSidebar && <MobileNav />}
     </div>
   );
 }

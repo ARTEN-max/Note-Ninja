@@ -11,7 +11,7 @@ const SignIn = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state && location.state.from && location.state.from.pathname) ? location.state.from.pathname : '/browse';
+  const from = (location.state && location.state.from && location.state.from.pathname) ? location.state.from.pathname : '/dashboard';
   const vantaRef = useRef(null);
   const vantaEffect = useRef(null);
 

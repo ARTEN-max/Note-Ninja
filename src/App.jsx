@@ -88,8 +88,7 @@ function AppContent() {
   // Redirect authenticated users away from landing to dashboard
   useEffect(() => {
     if (location.pathname === '/' && currentUser) {
-      // Send to dashboard (default route -> NoteDashboard)
-      window.history.replaceState(null, '', '/browse');
+      window.history.replaceState(null, '', '/dashboard');
     }
   }, [location.pathname, currentUser]);
 
@@ -289,6 +288,15 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <NoteDashboard />
+                  </Suspense>
+                </div>
+              </ProtectedRoute>
+            } />
             <Route path="/" element={
               <Suspense fallback={<LoadingSpinner />}>
                 <LandingPage />

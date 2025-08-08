@@ -217,7 +217,9 @@ const NewUserProfilePage = () => {
               if (audioDoc.exists()) {
                 audioNotes.push({ id: audioDoc.id, ...audioDoc.data() });
               }
-            } catch {}
+            } catch (err) {
+              console.warn('Failed to fetch audio note', audioId, err);
+            }
           }
           audiosByPlaylist[pl.id] = audioNotes;
         } else {

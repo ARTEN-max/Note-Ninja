@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "./App.jsx";
 import "./index.css";
-import { AuthProvider } from "./contexts/AuthContext.jsx";
+import { AuthProvider } from "./contexts/AuthContext";
 import performanceMonitor from "./utils/performanceMonitor";
 import imageOptimizer from "./utils/imageOptimizer";
 
@@ -22,17 +22,30 @@ if (typeof window !== 'undefined') {
   document.head.appendChild(fontLink);
 }
 
-// Register service worker for caching and offline support
+// Register service worker for caching and offline support (production only)
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
+  if (import.meta && import.meta.env && import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('SW registered: ', registration);
+        })
+        .catch((registrationError) => {
+          console.log('SW registration failed: ', registrationError);
+        });
+    });
+  } else {
+    // In development, ensure any existing service workers are unregistered
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        registration.unregister();
       });
-  });
+    }).catch(() => {});
+    // Also clear caches created by any prior SW
+    if (window.caches && typeof window.caches.keys === 'function') {
+      caches.keys().then(keys => keys.forEach(key => caches.delete(key))).catch(() => {});
+    }
+  }
 }
 
 // Optimize React rendering

@@ -5,7 +5,7 @@ import DownloadNotesPage from "./DownloadNotesPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import MobileNav from "./components/MobileNav";
 import SetupStudyGuides from "./components/SetupStudyGuides";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { useAuth } from "./contexts/AuthContext";
 import { AudioProvider, useAudio } from './contexts/AudioContext';
 import "./App.css";
 import { onAuthStateChanged } from "firebase/auth";
@@ -40,6 +40,8 @@ const ChapterNotesPage = lazy(() => import('./pages/ChapterNotesPage'));
 const ChapterStudyCards = lazy(() => import('./pages/ChapterStudyCards'));
 const StudyGuideChapters = lazy(() => import('./pages/StudyGuideChapters'));
 const ForgotPassword = lazy(() => import('./ForgotPassword'));
+const LandingPage = lazy(() => import('./LandingPage'));
+const AboutPage = lazy(() => import('./pages/About'));
 
 // Optimized loading component with skeleton
 const LoadingSpinner = () => (
@@ -80,8 +82,15 @@ function AppContent() {
   const location = useLocation();
   const { currentAudio } = useAudio();
   const { currentUser } = useAuth();
-  const showSidebar = !['/signin', '/register', '/student-info'].includes(location.pathname);
+  const showSidebar = !['/signin', '/register', '/student-info', '/', '/about'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
+
+  // Redirect authenticated users away from landing to dashboard
+  useEffect(() => {
+    if (location.pathname === '/' && currentUser) {
+      window.history.replaceState(null, '', '/dashboard');
+    }
+  }, [location.pathname, currentUser]);
 
   // Preload critical images on app mount
   useEffect(() => {
@@ -279,6 +288,25 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <NoteDashboard />
+                  </Suspense>
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <LandingPage />
+              </Suspense>
+            } />
+            <Route path="/about" element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <AboutPage />
+              </Suspense>
+            } />
             <Route
               path="/*"
               element={
@@ -292,12 +320,12 @@ function AppContent() {
               }
             />
           </Routes>
-          <MiniPlayer />
+          {showSidebar && <MiniPlayer />}
           <Analytics />
           <SpeedInsights />
         </div>
       </div>
-      {currentUser && <MobileNav />}
+      {currentUser && showSidebar && <MobileNav />}
     </div>
   );
 }
@@ -305,11 +333,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AudioProvider>
-          <AppContent />
-        </AudioProvider>
-      </AuthProvider>
+      <AudioProvider>
+        <AppContent />
+      </AudioProvider>
     </BrowserRouter>
   );
 }

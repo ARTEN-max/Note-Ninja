@@ -1,16 +1,12 @@
 // Optimized Service Worker for Note Ninja
-const CACHE_NAME = 'note-ninja-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
+const CACHE_NAME = 'note-ninja-v2';
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
 
 // Critical resources to cache immediately
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/src/main.jsx',
-  '/src/App.jsx',
-  '/src/index.css',
-  '/src/App.css',
   '/placeholders/city.jpg',
   '/placeholders/strawberry.jpg',
   '/placeholders/dog.jpg',
@@ -65,7 +61,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(handleImageRequest(request));
   } else if (request.destination === 'audio') {
     event.respondWith(handleAudioRequest(request));
-  } else if (url.pathname.startsWith('/src/') || url.pathname.endsWith('.js') || url.pathname.endsWith('.jsx')) {
+  } else if (url.pathname.startsWith('/assets/') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
     event.respondWith(handleScriptRequest(request));
   } else {
     event.respondWith(handleGeneralRequest(request));

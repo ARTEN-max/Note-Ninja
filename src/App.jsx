@@ -84,6 +84,7 @@ function AppContent() {
   const { currentUser } = useAuth();
   const showSidebar = !['/signin', '/register', '/student-info', '/', '/about'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
+  const isLanding = location.pathname === '/';
 
   // Redirect authenticated users away from landing to dashboard
   useEffect(() => {
@@ -121,10 +122,10 @@ function AppContent() {
   }, [location.pathname]);
 
   return (
-    <div className="bg-sour-lavender flex flex-col md:flex-row min-h-screen w-full">
+    <div className={`${isLanding ? 'bg-black' : 'bg-sour-lavender'} flex flex-col md:flex-row min-h-screen w-full`}>
       {showSidebar && <Sidebar showMinimize={showMinimize} />}
       <div className={showSidebar ? 'w-full md:ml-[240px] transition-all duration-300' : 'w-full'} style={{ width: '100%' }}>
-        <div className="px-4 md:px-0 w-full">
+        <div className={isLanding ? 'px-0 w-full' : 'px-4 md:px-0 w-full'}>
           <Routes>
             <Route path="/signin" element={
               <Suspense fallback={<LoadingSpinner />}>

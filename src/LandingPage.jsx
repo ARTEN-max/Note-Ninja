@@ -90,21 +90,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Quick pills */}
-            <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-3xl">
-              {["Faster Recall", "Audio Notes", "Smart Reviews", "Community"].map((label, i) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, y: 8 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="rounded-full bg-white/10 border border-white/10 px-4 py-2 text-sm text-zinc-100 text-center"
-                >
-                  {label}
-                </motion.div>
-              ))}
-            </div>
+            {/* quick feature pills removed per request */}
           </div>
         </Section>
       </div>
@@ -219,7 +205,7 @@ export default function LandingPage() {
       </Section>
 
       {/* FAQ */}
-      <Section className="py-12">
+      <Section className="py-10">
         <h2 className="text-3xl font-bold text-center mb-6">Frequently asked</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
@@ -228,9 +214,9 @@ export default function LandingPage() {
             { q: 'Does it work on mobile?', a: 'Absolutely. It’s optimized for phones, tablets, and desktops.' },
             { q: 'How do audio notes work?', a: 'We prefetch and cache tracks for instant playback and minimal waiting.' }
           ].map((item) => (
-            <details key={item.q} className="bg-white/5 rounded-2xl p-5 border border-white/10">
-              <summary className="cursor-pointer font-semibold">{item.q}</summary>
-              <p className="mt-2 text-zinc-300">{item.a}</p>
+            <details key={item.q} className="bg-white/5 rounded-xl p-3 md:p-4 border border-white/10">
+              <summary className="cursor-pointer font-semibold text-base">{item.q}</summary>
+              <p className="mt-2 text-zinc-300 text-sm">{item.a}</p>
             </details>
           ))}
         </div>

@@ -14,6 +14,31 @@ const navItems = [
   { label: "Profile", to: "/profile", icon: <UserIcon className="w-6 h-6" /> },
 ];
 
+// Lightweight route prefetcher
+const prefetchRoute = (path) => {
+  try {
+    switch (path) {
+      case '/dashboard':
+        import('../components/NoteDashboard');
+        break;
+      case '/browse':
+        import('../BrowsePage');
+        break;
+      case '/audio-notes':
+        import('../pages/AudioNotesPage');
+        break;
+      case '/account':
+        import('../pages/NewUserProfilePage');
+        break;
+      case '/profile':
+        import('../pages/UserProfilePage');
+        break;
+      default:
+        break;
+    }
+  } catch {}
+};
+
 export default function MobileNav() {
   const { currentUser } = useAuth();
   const { resetAudio } = useAudio();
@@ -48,6 +73,8 @@ export default function MobileNav() {
                   navigate(item.to);
                 }
               }}
+              onMouseEnter={() => prefetchRoute(item.to)}
+              onTouchStart={() => prefetchRoute(item.to)}
               className={`flex flex-col items-center text-xs font-medium ${
                 location.pathname === item.to || (item.label === "Profile" && location.pathname === "/account") ? "text-pink-700" : "text-gray-500"
               }`}

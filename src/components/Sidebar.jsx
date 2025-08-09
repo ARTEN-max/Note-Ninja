@@ -9,6 +9,36 @@ import { useAuth } from "../contexts/AuthContext";
 import { useAudio } from '../contexts/AudioContext';
 import { Home, Search, Headphones, Upload, FileText, User } from "lucide-react";
 
+// Lightweight route prefetcher to warm up lazy chunks
+const prefetchRoute = (path) => {
+  try {
+    switch (path) {
+      case '/dashboard':
+        import('../components/NoteDashboard');
+        break;
+      case '/browse':
+        import('../BrowsePage');
+        break;
+      case '/audio-notes':
+        import('../pages/AudioNotesPage');
+        break;
+      case '/upload':
+        import('../UploadPage');
+        break;
+      case '/my-notes':
+        import('../MyNotesPage');
+        break;
+      case '/account':
+        import('../pages/NewUserProfilePage');
+        break;
+      case '/profile':
+        import('../pages/UserProfilePage');
+        break;
+      default:
+        break;
+    }
+  } catch {}
+};
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
@@ -101,6 +131,9 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
         <NavLink
           key={item.label}
           to={item.to}
+          onMouseEnter={() => prefetchRoute(item.to)}
+          onFocus={() => prefetchRoute(item.to)}
+          onTouchStart={() => prefetchRoute(item.to)}
           className={({ isActive }) =>
             `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition duration-200 ${
               isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'
@@ -131,7 +164,7 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
       ))}
 
       {/* Account/Profile */}
-      <NavLink to="/account" className="flex items-center gap-2 w-full px-4 py-2 rounded-lg hover:bg-[#ecd6fa]">
+      <NavLink to="/account" className="flex items-center gap-2 w-full px-4 py-2 rounded-lg hover:bg-[#ecd6fa]" onMouseEnter={() => prefetchRoute('/account')} onFocus={() => prefetchRoute('/account')} onTouchStart={() => prefetchRoute('/account')}>
         <span className="sidebar-icon">
           {profileImageUrl || currentUser?.photoURL ? (
             <img

@@ -3,11 +3,22 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext";
-import performanceMonitor from "./utils/performanceMonitor";
+import performanceMonitor, { preconnectOrigins, warmRoutesWhenIdle } from "./utils/performanceMonitor";
 import imageOptimizer from "./utils/imageOptimizer";
 
-// Initialize performance monitoring
+// Initialize performance tweaks (no heavy work)
 performanceMonitor;
+
+// Preconnect important origins early
+if (typeof window !== 'undefined') {
+  preconnectOrigins([
+    'https://firebaseapp.com',
+    'https://firestore.googleapis.com',
+    'https://storage.googleapis.com',
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com'
+  ]);
+}
 
 // Preload critical resources
 if (typeof window !== 'undefined') {
@@ -20,6 +31,11 @@ if (typeof window !== 'undefined') {
   fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap';
   fontLink.as = 'style';
   document.head.appendChild(fontLink);
+
+  // Warm common routes on landing
+  if (location && location.pathname === '/') {
+    warmRoutesWhenIdle(['/dashboard','/browse','/audio-notes']);
+  }
 }
 
 // Register service worker for caching and offline support (production only)

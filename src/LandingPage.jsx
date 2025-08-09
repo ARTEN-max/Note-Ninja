@@ -109,6 +109,58 @@ export default function LandingPage() {
         </Section>
       </div>
 
+      {/* Reference-style left-aligned hero copy */}
+      <Section className="py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div>
+            <h2 className="uppercase font-extrabold tracking-tight text-4xl md:text-6xl leading-[0.95]">
+              Rethink how
+              <br />
+              you study at Waterloo
+            </h2>
+          </div>
+          <div className="text-zinc-300 max-w-xl">
+            <p>
+              NoteNinja is an AI-powered study platform built for Waterloo students, offering free,
+              downloadable study guides for your toughest courses. Tune into podcast-style audio notes on the go
+              whether you're at the gym or commuting. Create your profile, explore notes from fellow students,
+              and build your own study playlists.
+            </p>
+            <div className="mt-6">
+              <button onClick={() => navigate('/register')} className="px-5 py-2 rounded-full border border-white/20 hover:border-white/40">
+                Try it now
+              </button>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Select Courses */}
+      <Section className="py-10">
+        <h2 className="uppercase font-extrabold tracking-tight text-4xl md:text-6xl text-center mb-8">Select Courses</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { code: 'CS246', title: 'Object-Oriented Software Dev', img: '/placeholders/city.jpg' },
+            { code: 'MATH137', title: 'Calculus 1', img: '/placeholders/strawberry.jpg' },
+            { code: 'STAT230', title: 'Probability', img: '/placeholders/dog.jpg' },
+            { code: 'MATH135', title: 'Algebra', img: '/placeholders/cool.jpg' },
+          ].map((c) => (
+            <div key={c.code} className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <img src={c.img} alt={c.title} className="h-36 w-full object-cover" />
+              <div className="p-4 flex flex-col gap-1">
+                <div className="text-sm text-zinc-300">{c.code}</div>
+                <div className="font-semibold">{c.title}</div>
+                <div className="mt-3">
+                  <button onClick={() => navigate(`/guide/${c.code}/notes`)} className="px-3 py-1.5 rounded-full text-sm bg-white text-black font-bold hover:bg-zinc-100">
+                    Open
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
       {/* Stats */}
       <Section className="py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">

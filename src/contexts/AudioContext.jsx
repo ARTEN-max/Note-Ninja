@@ -204,6 +204,15 @@ export const AudioProvider = ({ children }) => {
         audioElement.src = audioUrl;
         audioElement.preload = 'auto';
         needsToWait = true;
+
+        // Try to play immediately while still in user gesture call stack
+        try {
+          await audioElement.play();
+          console.log('✅ Immediate play attempt succeeded');
+          needsToWait = false;
+        } catch (e) {
+          console.log('⏳ Immediate play attempt deferred until metadata:', e?.name || e);
+        }
         
         // Clean up error listener when metadata loads
         audioElement.addEventListener('loadedmetadata', () => {

@@ -182,6 +182,28 @@ const MiniPlayer = () => {
     return () => observer.disconnect();
   }, [audioElementRef]);
 
+  useEffect(() => {
+    // Warm up audio on first user interaction to allow immediate play later
+    const warmup = () => {
+      const el = audioElementRef.current;
+      if (!el) return;
+      try {
+        el.play().then(() => {
+          el.pause();
+          el.currentTime = 0;
+        }).catch(() => {});
+      } catch {}
+      window.removeEventListener('touchstart', warmup);
+      window.removeEventListener('click', warmup);
+    };
+    window.addEventListener('touchstart', warmup, { once: true, passive: true });
+    window.addEventListener('click', warmup, { once: true });
+    return () => {
+      window.removeEventListener('touchstart', warmup);
+      window.removeEventListener('click', warmup);
+    };
+  }, [audioElementRef]);
+
   return (
     <>
       {/* Hidden audio element for the AudioContext to control */}

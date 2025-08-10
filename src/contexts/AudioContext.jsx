@@ -22,7 +22,8 @@ export const AudioProvider = ({ children }) => {
     
     const startTime = performance.now();
     const audio = new Audio();
-    audio.preload = 'metadata';
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
     audio.src = audioNote.url;
     
     // Store in cache once metadata is loaded

@@ -1,10 +1,28 @@
-import React, { useRef, useState, memo } from "react";
+import React, { useRef, useState, memo, useEffect } from "react";
 import { FiTrash2, FiPlus } from "react-icons/fi";
 import { useAudio } from '../contexts/AudioContext';
 
 const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, formatDuration, onAddToPlaylist, onRowPlay, closePlaylistMenu }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { currentAudio, isPlaying, isLoading, audioElementRef } = useAudio();
+  const { currentAudio, isPlaying, isLoading, audioElementRef, preloadAudio } = useAudio();
+  const rowRef = useRef(null);
+  
+  // Prefetch audio when row enters viewport
+  useEffect(() => {
+    if (!note?.url) return;
+    const el = rowRef.current;
+    if (!('IntersectionObserver' in window) || !el) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          preloadAudio({ url: note.url });
+          io.disconnect();
+        }
+      });
+    }, { rootMargin: '200px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [note?.url, preloadAudio]);
   
   // Check if this note is currently playing
   const isCurrentlyPlaying = currentAudio?.id === note.id && isPlaying;
@@ -31,6 +49,7 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
 
   return (
     <div
+      ref={rowRef}
       className={`flex items-center px-10 py-4 border-b border-[#b266ff]/10 transition group audio-note-row ${
         note.url ? "hover:bg-[#2a1a3a] cursor-pointer" : "opacity-50 cursor-not-allowed"
       } ${isCurrentlyPlaying ? "bg-[#2a1a3a]/50" : ""}`}

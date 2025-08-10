@@ -187,7 +187,9 @@ const MiniPlayer = () => {
       {/* Hidden audio element for the AudioContext to control */}
       <audio
         ref={audioElementRef}
-        preload="metadata"
+        preload="auto"
+        playsInline
+        crossOrigin="anonymous"
         style={{ display: 'none' }}
         onPlay={() => console.log('🎵 Audio play event')}
         onPause={() => console.log('🎵 Audio pause event')}

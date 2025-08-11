@@ -1,12 +1,11 @@
 // Optimized Service Worker for Note Ninja
-const CACHE_NAME = 'note-ninja-v2';
-const STATIC_CACHE = 'static-v2';
-const DYNAMIC_CACHE = 'dynamic-v2';
+const CACHE_NAME = 'note-ninja-v3';
+const STATIC_CACHE = 'static-v3';
+const DYNAMIC_CACHE = 'dynamic-v3';
 
 // Critical resources to cache immediately
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/placeholders/city.jpg',
   '/placeholders/strawberry.jpg',
   '/placeholders/dog.jpg',
@@ -53,6 +52,12 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-GET requests
   if (request.method !== 'GET') {
+    return;
+  }
+
+  // Always network-first for navigation requests to avoid stale landing
+  if (request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
+    event.respondWith(handleGeneralRequest(request));
     return;
   }
 

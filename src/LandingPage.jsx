@@ -63,20 +63,20 @@ export default function LandingPage() {
           preload="metadata"
           poster="/placeholders/city.jpg"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/65 to-black" />
-        <Section className="pt-12 md:pt-20 pb-10 md:pb-16 min-h-[70vh] md:min-h-[80vh] flex items-center">
-          <div className="max-w-2xl">
-            <motion.h1 initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:.5}} className="text-[14vw] md:text-7xl leading-[0.9] font-extrabold tracking-tight">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/60 to-black/80" />
+        <Section className="pt-16 md:pt-24 pb-12 md:pb-20 min-h-[70vh] md:min-h-[85vh] flex items-center relative z-10">
+          <div className="max-w-2xl md:max-w-3xl bg-black/35 md:bg-transparent backdrop-blur-[2px] md:backdrop-blur-0 rounded-xl md:rounded-none p-4 md:p-0">
+            <motion.h1 initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:.5}} className="text-[14vw] md:text-7xl leading-[0.9] font-extrabold tracking-tight" style={{textShadow:'0 6px 30px rgba(0,0,0,0.7)'}}>
               NOTE
               <span className="block" style={{color:ACCENT}}>NINJA</span>
             </motion.h1>
-            <p className="mt-3 text-zinc-300">Waterloo’s Smartest Study Tool.</p>
-            <p className="mt-3 text-zinc-300 max-w-xl">AI-powered study guides, exam patterns, and smarter prep — built for Waterloo courses.</p>
+            <p className="mt-3 text-white">Waterloo’s Smartest Study Tool.</p>
+            <p className="mt-3 text-zinc-200 max-w-xl">AI-powered study guides, exam patterns, and smarter prep — built for Waterloo courses.</p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto max-w-sm">
               <button onClick={() => navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto" style={{background:ACCENT,color:'#00150A'}}>Start Studying</button>
               <button onClick={() => navigate('/browse')} className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 w-full sm:w-auto">Browse Study Guides</button>
             </div>
-            <div className="mt-8 flex items-center gap-2 text-zinc-300"><ChevronDownIcon className="w-5 h-5"/>Scroll</div>
+            <div className="mt-8 flex items-center gap-2 text-zinc-200"><ChevronDownIcon className="w-5 h-5"/>Scroll</div>
           </div>
         </Section>
       </div>

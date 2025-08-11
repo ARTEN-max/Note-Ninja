@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDownIcon, CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import SiteFooter from './components/SiteFooter';
 
-const ACCENT = '#3AF38C';
+const ACCENT = '#8A2BE2';
 
 const Section = ({ children, className = '' }) => (
   <section className={`w-full px-4 ${className}`}>
@@ -32,22 +32,22 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen w-full bg-black text-white overflow-x-hidden">
       <style>{`
-        .neon-glow{box-shadow:0 0 40px rgba(58,243,140,.25),0 0 80px rgba(98,0,234,.15)}
+        .neon-glow{box-shadow:0 0 40px rgba(138,43,226,.25),0 0 80px rgba(98,0,234,.15)}
         .marquee{display:flex;gap:2rem;animation:mar 25s linear infinite;white-space:nowrap}
         @keyframes mar{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       `}</style>
 
       {/* Sticky Nav */}
       <header className={`sticky top-0 z-40 transition-colors ${navSolid ? 'bg-black/70 backdrop-blur border-b border-white/10' : 'bg-transparent'} `}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 h-14">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 md:px-8 h-14 md:h-16">
           <button onClick={() => navigate('/')} className="font-extrabold tracking-tight text-base sm:text-lg">NOTE NINJA</button>
-          <nav className="hidden sm:flex items-center gap-6 text-[11px] uppercase tracking-wide">
+          <nav className="hidden sm:flex items-center gap-8 md:gap-10 text-[11px] uppercase tracking-wide">
             <Link to="/browse" className="hover:text-[var(--accent,#3AF38C)]">Study Guides</Link>
             <Link to="/about" className="hover:text-[var(--accent,#3AF38C)]">About</Link>
             <a href="#faq" className="hover:text-[var(--accent,#3AF38C)]">FAQ</a>
             <Link to="/signin" className="hover:text-[var(--accent,#3AF38C)]">Sign In</Link>
           </nav>
-          <button onClick={() => navigate('/register')} className="px-4 py-2 rounded-full font-bold shadow-md" style={{ background: ACCENT, color: '#00150A' }}>Sign Up</button>
+          <button onClick={() => navigate('/register')} className="ml-4 md:ml-6 px-4 py-2 rounded-full font-bold shadow-md bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white">Sign Up</button>
         </div>
       </header>
 
@@ -68,13 +68,13 @@ export default function LandingPage() {
           <div className="max-w-2xl md:max-w-3xl bg-black/35 md:bg-transparent backdrop-blur-[2px] md:backdrop-blur-0 rounded-xl md:rounded-none p-4 md:p-0">
             <motion.h1 initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:.5}} className="text-[14vw] md:text-7xl leading-[0.9] font-extrabold tracking-tight" style={{textShadow:'0 6px 30px rgba(0,0,0,0.7)'}}>
               NOTE
-              <span className="block" style={{color:ACCENT}}>NINJA</span>
+              <span className="block text-[#b266ff]">NINJA</span>
             </motion.h1>
             <p className="mt-3 text-white">Waterloo’s Smartest Study Tool.</p>
             <p className="mt-3 text-zinc-200 max-w-xl">AI-powered study guides, exam patterns, and smarter prep — built for Waterloo courses.</p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto max-w-sm">
-              <button onClick={() => navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto" style={{background:ACCENT,color:'#00150A'}}>Start Studying</button>
-              <button onClick={() => navigate('/browse')} className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 w-full sm:w-auto">Browse Study Guides</button>
+              <button onClick={() => navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white">Start Studying</button>
+              <button onClick={() => navigate('/browse')} className="px-6 py-3 rounded-full border border-white/30 hover:border-white/50 w-full sm:w-auto">Browse Study Guides</button>
             </div>
             <div className="mt-8 flex items-center gap-2 text-zinc-200"><ChevronDownIcon className="w-5 h-5"/>Scroll</div>
           </div>
@@ -120,7 +120,7 @@ export default function LandingPage() {
             NoteNinja is an AI-powered study platform built for Waterloo students, offering free, downloadable study guides for your toughest courses. Tune into podcast-style audio notes on the go whether you're at the gym or commuting. Create your profile, explore notes from fellow students, and build your own study playlists.
           </p>
           <div className="mt-6">
-            <button onClick={()=>navigate('/register')} className="px-5 py-2 rounded-full border border-white/20 hover:border-white/40">Try it now</button>
+            <button onClick={()=>navigate('/register')} className="px-5 py-2 rounded-full border border-white/30 hover:border-white/50">Try it now</button>
           </div>
         </div>
       </Section>
@@ -131,7 +131,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {[{n:1,t:'Upload or choose',d:'Add notes or pick a course.'},{n:2,t:'AI builds your guide',d:'Clean, exam-focused study guide.'},{n:3,t:'Drill key points',d:'Fast recall with smart prompts.'}].map((s,i)=> (
             <motion.div key={s.n} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*.05}} className="rounded-2xl bg-white/5 border border-white/10 p-6">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold" style={{background:ACCENT,color:'#00150A'}}>{s.n}</div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold bg-[#8a2be2] text-white">{s.n}</div>
               <div className="mt-2 font-semibold">{s.t}</div>
               <div className="text-zinc-400 text-sm">{s.d}</div>
             </motion.div>
@@ -179,11 +179,11 @@ export default function LandingPage() {
 
       {/* Final CTA */}
       <Section className="py-12">
-        <div className="relative rounded-3xl overflow-hidden p-6 md:p-12" style={{background:'linear-gradient(135deg, rgba(58,243,140,.2) 0%, rgba(98,0,234,.25) 100%)'}}>
+        <div className="relative rounded-3xl overflow-hidden p-6 md:p-12" style={{background:'linear-gradient(135deg, rgba(138,43,226,.25) 0%, rgba(98,0,234,.25) 100%)'}}>
           <h3 className="text-xl md:text-3xl font-extrabold mb-2">Get better grades, faster.</h3>
           <p className="text-zinc-300 max-w-2xl text-sm md:text-base">Free to start. Cancel anytime.</p>
           <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto max-w-sm">
-            <button onClick={()=>navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto" style={{background:ACCENT,color:'#00150A'}}>Sign Up Now</button>
+            <button onClick={()=>navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white">Sign Up Now</button>
             <button onClick={()=>navigate('/signin')} className="px-6 py-3 rounded-full border border-white/30 w-full sm:w-auto">Sign In</button>
           </div>
         </div>

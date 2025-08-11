@@ -20,5 +20,9 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
+
+// Primary storage: user's specified bucket
+export const storage = getStorage(app, 'gs://note-ninja-856f6.firebasestorage.app');
+// Fallback storage: original default bucket used historically
+export const storageFallback = getStorage(app, 'gs://note-ninja-856f6.appspot.com');
 // export const perf = getPerformance(app); 

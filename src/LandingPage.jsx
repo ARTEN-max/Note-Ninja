@@ -93,13 +93,11 @@ export default function LandingPage() {
       {/* Glass feature cards */}
       <Section className="py-10 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          [{
-            t:'Ready to use efficient study guides', d:'Clean, exam-focused summaries ready to go.'
-          },{
-            t:'Listen to audio notes', d:'Study hands‑free with podcast‑style notes on the go.'
-          },{
-            t:'Create playlists of your favorite courses', d:'Save guides and audio into personalized study playlists.'
-          }].map((f,i)=> (
+          {[
+            { t: 'Ready to use efficient study guides', d: 'Clean, exam-focused summaries ready to go.' },
+            { t: 'Listen to audio notes', d: 'Study hands‑free with podcast‑style notes on the go.' },
+            { t: 'Create playlists of your favorite courses', d: 'Save guides and audio into personalized study playlists.' }
+          ].map((f,i)=> (
             <motion.div key={f.t} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*.05}} className="rounded-2xl bg-white/5 border border-white/10 p-5">
               <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5"/><span className="font-semibold">{f.t}</span></div>
               <p className="mt-1 text-zinc-400 text-sm">{f.d}</p>

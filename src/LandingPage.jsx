@@ -108,25 +108,20 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* Interactive preview */}
-      <Section className="py-10">
-        <div className="text-center mb-4">
-          <h2 className="text-2xl md:text-3xl font-bold">Search your course</h2>
-          <p className="text-zinc-400 text-sm">Try MATH 135 or CS 246</p>
-        </div>
-        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 max-w-2xl mx-auto">
-          <MagnifyingGlassIcon className="w-5 h-5 text-zinc-400"/>
-          <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search courses..." className="flex-1 bg-transparent outline-none text-sm md:text-base placeholder:text-zinc-500"/>
-          <button onClick={()=>navigate('/browse')} className="hidden sm:inline px-4 py-1.5 rounded-full font-semibold" style={{background:ACCENT,color:'#00150A'}}>Explore</button>
-        </div>
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(query?courses.filter(c=>c.toLowerCase().includes(query.toLowerCase())):courses).slice(0,6).map((c)=> (
-            <div key={c} className="rounded-2xl bg-white/5 border border-white/10 p-4">
-              <div className="font-semibold">{c}</div>
-              <p className="text-zinc-400 text-sm mt-1">Auto-generated guide • Key topics • Quick recall</p>
-              <div className="mt-3"><button onClick={()=>navigate(`/guide/${c.replace(' ','')}/notes`)} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{background:ACCENT,color:'#00150A'}}>Open</button></div>
-            </div>
-          ))}
+      {/* Reference-style copy section (replaces search feature) */}
+      <Section className="py-14 md:py-20">
+        <div className="max-w-3xl">
+          <h2 className="uppercase font-extrabold tracking-tight text-4xl md:text-6xl leading-[0.95]">
+            Rethink how
+            <br />
+            you study at Waterloo
+          </h2>
+          <p className="mt-6 text-zinc-300 max-w-2xl text-sm md:text-base">
+            NoteNinja is an AI-powered study platform built for Waterloo students, offering free, downloadable study guides for your toughest courses. Tune into podcast-style audio notes on the go whether you're at the gym or commuting. Create your profile, explore notes from fellow students, and build your own study playlists.
+          </p>
+          <div className="mt-6">
+            <button onClick={()=>navigate('/register')} className="px-5 py-2 rounded-full border border-white/20 hover:border-white/40">Try it now</button>
+          </div>
         </div>
       </Section>
 

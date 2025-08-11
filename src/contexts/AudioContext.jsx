@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import audioPerformanceMonitor from '../utils/audioPerformance';
-import { storage } from '../firebase';
+import { storage, storageFallback } from '../firebase';
 import { ref as storageRef, getDownloadURL } from 'firebase/storage';
 
 const AudioContext = createContext();
@@ -40,6 +40,13 @@ export const AudioProvider = ({ children }) => {
         if (fresh1 && typeof fresh1 === 'string') return fresh1;
       } catch (_) {}
 
+      // Try fallback bucket
+      try {
+        const r1b = storageRef(storageFallback, url);
+        const fresh1b = await getDownloadURL(r1b);
+        if (fresh1b && typeof fresh1b === 'string') return fresh1b;
+      } catch (_) {}
+
       // Fallback: extract the encoded object path between "/o/" and the query string, then decode it
       const oIndex = url.indexOf('/o/');
       if (oIndex !== -1) {
@@ -51,6 +58,11 @@ export const AudioProvider = ({ children }) => {
             const r2 = storageRef(storage, decodedPath);
             const fresh2 = await getDownloadURL(r2);
             if (fresh2 && typeof fresh2 === 'string') return fresh2;
+          } catch (_) {}
+          try {
+            const r2b = storageRef(storageFallback, decodedPath);
+            const fresh2b = await getDownloadURL(r2b);
+            if (fresh2b && typeof fresh2b === 'string') return fresh2b;
           } catch (_) {}
         }
       }

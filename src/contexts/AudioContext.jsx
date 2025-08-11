@@ -104,7 +104,11 @@ export const AudioProvider = ({ children }) => {
     });
     
     // Check for audio URL in multiple possible fields
-    const audioUrl = audioNote?.url || audioNote?.audioUrl || '';
+    let audioUrl = audioNote?.url || audioNote?.audioUrl || '';
+    // Normalize legacy/bad bucket hostnames to correct appspot.com domain
+    try {
+      audioUrl = audioUrl.replace(/\.firebasestorage\.app/gi, '.appspot.com');
+    } catch {}
     if (!audioUrl) {
       console.error('❌ No audio URL provided:', audioNote);
       return;

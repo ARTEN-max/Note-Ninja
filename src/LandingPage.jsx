@@ -70,7 +70,16 @@ export default function LandingPage() {
           <div className="relative">
             <div className="absolute inset-0 blur-3xl opacity-30" style={{background:'radial-gradient(600px 300px at 60% 40%, rgba(58,243,140,.25), transparent 60%)'}} />
             <div className="relative rounded-3xl border border-white/10 bg-white/5 neon-glow overflow-hidden">
-              <img src="/placeholders/city.jpg" alt="Preview" className="w-full h-[360px] md:h-[420px] object-cover" loading="lazy"/>
+              <video
+                className="w-full h-[360px] md:h-[420px] object-cover"
+                src="/landing-video.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                poster="/placeholders/city.jpg"
+              />
             </div>
           </div>
         </div>

@@ -1,12 +1,8 @@
 [
   {
-    "origin": [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "https://note-ninja-six.vercel.app/"
-    ],
-    "method": ["GET", "POST", "PUT", "DELETE"],
-    "maxAgeSeconds": 3600,
-    "responseHeader": ["Content-Type", "Authorization"]
+  "origin": ["https://note-ninja-six.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+  "method": ["GET", "HEAD", "OPTIONS"],
+  "responseHeader": ["Content-Type", "x-goog-meta-", "Origin"],
+  "maxAgeSeconds": 3600
   }
-]
+  ]

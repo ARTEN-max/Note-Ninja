@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import audioPerformanceMonitor from '../utils/audioPerformance';
+import { storage } from '../firebase';
+import { ref as storageRef, getDownloadURL } from 'firebase/storage';
 
 const AudioContext = createContext();
 
@@ -16,13 +18,37 @@ export const AudioProvider = ({ children }) => {
   const [duration, setDuration] = useState(0);
   const preloadQueueRef = useRef([]); // Queue for preloading audio files
 
-  const normalizeUrl = useCallback((url) => {
+  const normalizeUrl = useCallback((url) => url || '', []);
+
+  // Attempt to derive a fresh, valid download URL from a possibly stale URL
+  const resolveFreshDownloadUrl = useCallback(async (inputUrl) => {
+    let url = inputUrl || '';
     try {
       if (!url) return url;
-      return url.replace(/\.firebasestorage\.app/gi, '.appspot.com');
-    } catch {
-      return url;
-    }
+
+      // First try: treat the existing https URL as a ref (SDK supports https/gs URLs)
+      try {
+        const r1 = storageRef(storage, url);
+        const fresh1 = await getDownloadURL(r1);
+        if (fresh1 && typeof fresh1 === 'string') return fresh1;
+      } catch (_) {}
+
+      // Fallback: extract the encoded object path between "/o/" and the query string, then decode it
+      const oIndex = url.indexOf('/o/');
+      if (oIndex !== -1) {
+        const afterO = url.substring(oIndex + 3);
+        const pathEncoded = afterO.split('?')[0];
+        if (pathEncoded) {
+          const decodedPath = decodeURIComponent(pathEncoded);
+          try {
+            const r2 = storageRef(storage, decodedPath);
+            const fresh2 = await getDownloadURL(r2);
+            if (fresh2 && typeof fresh2 === 'string') return fresh2;
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+    return url; // give back the original if we couldn't refresh
   }, []);
 
   // Enhanced preload audio with queue management
@@ -130,6 +156,14 @@ export const AudioProvider = ({ children }) => {
       console.error('❌ Invalid audio URL detected (localhost page URL):', audioUrl);
       return;
     }
+
+    // Try to refresh potentially stale Firebase Storage URLs
+    try {
+      const fresh = await resolveFreshDownloadUrl(audioUrl);
+      if (fresh && typeof fresh === 'string') {
+        audioUrl = fresh;
+      }
+    } catch (_) {}
     
     const playStartTime = performance.now();
     // Ensure audio element is mounted before proceeding
@@ -192,6 +226,21 @@ export const AudioProvider = ({ children }) => {
         audioElement.src = audioUrl;
         try { audioElement.load(); } catch {}
         needsToWait = true;
+
+        // Retry once on error by resolving a fresh URL
+        const onErrorOnce = async () => {
+          audioElement.removeEventListener('error', onErrorOnce);
+          try {
+            const refreshed = await resolveFreshDownloadUrl(audioUrl);
+            if (refreshed && refreshed !== audioUrl) {
+              console.warn('Retrying audio load with refreshed URL');
+              audioElement.src = refreshed;
+              try { audioElement.load(); } catch {}
+              try { await playWithRetry(audioElement, 2); } catch {}
+            }
+          } catch {}
+        };
+        audioElement.addEventListener('error', onErrorOnce, { once: true });
         
         // Try to play immediately while still in user gesture call stack
         try {
@@ -238,7 +287,8 @@ export const AudioProvider = ({ children }) => {
       setIsPlaying(false);
       setIsLoading(false);
     }
-  }, [audioNotes, preloadAudio, preloadAudioBatch, playWithRetry, normalizeUrl]);
+  }, [audioNotes, preloadAudio, preloadAudioBatch, playWithRetry, normalizeUrl, resolveFreshDownloadUrl]);
+  
 
   const pauseAudio = useCallback(() => {
     setIsPlaying(false);

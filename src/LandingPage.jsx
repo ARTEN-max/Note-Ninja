@@ -51,10 +51,21 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero: left text + device mock */}
-      <Section className="pt-10 md:pt-16 pb-8 md:pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div>
+      {/* Hero: full-background video */}
+      <div className="relative overflow-hidden">
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/landing-video.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster="/placeholders/city.jpg"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/65 to-black" />
+        <Section className="pt-12 md:pt-20 pb-10 md:pb-16 min-h-[70vh] md:min-h-[80vh] flex items-center">
+          <div className="max-w-2xl">
             <motion.h1 initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:.5}} className="text-[14vw] md:text-7xl leading-[0.9] font-extrabold tracking-tight">
               NOTE
               <span className="block" style={{color:ACCENT}}>NINJA</span>
@@ -65,25 +76,10 @@ export default function LandingPage() {
               <button onClick={() => navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto" style={{background:ACCENT,color:'#00150A'}}>Start Studying</button>
               <button onClick={() => navigate('/browse')} className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 w-full sm:w-auto">Browse Study Guides</button>
             </div>
-            <div className="mt-8 flex items-center gap-2 text-zinc-400"><ChevronDownIcon className="w-5 h-5"/>Scroll</div>
+            <div className="mt-8 flex items-center gap-2 text-zinc-300"><ChevronDownIcon className="w-5 h-5"/>Scroll</div>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 blur-3xl opacity-30" style={{background:'radial-gradient(600px 300px at 60% 40%, rgba(58,243,140,.25), transparent 60%)'}} />
-            <div className="relative rounded-3xl border border-white/10 bg-white/5 neon-glow overflow-hidden">
-              <video
-                className="w-full h-[360px] md:h-[420px] object-cover"
-                src="/landing-video.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                poster="/placeholders/city.jpg"
-              />
-            </div>
-          </div>
-        </div>
-      </Section>
+        </Section>
+      </div>
 
       {/* Course code marquee */}
       <div className="py-4 border-y border-white/10 bg-white/5">

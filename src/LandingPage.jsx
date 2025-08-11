@@ -139,20 +139,6 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* How it works – compact */}
-      <Section className="py-10 md:py-12">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">How it works</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          {[{n:1,t:'Upload or choose',d:'Add notes or pick a course.'},{n:2,t:'AI builds your guide',d:'Clean, exam-focused study guide.'},{n:3,t:'Drill key points',d:'Fast recall with smart prompts.'}].map((s,i)=> (
-            <motion.div key={s.n} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*.05}} className="rounded-2xl bg-white/5 border border-white/10 p-6">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold bg-[#8a2be2] text-white">{s.n}</div>
-              <div className="mt-2 font-semibold">{s.t}</div>
-              <div className="text-zinc-400 text-sm">{s.d}</div>
-            </motion.div>
-          ))}
-        </div>
-      </Section>
-
       {/* Testimonials – punchy grid */}
       <Section className="py-10">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Students love the speed</h2>

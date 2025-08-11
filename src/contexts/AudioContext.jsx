@@ -76,6 +76,20 @@ export const AudioProvider = ({ children }) => {
     }
   }, [preloadAudio]);
 
+  const playWithRetry = useCallback(async (element, attempts = 3) => {
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const p = element.play();
+        if (p && typeof p.then === 'function') await p;
+        return true;
+      } catch (err) {
+        if (i === attempts - 1) throw err;
+        await new Promise(r => setTimeout(r, 80));
+      }
+    }
+    return false;
+  }, []);
+
   // Optimized play function with immediate response
   const playAudio = useCallback(async (audioNote, index = null, retryCount = 0) => {
     console.log('🎵 playAudio called with:', { 
@@ -148,82 +162,40 @@ export const AudioProvider = ({ children }) => {
       
       if (audioElement.src !== audioUrl) {
         console.log('🎵 Loading new audio URL:', audioUrl);
-        console.log('🎵 Current audio element src:', audioElement.src);
-        console.log('🎵 Audio note object:', audioNote);
         
-        // Check if the URL is valid
-        if (!audioUrl || audioUrl === '') {
-          console.error('❌ Invalid audio URL:', audioUrl);
-          setIsPlaying(false);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Attach event listener BEFORE setting src
-        const onReady = async () => {
-          console.log('🎵 Audio metadata loaded, attempting to play...');
-          console.log('🎵 Audio element details:', {
-            src: audioElement.src,
-            duration: audioElement.duration,
-            readyState: audioElement.readyState,
-            networkState: audioElement.networkState
-          });
-          try {
-            await audioElement.play();
-            console.log('✅ Audio play successful');
-          } catch (error) {
-            console.error('❌ Failed to play audio:', error);
-            console.error('❌ Error details:', {
-              name: error.name,
-              message: error.message,
-              code: error.code
-            });
-            audioPerformanceMonitor.trackError(audioUrl, error);
-            setIsPlaying(false);
-            setIsLoading(false);
-          }
-          audioElement.removeEventListener('loadedmetadata', onReady);
-        };
-        
-        // Add error handling for the audio element
-        const onError = (error) => {
-          console.error('❌ Audio element error:', error);
-          console.error('❌ Audio element error details:', {
-            error: audioElement.error,
-            networkState: audioElement.networkState,
-            readyState: audioElement.readyState,
-            src: audioElement.src
-          });
-          setIsPlaying(false);
-          setIsLoading(false);
-        };
-        
-        audioElement.addEventListener('error', onError);
-        audioElement.addEventListener('loadedmetadata', onReady);
-        console.log('🎵 Setting audio element src to:', audioUrl);
-        audioElement.src = audioUrl;
+        // Prepare element for mobile inline playback
+        try { audioElement.setAttribute('playsinline', ''); audioElement.setAttribute('webkit-playsinline', ''); } catch {}
         audioElement.preload = 'auto';
-        needsToWait = true;
+        audioElement.autoplay = true;
 
+        // Attach ready listeners that will try to play ASAP
+        const onCanPlay = async () => {
+          audioElement.removeEventListener('canplay', onCanPlay);
+          audioElement.removeEventListener('canplaythrough', onCanPlay);
+          try { await playWithRetry(audioElement, 2); } catch (e) { console.log('canplay retry failed', e?.name || e); }
+        };
+        audioElement.addEventListener('canplay', onCanPlay);
+        audioElement.addEventListener('canplaythrough', onCanPlay);
+
+        // Set src and force load
+        audioElement.src = audioUrl;
+        try { audioElement.load(); } catch {}
+        needsToWait = true;
+        
         // Try to play immediately while still in user gesture call stack
         try {
-          await audioElement.play();
+          await playWithRetry(audioElement, 2);
           console.log('✅ Immediate play attempt succeeded');
           needsToWait = false;
         } catch (e) {
-          console.log('⏳ Immediate play attempt deferred until metadata:', e?.name || e);
+          console.log('⏳ Immediate play attempt deferred:', e?.name || e);
         }
-        
-        // Clean up error listener when metadata loads
-        audioElement.addEventListener('loadedmetadata', () => {
-          audioElement.removeEventListener('error', onError);
-        }, { once: true });
       }
       
       if (!needsToWait) {
         console.log('🎵 Playing existing audio...');
         try {
-          await audioElement.play();
+          await playWithRetry(audioElement, 2);
           console.log('✅ Direct play successful');
         } catch (error) {
           console.error('❌ Direct play failed:', error);
@@ -255,7 +227,7 @@ export const AudioProvider = ({ children }) => {
       setIsPlaying(false);
       setIsLoading(false);
     }
-  }, [audioNotes, preloadAudio, preloadAudioBatch]);
+  }, [audioNotes, preloadAudio, preloadAudioBatch, playWithRetry]);
 
   const pauseAudio = useCallback(() => {
     setIsPlaying(false);

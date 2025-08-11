@@ -193,6 +193,19 @@ const MiniPlayer = () => {
           el.currentTime = 0;
         }).catch(() => {});
       } catch {}
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) {
+          const ctx = new Ctx();
+          // Create a short silent buffer to unlock
+          const buf = ctx.createBuffer(1, 1, 22050);
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          src.connect(ctx.destination);
+          if (ctx.state === 'suspended') ctx.resume().catch(()=>{});
+          try { src.start(0); } catch {}
+        }
+      } catch {}
       window.removeEventListener('touchstart', warmup);
       window.removeEventListener('click', warmup);
     };
@@ -211,6 +224,7 @@ const MiniPlayer = () => {
         ref={audioElementRef}
         preload="auto"
         playsInline
+        x-webkit-airplay="allow"
         crossOrigin="anonymous"
         style={{ display: 'none' }}
         onPlay={() => console.log('🎵 Audio play event')}

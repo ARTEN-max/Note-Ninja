@@ -164,7 +164,7 @@ export const AudioProvider = ({ children }) => {
         console.log('🎵 Loading new audio URL:', audioUrl);
         
         // Prepare element for mobile inline playback
-        try { audioElement.setAttribute('playsinline', ''); audioElement.setAttribute('webkit-playsinline', ''); } catch {}
+        try { audioElement.setAttribute('playsinline', ''); audioElement.setAttribute('webkit-playsinline', ''); audioElement.setAttribute('x-webkit-airplay','allow'); } catch {}
         audioElement.preload = 'auto';
         audioElement.autoplay = true;
 

@@ -16,50 +16,61 @@ export const AudioProvider = ({ children }) => {
   const [duration, setDuration] = useState(0);
   const preloadQueueRef = useRef([]); // Queue for preloading audio files
 
+  const normalizeUrl = useCallback((url) => {
+    try {
+      if (!url) return url;
+      return url.replace(/\.firebasestorage\.app/gi, '.appspot.com');
+    } catch {
+      return url;
+    }
+  }, []);
+
   // Enhanced preload audio with queue management
   const preloadAudio = useCallback((audioNote) => {
-    if (!audioNote?.url || audioCacheRef.current.has(audioNote.url)) return;
+    const rawUrl = audioNote?.url;
+    const url = normalizeUrl(rawUrl);
+    if (!url || audioCacheRef.current.has(url)) return;
     
     const startTime = performance.now();
     const audio = new Audio();
     audio.preload = 'auto';
     audio.crossOrigin = 'anonymous';
-    audio.src = audioNote.url;
+    audio.src = url;
     
     // Store in cache once metadata is loaded
     audio.addEventListener('loadedmetadata', () => {
-      audioCacheRef.current.set(audioNote.url, {
+      audioCacheRef.current.set(url, {
         duration: audio.duration,
         element: audio,
         loadedAt: Date.now()
       });
-      audioPerformanceMonitor.trackLoadTime(audioNote.url, startTime);
+      audioPerformanceMonitor.trackLoadTime(url, startTime);
       
       // Remove from preload queue
-      const index = preloadQueueRef.current.findIndex(item => item.url === audioNote.url);
+      const index = preloadQueueRef.current.findIndex(item => item.url === url);
       if (index > -1) {
         preloadQueueRef.current.splice(index, 1);
       }
     });
     
     audio.addEventListener('error', (error) => {
-      console.warn('Failed to preload audio:', audioNote.url);
-      audioPerformanceMonitor.trackError(audioNote.url || audioNote.audioUrl || '', error);
+      console.warn('Failed to preload audio:', url);
+      audioPerformanceMonitor.trackError(url || audioNote.audioUrl || '', error);
       
       // Remove from preload queue on error
-      const index = preloadQueueRef.current.findIndex(item => item.url === audioNote.url);
+      const index = preloadQueueRef.current.findIndex(item => item.url === url);
       if (index > -1) {
         preloadQueueRef.current.splice(index, 1);
       }
     });
     
     // Add to preload queue
-    preloadQueueRef.current.push({ url: audioNote.url, audio });
-  }, []);
+    preloadQueueRef.current.push({ url, audio });
+  }, [normalizeUrl]);
 
   // Batch preload function for multiple audio files
   const preloadAudioBatch = useCallback((audioNotes, maxConcurrent = 3) => {
-    const validNotes = audioNotes.filter(note => note?.url && !audioCacheRef.current.has(note.url));
+    const validNotes = audioNotes.filter(note => note?.url && !audioCacheRef.current.has(normalizeUrl(note.url)));
     
     // Process in batches to avoid overwhelming the browser
     const processBatch = (startIndex) => {
@@ -74,7 +85,7 @@ export const AudioProvider = ({ children }) => {
     if (validNotes.length > 0) {
       processBatch(0);
     }
-  }, [preloadAudio]);
+  }, [preloadAudio, normalizeUrl]);
 
   const playWithRetry = useCallback(async (element, attempts = 3) => {
     for (let i = 0; i < attempts; i++) {
@@ -104,11 +115,7 @@ export const AudioProvider = ({ children }) => {
     });
     
     // Check for audio URL in multiple possible fields
-    let audioUrl = audioNote?.url || audioNote?.audioUrl || '';
-    // Normalize legacy/bad bucket hostnames to correct appspot.com domain
-    try {
-      audioUrl = audioUrl.replace(/\.firebasestorage\.app/gi, '.appspot.com');
-    } catch {}
+    let audioUrl = normalizeUrl(audioNote?.url || audioNote?.audioUrl || '');
     if (!audioUrl) {
       console.error('❌ No audio URL provided:', audioNote);
       return;
@@ -231,7 +238,7 @@ export const AudioProvider = ({ children }) => {
       setIsPlaying(false);
       setIsLoading(false);
     }
-  }, [audioNotes, preloadAudio, preloadAudioBatch, playWithRetry]);
+  }, [audioNotes, preloadAudio, preloadAudioBatch, playWithRetry, normalizeUrl]);
 
   const pauseAudio = useCallback(() => {
     setIsPlaying(false);

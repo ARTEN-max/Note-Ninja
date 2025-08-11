@@ -98,9 +98,25 @@ export default function LandingPage() {
             { t: 'Listen to audio notes', d: 'Study hands‑free with podcast‑style notes on the go.' },
             { t: 'Create playlists of your favorite courses', d: 'Save guides and audio into personalized study playlists.' }
           ].map((f,i)=> (
-            <motion.div key={f.t} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*.05}} className="rounded-2xl bg-white/5 border border-white/10 p-5">
-              <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5"/><span className="font-semibold">{f.t}</span></div>
-              <p className="mt-1 text-zinc-400 text-sm">{f.d}</p>
+            <motion.div
+              key={f.t}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="group relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 p-6 md:p-7 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-br from-[#b266ff]/15 to-[#8a2be2]/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#b266ff] to-[#8a2be2] text-white shadow-md">
+                  <CheckCircleIcon className="w-5 h-5" />
+                </div>
+                <h3 className="text-base md:text-lg font-semibold text-white">{f.t}</h3>
+              </div>
+              <p className="mt-3 text-zinc-400 text-sm leading-relaxed">
+                {f.d}
+              </p>
+              <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
             </motion.div>
           ))}
         </div>

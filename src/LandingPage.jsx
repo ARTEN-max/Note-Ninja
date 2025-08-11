@@ -94,11 +94,11 @@ export default function LandingPage() {
       <Section className="py-10 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {[{
-            t:'Auto Study Guides', d:'Turn messy notes into exam-ready summaries in seconds.'
+            t:'Ready to use efficient study guides', d:'Jump straight into structured notes and exam-focused summaries.'
           },{
-            t:'Past Paper Insights', d:'See commonly tested topics instantly.'
+            t:'Listen to audio notes', d:'Study on the go with podcast-style notes for every chapter.'
           },{
-            t:'Lightning Recall', d:'Smart spaced repetition for max retention.'
+            t:'Create playlists of your favorite courses', d:'Collect guides and audio into custom playlists for fast review.'
           }].map((f,i)=> (
             <motion.div key={f.t} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*.05}} className="rounded-2xl bg-white/5 border border-white/10 p-5">
               <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5"/><span className="font-semibold">{f.t}</span></div>

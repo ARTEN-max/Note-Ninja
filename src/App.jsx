@@ -86,12 +86,7 @@ function AppContent() {
   const showMinimize = location.pathname !== "/";
   const isLanding = location.pathname === '/';
 
-  // Redirect authenticated users away from landing to dashboard
-  useEffect(() => {
-    if (location.pathname === '/' && currentUser) {
-      window.history.replaceState(null, '', '/dashboard');
-    }
-  }, [location.pathname, currentUser]);
+  // Removed: allow signed-in users to view the landing page without redirecting
 
   // Preload critical images on app mount
   useEffect(() => {

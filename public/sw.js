@@ -55,6 +55,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Ignore chrome-extension and other non-http(s) schemes
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
   // Always network-first for navigation requests to avoid stale landing
   if (request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
     event.respondWith(handleGeneralRequest(request));
@@ -139,9 +144,12 @@ async function handleScriptRequest(request) {
 async function handleGeneralRequest(request) {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    if (networkResponse.ok && networkResponse.status !== 206) {
       const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, networkResponse.clone());
+      // Only cache same-origin or CORS-success responses
+      if ((new URL(request.url)).origin === self.location.origin || networkResponse.type === 'basic' || networkResponse.type === 'cors') {
+        try { await cache.put(request, networkResponse.clone()); } catch (e) { /* ignore cache errors for unsupported schemes */ }
+      }
     }
     return networkResponse;
   } catch (error) {

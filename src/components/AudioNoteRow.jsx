@@ -29,7 +29,7 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
   const isCurrentlyLoading = currentAudio?.id === note.id && isLoading;
 
   // Play audio when row is clicked (except + button)
-  const handleRowClick = (e) => {
+  const handleRowClick = async (e) => {
     console.log('🎵 Row clicked:', note.title, 'URL:', note.url);
     if (e.target.closest('.add-to-playlist-btn')) {
       console.log('🎵 Add to playlist button clicked, ignoring');
@@ -40,11 +40,27 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
       return;
     }
     if (closePlaylistMenu) closePlaylistMenu();
+    
+    // IMMEDIATE PLAY: Try to start playback right in the user gesture
+    if (audioElementRef?.current) {
+      const audioElement = audioElementRef.current;
+      console.log('🎵 Attempting immediate play within user gesture...');
+      try {
+        // If it's already the current audio and just paused, resume immediately
+        if (currentAudio?.id === note.id && audioElement.src && !isPlaying) {
+          console.log('🎵 Resuming current audio...');
+          await audioElement.play();
+          return;
+        }
+      } catch (e) {
+        console.log('🎵 Immediate resume failed, continuing with full setup');
+      }
+    }
+    
     if (onRowPlay) {
       console.log('🎵 Calling onRowPlay for:', note.title);
       onRowPlay(note);
     }
-    // Removed direct play call; let MiniPlayer handle playback after DOM update
   };
 
   return (
@@ -66,8 +82,13 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
           className="w-10 h-10 rounded-sm object-cover" 
           loading="lazy"
         />
-        <div>
-          <div className="font-bold text-white truncate">{note.title}</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-white truncate flex items-center gap-2">
+            {note.title}
+            {isCurrentlyLoading && (
+              <div className="w-3 h-3 border border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+            )}
+          </div>
           <div className="text-xs text-purple-300 truncate">{note.subject}</div>
         </div>
       </div>

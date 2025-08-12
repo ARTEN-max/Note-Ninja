@@ -222,10 +222,9 @@ const MiniPlayer = () => {
       {/* Hidden audio element for the AudioContext to control */}
       <audio
         ref={audioElementRef}
-        preload="auto"
+        preload={/Mobi|Android/i.test(navigator.userAgent) ? "none" : "metadata"}
         playsInline
         x-webkit-airplay="allow"
-        crossOrigin="anonymous"
         style={{ display: 'none' }}
         onPlay={() => console.log('🎵 Audio play event')}
         onPause={() => console.log('🎵 Audio pause event')}

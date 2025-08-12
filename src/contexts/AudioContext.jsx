@@ -14,6 +14,7 @@ export const AudioProvider = ({ children }) => {
   const audioElementRef = useRef(null);
   const audioCacheRef = useRef(new Map()); // Cache for preloaded audio elements
   const shouldPlayRef = useRef(false); // NEW: tracks if play should be triggered after DOM update
+  const hasColdPlayOccurredRef = useRef(false); // Tracks if we've successfully played at least once this session
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const preloadQueueRef = useRef([]); // Queue for preloading audio files
@@ -51,16 +52,23 @@ export const AudioProvider = ({ children }) => {
     return url; // give back the original if we couldn't refresh
   }, []);
 
-  // Enhanced preload audio with queue management
+  // Enhanced preload audio with mobile optimization
   const preloadAudio = useCallback((audioNote) => {
     const rawUrl = audioNote?.url;
     const url = normalizeUrl(rawUrl);
     if (!url || audioCacheRef.current.has(url)) return;
     
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    
+    // Skip aggressive preloading on mobile to save bandwidth
+    if (isMobile) {
+      console.log('📱 Skipping preload on mobile for:', url);
+      return;
+    }
+    
     const startTime = performance.now();
     const audio = new Audio();
-    audio.preload = 'auto';
-    audio.crossOrigin = 'anonymous';
+    audio.preload = 'metadata'; // Lighter preload for better performance
     audio.src = url;
     
     // Store in cache once metadata is loaded
@@ -182,6 +190,42 @@ export const AudioProvider = ({ children }) => {
     setIsLoading(true);
     // Set ref to trigger play after DOM update
     shouldPlayRef.current = true;
+    
+    // Immediately try to initiate playback to preserve user gesture
+    const quickPlayAttempt = () => {
+      try {
+        console.log('🎵 Quick play attempt to preserve user gesture...');
+        const playPromise = audioElement.play();
+        if (playPromise) {
+          playPromise.then(() => {
+            console.log('⚡ Quick play succeeded!');
+            setIsPlaying(true);
+            clearTimeout(loadingTimeout);
+            setIsLoading(false);
+            return true;
+          }).catch(() => {
+            console.log('⏳ Quick play failed, continuing with setup...');
+            return false;
+          });
+        }
+      } catch (e) {
+        console.log('⏳ Quick play error:', e?.name || e);
+        return false;
+      }
+    };
+    
+    // Try quick play if audio element has some data
+    if (audioElement.readyState > 0) {
+      quickPlayAttempt();
+    }
+    
+    // Mobile-adaptive timeout
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const timeoutDuration = isMobile ? 500 : 200; // Longer timeout for mobile networks
+    const loadingTimeout = setTimeout(() => {
+      console.warn('⚠️ Loading timeout reached, clearing loading state');
+      setIsLoading(false);
+    }, timeoutDuration);
     // Immediately update UI state for instant feedback
     setCurrentAudio(audioNote);
     if (index !== null) {
@@ -198,6 +242,7 @@ export const AudioProvider = ({ children }) => {
       
       // Add 'playing' event listener to clear loading as soon as playback starts
       const onPlaying = () => {
+        clearTimeout(loadingTimeout);
         setIsLoading(false);
         setIsPlaying(true);
         audioPerformanceMonitor.trackPlayTime(audioUrl, playStartTime);
@@ -208,22 +253,75 @@ export const AudioProvider = ({ children }) => {
       if (audioElement.src !== audioUrl) {
         console.log('🎵 Loading new audio URL:', audioUrl);
         
-        // Prepare element for mobile inline playback
-        try { audioElement.setAttribute('playsinline', ''); audioElement.setAttribute('webkit-playsinline', ''); audioElement.setAttribute('x-webkit-airplay','allow'); } catch {}
-        audioElement.preload = 'auto';
+        // Optimize for mobile playback
+        try { 
+          audioElement.setAttribute('playsinline', ''); 
+          audioElement.setAttribute('webkit-playsinline', ''); 
+          audioElement.setAttribute('x-webkit-airplay','allow');
+          // Mobile-specific optimizations
+          if (/Mobi|Android/i.test(navigator.userAgent)) {
+            audioElement.setAttribute('preload', 'metadata'); // Lighter preload for mobile
+            audioElement.setAttribute('crossorigin', 'anonymous'); // Help with mobile CORS
+          } else {
+            audioElement.preload = 'auto'; // Full preload for desktop
+          }
+        } catch {}
         audioElement.autoplay = true;
 
-        // Attach ready listeners that will try to play ASAP
-        const onCanPlay = async () => {
-          audioElement.removeEventListener('canplay', onCanPlay);
-          audioElement.removeEventListener('canplaythrough', onCanPlay);
-          try { await playWithRetry(audioElement, 2); } catch (e) { console.log('canplay retry failed', e?.name || e); }
-        };
-        audioElement.addEventListener('canplay', onCanPlay);
-        audioElement.addEventListener('canplaythrough', onCanPlay);
+        // Mobile-optimized progressive loading
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Mobile: More aggressive early play attempts
+          const onProgress = () => {
+            if (audioElement.buffered.length > 0 && audioElement.buffered.end(0) > 1) {
+              audioElement.removeEventListener('progress', onProgress);
+              clearTimeout(loadingTimeout);
+              setIsLoading(false);
+              const playPromise = audioElement.play();
+              if (playPromise) {
+                playPromise.then(() => setIsPlaying(true)).catch(() => {
+                  // Fallback to canplaythrough for mobile
+                  const onCanPlayThrough = () => {
+                    audioElement.removeEventListener('canplaythrough', onCanPlayThrough);
+                    audioElement.play().then(() => setIsPlaying(true)).catch(e => console.log('mobile fallback failed', e));
+                  };
+                  audioElement.addEventListener('canplaythrough', onCanPlayThrough);
+                });
+              }
+            }
+          };
+          audioElement.addEventListener('progress', onProgress);
+        } else {
+          // Desktop: Play as soon as ANY data starts loading
+          const onLoadStart = () => {
+            audioElement.removeEventListener('loadstart', onLoadStart);
+            clearTimeout(loadingTimeout);
+            setIsLoading(false);
+            const playPromise = audioElement.play();
+            if (playPromise) {
+              playPromise.then(() => {
+                setIsPlaying(true);
+              }).catch(() => {
+                const onCanPlay = () => {
+                  audioElement.removeEventListener('canplay', onCanPlay);
+                  const retryPromise = audioElement.play();
+                  if (retryPromise) {
+                    retryPromise.then(() => setIsPlaying(true)).catch(e => console.log('canplay failed', e));
+                  }
+                };
+                audioElement.addEventListener('canplay', onCanPlay);
+              });
+            }
+          };
+          audioElement.addEventListener('loadstart', onLoadStart);
+        }
 
-        // Set src and force load
-        audioElement.src = audioUrl;
+        // Set src and force load. Mobile-optimized cache strategy
+        const urlToUse = !hasColdPlayOccurredRef.current && !isMobile
+          ? audioUrl + (audioUrl.includes('?') ? '&' : '?') + 'v=' + Date.now()
+          : audioUrl; // Skip cache-buster on mobile to avoid extra requests
+        audioElement.src = urlToUse;
         try { audioElement.load(); } catch {}
         needsToWait = true;
 
@@ -242,30 +340,48 @@ export const AudioProvider = ({ children }) => {
         };
         audioElement.addEventListener('error', onErrorOnce, { once: true });
         
-        // Try to play immediately while still in user gesture call stack
+        // ULTRA-AGGRESSIVE: Try to play immediately, no waiting
         try {
-          await playWithRetry(audioElement, 2);
-          console.log('✅ Immediate play attempt succeeded');
-          needsToWait = false;
+          const playPromise = audioElement.play();
+          console.log('⚡ INSTANT play attempt started');
+          playPromise.then(() => {
+            console.log('⚡ INSTANT play succeeded');
+            setIsPlaying(true);
+            clearTimeout(loadingTimeout);
+            setIsLoading(false);
+            needsToWait = false;
+          }).catch(e => {
+            console.log('⏳ Immediate play deferred, will retry on loadstart:', e?.name || e);
+            // Let loadstart handle it
+          });
         } catch (e) {
-          console.log('⏳ Immediate play attempt deferred:', e?.name || e);
+          console.log('⏳ Immediate play failed synchronously:', e?.name || e);
         }
       }
       
       if (!needsToWait) {
         console.log('🎵 Playing existing audio...');
         try {
-          await playWithRetry(audioElement, 2);
-          console.log('✅ Direct play successful');
+          const playPromise = audioElement.play();
+          if (playPromise) {
+            playPromise.then(() => {
+              console.log('✅ Direct play successful');
+              setIsPlaying(true);
+              hasColdPlayOccurredRef.current = true;
+              clearTimeout(loadingTimeout);
+              setIsLoading(false);
+            }).catch(error => {
+              console.error('❌ Direct play failed:', error);
+              setIsPlaying(false);
+              setIsLoading(false);
+              clearTimeout(loadingTimeout);
+            });
+          }
         } catch (error) {
           console.error('❌ Direct play failed:', error);
-          console.error('❌ Direct play error details:', {
-            name: error.name,
-            message: error.message,
-            code: error.code
-          });
           setIsPlaying(false);
           setIsLoading(false);
+          clearTimeout(loadingTimeout);
         }
       }
       
@@ -286,6 +402,7 @@ export const AudioProvider = ({ children }) => {
       audioPerformanceMonitor.trackError(audioUrl, error);
       setIsPlaying(false);
       setIsLoading(false);
+      clearTimeout(loadingTimeout);
     }
   }, [audioNotes, preloadAudio, preloadAudioBatch, playWithRetry, normalizeUrl, resolveFreshDownloadUrl]);
   
@@ -298,49 +415,31 @@ export const AudioProvider = ({ children }) => {
   }, []);
 
   const togglePlay = useCallback(async () => {
-    if (!currentAudio || !(currentAudio.url || currentAudio.audioUrl)) return;
+    if (!currentAudio) return;
     const audioElement = audioElementRef.current;
-    const audioUrl = currentAudio.url || currentAudio.audioUrl || '';
     if (!audioElement) return;
-
-    // Safeguard against invalid URLs
-    if (audioUrl.includes('localhost') && !audioUrl.includes('firebasestorage')) {
-      console.error('❌ Invalid audio URL detected (localhost page URL):', audioUrl);
-      return;
-    }
 
     if (isPlaying) {
       pauseAudio();
     } else {
-      try {
-        // If src is not set or is different, set it and wait for loadedmetadata
-        if (!audioElement.src || audioElement.src !== audioUrl) {
-          console.log('togglePlay: setting src to', audioUrl);
-          console.log('togglePlay: current audio element src was', audioElement.src);
-          audioElement.src = audioUrl;
-          audioElement.preload = 'auto';
-          // Wait for loadedmetadata before playing
-          const playAfterLoad = () => {
-            console.log('togglePlay: loadedmetadata, now playing');
-            console.log('togglePlay: final audio element src is', audioElement.src);
-            audioElement.play().then(() => {
-              setIsPlaying(true);
-            }).catch((error) => {
-              console.error('Failed to resume audio after loadedmetadata:', error);
-            });
-            audioElement.removeEventListener('loadedmetadata', playAfterLoad);
-          };
-          audioElement.addEventListener('loadedmetadata', playAfterLoad);
-        } else {
-          console.log('togglePlay: audioElement.src =', audioElement.src);
-          await audioElement.play();
-          setIsPlaying(true);
+      // ULTRA-FAST: If audio has ANY data, try to play immediately
+      if (audioElement.src && audioElement.readyState >= 1) {
+        const playPromise = audioElement.play();
+        if (playPromise) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+            return;
+          }).catch(() => {
+            console.log('Quick play failed, falling back to full setup');
+          });
         }
-      } catch (error) {
-        console.error('Failed to resume audio:', error);
       }
+      
+      // Otherwise use full playAudio setup
+      const index = audioNotes.findIndex(n => n.id === currentAudio.id);
+      playAudio(currentAudio, index >= 0 ? index : null);
     }
-  }, [currentAudio, isPlaying, pauseAudio]);
+  }, [currentAudio, isPlaying, pauseAudio, audioNotes, playAudio, audioElementRef]);
 
   const nextTrack = useCallback(() => {
     if (audioNotes.length === 0) return;

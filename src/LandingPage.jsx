@@ -55,7 +55,7 @@ export default function LandingPage() {
       <div className="relative overflow-hidden">
         <video
           className="absolute inset-0 w-full h-full object-cover"
-          src="/landing-video.mp4"
+          src="/placeholders/landing-video.mp4"
           autoPlay
           loop
           muted

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import audioPerformanceMonitor from '../utils/audioPerformance';
 import { storage } from '../firebase';
 import { ref as storageRef, getDownloadURL } from 'firebase/storage';
@@ -422,20 +422,24 @@ export const AudioProvider = ({ children }) => {
     if (isPlaying) {
       pauseAudio();
     } else {
-      // ULTRA-FAST: If audio has ANY data, try to play immediately
+      // Try to resume existing audio first (preserves playback position)
       if (audioElement.src && audioElement.readyState >= 1) {
-        const playPromise = audioElement.play();
-        if (playPromise) {
-          playPromise.then(() => {
+        try {
+          console.log('🎵 Resuming audio from current position:', audioElement.currentTime);
+          const playPromise = audioElement.play();
+          if (playPromise) {
+            await playPromise;
             setIsPlaying(true);
-            return;
-          }).catch(() => {
-            console.log('Quick play failed, falling back to full setup');
-          });
+            console.log('✅ Resume successful');
+            return; // Successfully resumed, don't reload
+          }
+        } catch (error) {
+          console.log('⚠️ Resume failed, trying full reload:', error?.name || error);
         }
       }
       
-      // Otherwise use full playAudio setup
+      // Only if resume fails completely, reload the audio
+      console.log('🔄 Reloading audio due to resume failure');
       const index = audioNotes.findIndex(n => n.id === currentAudio.id);
       playAudio(currentAudio, index >= 0 ? index : null);
     }
@@ -582,28 +586,45 @@ export const AudioProvider = ({ children }) => {
     };
   }, [currentAudio, audioElementRef, nextTrack, progress, duration]);
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    currentAudio,
+    isPlaying,
+    isLoading,
+    playAudio,
+    pauseAudio,
+    togglePlay,
+    audioElementRef,
+    audioNotes,
+    setAudioNotes: setAudioNotesWithPreload,
+    nextTrack,
+    prevTrack,
+    shuffleTrack,
+    resetAudio,
+    preloadAudio,
+    shouldPlayRef,
+    progress,
+    duration,
+  }), [
+    currentAudio,
+    isPlaying,
+    isLoading,
+    playAudio,
+    pauseAudio,
+    togglePlay,
+    audioNotes,
+    setAudioNotesWithPreload,
+    nextTrack,
+    prevTrack,
+    shuffleTrack,
+    resetAudio,
+    preloadAudio,
+    progress,
+    duration,
+  ]);
+
   return (
-    <AudioContext.Provider
-      value={{
-        currentAudio,
-        isPlaying,
-        isLoading,
-        playAudio,
-        pauseAudio,
-        togglePlay,
-        audioElementRef,
-        audioNotes,
-        setAudioNotes: setAudioNotesWithPreload,
-        nextTrack,
-        prevTrack,
-        shuffleTrack,
-        resetAudio,
-        preloadAudio,
-        shouldPlayRef, // NEW: expose ref
-        progress,
-        duration,
-      }}
-    >
+    <AudioContext.Provider value={contextValue}>
       {children}
     </AudioContext.Provider>
   );

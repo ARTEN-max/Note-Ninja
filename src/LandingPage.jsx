@@ -91,8 +91,7 @@ export default function LandingPage() {
           loop
           muted
           playsInline
-          preload="metadata"
-          poster="/placeholders/city.jpg"
+          preload="auto"
           style={{ playbackRate: 0.75 }}
           onLoadedData={(e) => { e.target.playbackRate = 0.75; }}
         />

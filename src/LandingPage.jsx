@@ -50,6 +50,8 @@ export default function LandingPage() {
           mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           mask-composite: exclude;
           animation: glowRotate 3s linear infinite;
+          will-change: transform;
+          transform: translateZ(0);
         }
         .glow-border::after {
           content: '';
@@ -94,6 +96,12 @@ export default function LandingPage() {
           preload="auto"
           style={{ playbackRate: 0.75 }}
           onLoadedData={(e) => { e.target.playbackRate = 0.75; }}
+          onCanPlay={(e) => { 
+            e.target.playbackRate = 0.75;
+            e.target.play().catch(() => {});
+          }}
+          priority="high"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/60 to-black/80" />
         
@@ -206,7 +214,13 @@ export default function LandingPage() {
               {/* Audio Notes Header */}
               <div className="bg-gradient-to-r from-[#4b006e] to-[#b266ff] rounded-xl p-6 glow-border-subtle">
                 <div className="flex items-center gap-4">
-                  <img src="/goose-radio.png" alt="Note Ninja Radio" className="w-16 h-16 rounded-lg object-cover" />
+                  <img 
+                    src="/goose-radio.png" 
+                    alt="Note Ninja Radio" 
+                    className="w-16 h-16 rounded-lg object-cover" 
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div>
                     <div className="text-xs text-purple-200 uppercase tracking-wider">Public Playlist</div>
                     <div className="text-2xl font-bold text-white">NOTE NINJA RADIO</div>
@@ -314,7 +328,7 @@ export default function LandingPage() {
       <Section className="py-12">
         <div className="relative rounded-3xl overflow-hidden p-6 md:p-12" style={{background:'linear-gradient(135deg, rgba(138,43,226,.25) 0%, rgba(98,0,234,.25) 100%)'}}>
           <h3 className="text-xl md:text-3xl font-extrabold mb-2">Get better grades, faster.</h3>
-          <p className="text-zinc-300 max-w-2xl text-sm md:text-base">Free to start. Cancel anytime.</p>
+          <p className="text-zinc-300 max-w-2xl text-sm md:text-base">All features and content are free, ENJOY!</p>
           <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto max-w-sm">
             <button onClick={()=>navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white">Sign Up Now</button>
             <button onClick={()=>navigate('/signin')} className="px-6 py-3 rounded-full border border-white/30 w-full sm:w-auto">Sign In</button>

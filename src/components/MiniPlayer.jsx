@@ -13,6 +13,7 @@ const MiniPlayer = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [isHidden, setIsHidden] = useState(false);
   const { currentUser } = useAuth();
 
 
@@ -131,7 +132,7 @@ const MiniPlayer = () => {
   const handleQueue = () => console.log('Queue clicked');
 
   const audioTitle = currentAudio?.title || 'No audio selected';
-  const audioSubtitle = currentAudio?.artist || 'Select a track to play';
+  const audioSubtitle = currentAudio?.subject || 'Select a track to play';
   const albumArt = currentAudio?.albumArt || '/path/to/default/art.jpg';
 
   // When currentAudio changes, if shouldPlayRef.current is true, play after loadedmetadata
@@ -231,7 +232,7 @@ const MiniPlayer = () => {
         onLoadedMetadata={() => console.log('🎵 Audio metadata loaded')}
         onError={(e) => console.error('🎵 Audio error:', e)}
       />
-      {currentUser && currentAudio && (
+      {currentUser && currentAudio && !isHidden && (
         isMobile ? (
           <div className="miniplayer-mobile-spotify">
             <img src={albumArt} alt={audioTitle} className="miniplayer-mobile-spotify-art" />
@@ -239,11 +240,44 @@ const MiniPlayer = () => {
               <div className="miniplayer-mobile-spotify-title">{audioTitle}</div>
               <div className="miniplayer-mobile-spotify-artist">{audioSubtitle}</div>
             </div>
-            <button onClick={handlePlayPause} className="miniplayer-mobile-spotify-play">
-              {isPlaying ? <FiPause /> : <FiPlay />}
-            </button>
-            <div className="miniplayer-mobile-spotify-progress" onClick={handleMobileProgressBarTap} style={{ cursor: 'pointer' }}>
-              <div className="miniplayer-mobile-spotify-progress-bar" style={{ width: duration ? `${(progress / duration) * 100}%` : '0%' }}></div>
+            <div className="flex items-center gap-2">
+              <button onClick={handlePlayPause} className="miniplayer-mobile-spotify-play">
+                {isPlaying ? <FiPause /> : <FiPlay />}
+              </button>
+              <button 
+                onClick={() => setIsHidden(true)} 
+                className="text-white/70 hover:text-white text-sm"
+                title="Hide mini player"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            <div 
+              className="miniplayer-mobile-spotify-progress" 
+              onClick={handleMobileProgressBarTap} 
+              style={{ 
+                cursor: 'pointer',
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: '4px',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: '0 0 1.5rem 1.5rem'
+              }}
+            >
+              <div 
+                className="miniplayer-mobile-spotify-progress-bar" 
+                style={{ 
+                  width: duration ? `${(progress / duration) * 100}%` : '0%',
+                  height: '100%',
+                  backgroundColor: '#b266ff',
+                  borderRadius: '0 0 1.5rem 1.5rem',
+                  transition: 'width 0.2s'
+                }}
+              ></div>
             </div>
             {showTimeTooltip && (
               <div className="miniplayer-mobile-spotify-tooltip" style={{ position: 'absolute', left: '50%', bottom: '110%', transform: 'translateX(-50%)' }}>
@@ -252,7 +286,7 @@ const MiniPlayer = () => {
             )}
           </div>
         ) : (
-          <div className="fixed left-0 lg:left-[240px] right-0 z-[9999] flex justify-end pointer-events-none bottom-14 md:bottom-0 miniplayer-mobile">
+          <div className="fixed left-0 lg:left-[240px] right-0 z-[9999] flex justify-end pointer-events-none bottom-14 md:bottom-0">
             <div className="w-full bg-black shadow-2xl px-2 sm:px-4 lg:px-6 py-1 sm:py-2 flex items-center gap-2 sm:gap-6 pointer-events-auto h-[60px] sm:h-[80px] lg:h-[90px]">
               {/* Left Section: Album Art & Title */}
               <div className="flex items-center gap-2 sm:gap-3 w-1/3 min-w-0">
@@ -368,11 +402,34 @@ const MiniPlayer = () => {
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
                 </div>
+                
+                <button 
+                  onClick={() => setIsHidden(true)} 
+                  className="text-neutral-400 hover:text-white ml-2" 
+                  title="Hide mini player"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
 
             </div>
           </div>
         )
+      )}
+      
+      {/* Show Mini Player Button (when hidden) */}
+      {currentUser && currentAudio && isHidden && (
+        <button
+          onClick={() => setIsHidden(false)}
+          className="fixed bottom-4 right-4 z-[9999] bg-[#b266ff] hover:bg-[#9644e8] text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105"
+          title="Show mini player"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
       )}
     </>
   );

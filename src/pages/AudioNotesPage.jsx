@@ -224,7 +224,12 @@ const AudioNotesPage = () => {
       }
     };
 
-    fetchAudioNotes();
+    // Use request idle callback for better performance
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => fetchAudioNotes(), { timeout: 1000 });
+    } else {
+      setTimeout(fetchAudioNotes, 0);
+    }
   }, [setAudioNotes]);
 
   // Performance optimization: Preload first few audio files when component mounts

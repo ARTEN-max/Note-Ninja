@@ -16,32 +16,39 @@ import MiniPlayer from "./components/MiniPlayer";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import imageOptimizer from "./utils/imageOptimizer";
+import performanceMonitor from "./utils/performanceMonitor";
 
-// Lazy load components with preloading hints
-const StudentInfoPage = lazy(() => import('./StudentInfoPage'));
-const SignIn = lazy(() => import('./SignIn'));
-const Register = lazy(() => import('./Register'));
-const NoteDashboard = lazy(() => import('./components/NoteDashboard'));
-const BrowsePage = lazy(() => import('./BrowsePage'));
-const UploadPage = lazy(() => import('./UploadPage'));
-const AudioNotesPage = lazy(() => import('./pages/AudioNotesPage'));
-const MyNotesPage = lazy(() => import('./MyNotesPage'));
-const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
-const NewUserProfilePage = lazy(() => import('./pages/NewUserProfilePage'));
-const CramModePage = lazy(() => import('./CramModePage'));
-const DeepDivePage = lazy(() => import('./DeepDivePage'));
-const ExamReviewPage = lazy(() => import('./ExamReviewPage'));
-const QuickRecapPage = lazy(() => import('./QuickRecapPage'));
-const NightOwlPage = lazy(() => import('./NightOwlPage'));
-const ChillReviewPage = lazy(() => import('./ChillReviewPage'));
-const PlaylistViewPage = lazy(() => import('./pages/PlaylistViewPage'));
-const ChapterPage = lazy(() => import('./pages/ChapterPage'));
-const ChapterNotesPage = lazy(() => import('./pages/ChapterNotesPage'));
-const ChapterStudyCards = lazy(() => import('./pages/ChapterStudyCards'));
-const StudyGuideChapters = lazy(() => import('./pages/StudyGuideChapters'));
-const ForgotPassword = lazy(() => import('./ForgotPassword'));
-const LandingPage = lazy(() => import('./LandingPage'));
-const AboutPage = lazy(() => import('./pages/About'));
+// Intelligent lazy loading with chunk names for better caching
+const StudentInfoPage = lazy(() => import(/* webpackChunkName: "auth" */ './StudentInfoPage'));
+const SignIn = lazy(() => import(/* webpackChunkName: "auth" */ './SignIn'));
+const Register = lazy(() => import(/* webpackChunkName: "auth" */ './Register'));
+const ForgotPassword = lazy(() => import(/* webpackChunkName: "auth" */ './ForgotPassword'));
+
+const NoteDashboard = lazy(() => import(/* webpackChunkName: "dashboard" */ './components/NoteDashboard'));
+const BrowsePage = lazy(() => import(/* webpackChunkName: "browse" */ './BrowsePage'));
+const UploadPage = lazy(() => import(/* webpackChunkName: "upload" */ './UploadPage'));
+
+const AudioNotesPage = lazy(() => import(/* webpackChunkName: "audio" */ './pages/AudioNotesPage'));
+const MyNotesPage = lazy(() => import(/* webpackChunkName: "notes" */ './MyNotesPage'));
+
+const UserProfilePage = lazy(() => import(/* webpackChunkName: "profile" */ './pages/UserProfilePage'));
+const NewUserProfilePage = lazy(() => import(/* webpackChunkName: "profile" */ './pages/NewUserProfilePage'));
+
+const CramModePage = lazy(() => import(/* webpackChunkName: "study-modes" */ './CramModePage'));
+const DeepDivePage = lazy(() => import(/* webpackChunkName: "study-modes" */ './DeepDivePage'));
+const ExamReviewPage = lazy(() => import(/* webpackChunkName: "study-modes" */ './ExamReviewPage'));
+const QuickRecapPage = lazy(() => import(/* webpackChunkName: "study-modes" */ './QuickRecapPage'));
+const NightOwlPage = lazy(() => import(/* webpackChunkName: "study-modes" */ './NightOwlPage'));
+const ChillReviewPage = lazy(() => import(/* webpackChunkName: "study-modes" */ './ChillReviewPage'));
+
+const PlaylistViewPage = lazy(() => import(/* webpackChunkName: "playlist" */ './pages/PlaylistViewPage'));
+const ChapterPage = lazy(() => import(/* webpackChunkName: "chapters" */ './pages/ChapterPage'));
+const ChapterNotesPage = lazy(() => import(/* webpackChunkName: "chapters" */ './pages/ChapterNotesPage'));
+const ChapterStudyCards = lazy(() => import(/* webpackChunkName: "chapters" */ './pages/ChapterStudyCards'));
+const StudyGuideChapters = lazy(() => import(/* webpackChunkName: "chapters" */ './pages/StudyGuideChapters'));
+
+const LandingPage = lazy(() => import(/* webpackChunkName: "landing" */ './LandingPage'));
+const AboutPage = lazy(() => import(/* webpackChunkName: "static" */ './pages/About'));
 
 // Optimized loading component with skeleton
 const LoadingSpinner = () => (

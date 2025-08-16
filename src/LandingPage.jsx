@@ -312,7 +312,7 @@ export default function LandingPage() {
             you study at Waterloo
           </h2>
           <p className="mt-6 text-zinc-300 max-w-2xl text-sm md:text-base">
-            NoteNinja is an AI-powered study platform built for Waterloo students, offering free, downloadable study guides for your toughest courses. Tune into podcast-style audio notes on the go whether you're at the gym or commuting. Create your profile, explore notes from fellow students, and build your own study playlists.
+            NoteNinja is an AI-powered study platform built for Waterloo student's, offering free, downloadable study guides for your toughest courses. Tune into podcast-style audio notes on the go whether you're at the gym or commuting. Create your profile, explore notes from fellow students, and build your own study playlists.
           </p>
           <div className="mt-6">
             <button onClick={()=>navigate('/register')} className="px-5 py-2 rounded-full border border-white/30 hover:border-white/50">Try it now</button>

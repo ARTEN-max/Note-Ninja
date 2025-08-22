@@ -22,16 +22,9 @@ if (typeof window !== 'undefined') {
 
 // Preload critical resources
 if (typeof window !== 'undefined') {
-  // Preload critical images
-  imageOptimizer.preloadCriticalImages();
+  // Image preloading disabled to prevent console warnings
+  // imageOptimizer.preloadCriticalImages();
   
-  // Preload critical fonts
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'preload';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap';
-  fontLink.as = 'style';
-  document.head.appendChild(fontLink);
-
   // Warm common routes on landing
   if (location && location.pathname === '/') {
     warmRoutesWhenIdle(['/dashboard','/browse','/audio-notes']);

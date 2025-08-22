@@ -123,17 +123,11 @@ class ImageOptimizer {
     }
   }
 
-  // Preload images for better performance
+  // Preload images for better performance (disabled to prevent console warnings)
   preloadCriticalImages() {
-    const criticalImages = [
-      '/placeholders/city.jpg',
-      '/placeholders/strawberry.jpg',
-      '/placeholders/dog.jpg',
-      '/placeholders/cool.jpg',
-      '/placeholders/car.jpg'
-    ];
-    
-    this.preloadImages(criticalImages);
+    // Images will be loaded on demand to prevent console warnings
+    // about preloaded resources not being used within a few seconds
+    return;
   }
 
   // Cleanup

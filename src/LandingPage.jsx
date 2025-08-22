@@ -147,16 +147,16 @@ export default function LandingPage() {
               </motion.div>
             </motion.h1>
             <p className="mt-3 text-white">Waterloo's Smartest Study Tool.</p>
-            <p className="mt-3 text-zinc-200 max-w-xl">AI-powered study guides, audio notes for smarter prep built for Waterloo students.</p>
+            <p className="mt-3 text-zinc-200 max-w-xl">Waterloo-specific guides and audio notes, wherever you are.</p>
             <div className="mt-6 flex flex-col sm:flex-row gap-2 w-full sm:w-auto max-w-sm">
               <button 
-                onClick={() => navigate('/register')} 
+                onClick={() => navigate('/dashboard')} 
                 className="px-6 py-3 rounded-full font-bold w-full sm:w-auto bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white shadow-md transition-all duration-300 hover:from-[#c078ff] hover:to-[#9644e8] hover:shadow-lg hover:shadow-purple-500/25 hover:scale-105"
               >
                 Start Studying
               </button>
               <button 
-                onClick={() => navigate('/browse')} 
+                onClick={() => navigate('/dashboard')} 
                 className="px-6 py-3 rounded-full border border-white/30 w-full sm:w-auto transition-all duration-300 hover:border-white/70 hover:bg-white/10 hover:shadow-lg hover:shadow-white/20 hover:scale-105"
               >
                 Browse Study Guides
@@ -315,7 +315,7 @@ export default function LandingPage() {
             NoteNinja is an AI-powered study platform built for Waterloo student's, offering free, downloadable study guides for your toughest courses. Tune into podcast-style audio notes on the go whether you're at the gym or commuting. Create your profile, explore notes from fellow students, and build your own study playlists.
           </p>
           <div className="mt-6">
-            <button onClick={()=>navigate('/register')} className="px-5 py-2 rounded-full border border-white/30 hover:border-white/50">Try it now</button>
+            <button onClick={()=>navigate('/dashboard')} className="px-5 py-2 rounded-full border border-white/30 hover:border-white/50">Try it now</button>
           </div>
         </div>
       </Section>
@@ -330,7 +330,7 @@ export default function LandingPage() {
           <h3 className="text-xl md:text-3xl font-extrabold mb-2">Get better grades, faster.</h3>
           <p className="text-zinc-300 max-w-2xl text-sm md:text-base">All features and content are free, ENJOY!</p>
           <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 w-full sm:w-auto max-w-sm">
-            <button onClick={()=>navigate('/register')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white">Sign Up Now</button>
+            <button onClick={()=>navigate('/dashboard')} className="px-6 py-3 rounded-full font-bold w-full sm:w-auto bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white">Get Started</button>
             <button onClick={()=>navigate('/signin')} className="px-6 py-3 rounded-full border border-white/30 w-full sm:w-auto">Sign In</button>
           </div>
         </div>

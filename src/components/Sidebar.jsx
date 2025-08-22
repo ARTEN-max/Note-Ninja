@@ -8,6 +8,7 @@ import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useAudio } from '../contexts/AudioContext';
 import { Home, Search, Headphones, Upload, FileText, User } from "lucide-react";
+import GateModal from "./GateModal";
 
 // Lightweight route prefetcher to warm up lazy chunks
 const prefetchRoute = (path) => {
@@ -41,14 +42,14 @@ const prefetchRoute = (path) => {
 };
 
 const navItems = [
-  { label: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
-  { label: "Browse & Discover", to: "/browse", icon: <Search size={20} /> },
-  { label: "Audio Notes", to: "/audio-notes", icon: <Headphones size={20} /> },
-  { label: "Request", to: "/upload", icon: <Upload size={20} /> },
+  { label: "Dashboard", to: "/dashboard", icon: <Home size={20} />, requiresAuth: false },
+  { label: "Browse & Discover", to: "/browse", icon: <Search size={20} />, requiresAuth: true },
+  { label: "Audio Notes", to: "/audio-notes", icon: <Headphones size={20} />, requiresAuth: false },
+  { label: "Request", to: "/upload", icon: <Upload size={20} />, requiresAuth: true },
 ];
 
 const libraryItems = [
-  { label: "My Notes", to: "/my-notes", icon: <FileText size={20} /> },
+  { label: "My Notes", to: "/my-notes", icon: <FileText size={20} />, requiresAuth: true },
 ];
 
 
@@ -65,6 +66,7 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
   const [userName, setUserName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [showGateModal, setShowGateModal] = useState(false);
 
 
   // Function to capitalize first letter of name
@@ -105,6 +107,14 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
     }
   };
 
+  // Handle navigation clicks for auth-required items
+  const handleNavClick = (e, item) => {
+    if (item.requiresAuth && !currentUser) {
+      e.preventDefault();
+      setShowGateModal(true);
+    }
+  };
+
   return (
     <div>
  <div
@@ -131,17 +141,21 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
         <NavLink
           key={item.label}
           to={item.to}
+          onClick={(e) => handleNavClick(e, item)}
           onMouseEnter={() => prefetchRoute(item.to)}
           onFocus={() => prefetchRoute(item.to)}
           onTouchStart={() => prefetchRoute(item.to)}
           className={({ isActive }) =>
             `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition duration-200 ${
               isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'
-            }`
+            } ${item.requiresAuth && !currentUser ? 'opacity-70' : ''}`
           }
         >
           <span className="sidebar-icon">{React.cloneElement(item.icon, { color: '#4b006e' })}</span>
           <span>{item.label}</span>
+          {item.requiresAuth && !currentUser && (
+            <span className="ml-auto text-xs text-gray-500">🔒</span>
+          )}
         </NavLink>
       ))}
     </div>
@@ -152,19 +166,30 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
         <NavLink
           key={item.label}
           to={item.to}
+          onClick={(e) => handleNavClick(e, item)}
           className={({ isActive }) =>
             `flex items-center gap-2 w-full px-4 py-2 rounded-lg transition duration-200 ${
               isActive ? 'bg-[#d6a5f7] text-[#4b006e] font-bold' : 'hover:bg-[#ecd6fa]'
-            }`
+            } ${item.requiresAuth && !currentUser ? 'opacity-70' : ''}`
           }
         >
           <span className="sidebar-icon">{React.cloneElement(item.icon, { color: '#4b006e' })}</span>
           <span>{item.label}</span>
+          {item.requiresAuth && !currentUser && (
+            <span className="ml-auto text-xs text-gray-500">🔒</span>
+          )}
         </NavLink>
       ))}
 
-      {/* Account/Profile */}
-      <NavLink to="/account" className="flex items-center gap-2 w-full px-4 py-2 rounded-lg hover:bg-[#ecd6fa]" onMouseEnter={() => prefetchRoute('/account')} onFocus={() => prefetchRoute('/account')} onTouchStart={() => prefetchRoute('/account')}>
+      {/* Account/Profile - show for all users */}
+      <NavLink 
+        to="/account" 
+        onClick={(e) => handleNavClick(e, { requiresAuth: true })}
+        className={`flex items-center gap-2 w-full px-4 py-2 rounded-lg hover:bg-[#ecd6fa] ${!currentUser ? 'opacity-70' : ''}`}
+        onMouseEnter={() => prefetchRoute('/account')} 
+        onFocus={() => prefetchRoute('/account')} 
+        onTouchStart={() => prefetchRoute('/account')}
+      >
         <span className="sidebar-icon">
           {profileImageUrl || currentUser?.photoURL ? (
             <img
@@ -177,18 +202,30 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
           )}
         </span>
         <span>Profile</span>
+        {!currentUser && (
+          <span className="ml-auto text-xs text-gray-500">🔒</span>
+        )}
       </NavLink>
     </div>
   </div>
 
-  {/* Pinned Logout at bottom */}
+  {/* Pinned action at bottom */}
   <div className="w-full px-2 py-3 bg-gradient-to-r from-[#b266ff] to-[#8a2be2] text-white font-bold text-base flex items-center justify-center gap-2 shadow-md z-10">
-    <button
-      onClick={() => setIsConfirmOpen(true)}
-      className="flex items-center gap-2 w-full justify-center"
-    >
-      <span className="text-xl">🚪</span> Logout
-    </button>
+    {currentUser ? (
+      <button
+        onClick={() => setIsConfirmOpen(true)}
+        className="flex items-center gap-2 w-full justify-center"
+      >
+        <span className="text-xl">🚪</span> Logout
+      </button>
+    ) : (
+      <button
+        onClick={() => navigate('/signin')}
+        className="flex items-center gap-2 w-full justify-center"
+      >
+        <span className="text-xl">🔑</span> Sign In
+      </button>
+    )}
   </div>
   </div>
 
@@ -201,6 +238,13 @@ const Sidebar = ({ showMinimize = false, usernameUpdated = false }) => {
       setIsConfirmOpen(false);
     }}
     message="Are you sure you want to log out?"
+  />
+
+  {/* Gate Modal */}
+  <GateModal 
+    isOpen={showGateModal} 
+    onClose={() => setShowGateModal(false)} 
+    type="feature"
   />
 </div>
   );

@@ -183,21 +183,17 @@ function AppContent() {
             <Route
               path="/guide/:guideId/notes"
               element={
-                <ProtectedRoute>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <ChapterNotesPage />
-                  </Suspense>
-                </ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ChapterNotesPage />
+                </Suspense>
               }
             />
             <Route
               path="/guide/:guideId/chapter/:chapterId"
               element={
-                <ProtectedRoute>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <ChapterStudyCards />
-                  </Suspense>
-                </ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ChapterStudyCards />
+                </Suspense>
               }
             />
             <Route
@@ -249,11 +245,9 @@ function AppContent() {
             <Route
               path="/audio-notes"
               element={
-                <ProtectedRoute>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AudioNotesPage />
-                  </Suspense>
-                </ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <AudioNotesPage />
+                </Suspense>
               }
             />
             <Route
@@ -292,13 +286,11 @@ function AppContent() {
               }
             />
             <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <NoteDashboard />
-                  </Suspense>
-                </div>
-              </ProtectedRoute>
+              <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <NoteDashboard />
+                </Suspense>
+              </div>
             } />
             <Route path="/" element={
               <Suspense fallback={<LoadingSpinner />}>
@@ -313,17 +305,15 @@ function AppContent() {
             <Route
               path="/*"
               element={
-                <ProtectedRoute>
-                  <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <NoteDashboard />
-                    </Suspense>
-                  </div>
-                </ProtectedRoute>
+                <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 2rem 2rem", boxSizing: "border-box" }}>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <NoteDashboard />
+                  </Suspense>
+                </div>
               }
             />
           </Routes>
-          {showSidebar && <MiniPlayer />}
+          {(showSidebar || currentAudio) && <MiniPlayer />}
           <Analytics />
           <SpeedInsights />
         </div>

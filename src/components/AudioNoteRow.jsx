@@ -1,6 +1,7 @@
 import React, { useRef, useState, memo, useEffect } from "react";
 import { FiTrash2, FiPlus } from "react-icons/fi";
 import { useAudio } from '../contexts/AudioContext';
+import ContentGate from './ContentGate';
 
 const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, formatDuration, onAddToPlaylist, onRowPlay, closePlaylistMenu }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -93,17 +94,19 @@ const AudioNoteRow = memo(({ note, index, isAdmin, handleDelete, formatDate, for
         </div>
       </div>
       <div className="w-16 flex items-center justify-start gap-2 relative add-to-playlist-mobile-col">
-        <button
-          className="add-to-playlist-btn text-purple-200 hover:text-white transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
-          title="Add to playlist"
-          onClick={e => {
-            e.stopPropagation();
-            if (onAddToPlaylist) onAddToPlaylist(note);
-          }}
-          style={{ minWidth: 32, minHeight: 32 }}
-        >
-          <FiPlus size={18} />
-        </button>
+        <ContentGate type="feature" gateType="feature">
+          <button
+            className="add-to-playlist-btn text-purple-200 hover:text-white transition-opacity rounded-full border-2 border-white p-2 flex items-center justify-center shadow bg-[#2a1a3a] hover:bg-purple-700/60"
+            title="Add to playlist"
+            onClick={e => {
+              e.stopPropagation();
+              if (onAddToPlaylist) onAddToPlaylist(note);
+            }}
+            style={{ minWidth: 32, minHeight: 32 }}
+          >
+            <FiPlus size={18} />
+          </button>
+        </ContentGate>
       </div>
       <div className="w-56 text-purple-200 text-sm hidden md:block truncate text-left pl-8">{note.subject}</div>
       <div className="w-40 text-purple-200 text-sm hidden md:block truncate">

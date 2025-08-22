@@ -2,10 +2,13 @@ import React, { createContext, useContext, useState, useRef, useCallback, useEff
 import audioPerformanceMonitor from '../utils/audioPerformance';
 import { storage } from '../firebase';
 import { ref as storageRef, getDownloadURL } from 'firebase/storage';
+import { useAuth } from './AuthContext';
+import { canAccessAudio, trackAudioUsage } from '../utils/meterUtils';
 
 const AudioContext = createContext();
 
 export const AudioProvider = ({ children }) => {
+  const { currentUser } = useAuth();
   const [currentAudio, setCurrentAudio] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioNotes, setAudioNotes] = useState([]);
@@ -18,6 +21,13 @@ export const AudioProvider = ({ children }) => {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const preloadQueueRef = useRef([]); // Queue for preloading audio files
+  
+  // Gating state
+  const [isGated, setIsGated] = useState(false);
+  const [gateTriggered, setGateTriggered] = useState(false);
+  const startTimeRef = useRef(null);
+  const playTimeRef = useRef(0);
+  const PREVIEW_TIME_LIMIT = 60; // 60 seconds for anonymous users
 
   const normalizeUrl = useCallback((url) => url || '', []);
 
@@ -147,6 +157,21 @@ export const AudioProvider = ({ children }) => {
       index, 
       retryCount 
     });
+    
+    // Check gating for anonymous users
+    if (!currentUser) {
+      const canPlay = canAccessAudio(PREVIEW_TIME_LIMIT / 60); // Convert seconds to minutes
+      if (!canPlay) {
+        setGateTriggered(true);
+        setIsGated(true);
+        return;
+      }
+      // Reset gate state for new track
+      setIsGated(false);
+      setGateTriggered(false);
+      startTimeRef.current = Date.now();
+      playTimeRef.current = 0;
+    }
     
     // Check for audio URL in multiple possible fields
     let audioUrl = normalizeUrl(audioNote?.url || audioNote?.audioUrl || '');
@@ -559,7 +584,38 @@ export const AudioProvider = ({ children }) => {
     const audioElement = audioElementRef.current;
     if (!audioElement) return;
 
-    const updateProgress = () => setProgress(audioElement.currentTime);
+    const updateProgress = () => {
+      const currentTime = audioElement.currentTime;
+      setProgress(currentTime);
+      
+      // Check gating for anonymous users
+      if (!currentUser && startTimeRef.current && !isGated) {
+        const timeElapsed = (Date.now() - startTimeRef.current) / 1000; // Convert to seconds
+        if (timeElapsed >= PREVIEW_TIME_LIMIT) {
+          // Gate the audio
+          audioElement.pause();
+          setIsPlaying(false);
+          setIsGated(true);
+          setGateTriggered(true);
+          
+          // Track the usage
+          trackAudioUsage(PREVIEW_TIME_LIMIT / 60); // Convert to minutes
+          
+          // Fade out effect
+          const fadeOut = () => {
+            if (audioElement.volume > 0.1) {
+              audioElement.volume -= 0.1;
+              setTimeout(fadeOut, 100);
+            } else {
+              audioElement.volume = 0;
+              audioElement.pause();
+            }
+          };
+          fadeOut();
+        }
+      }
+    };
+    
     const updateDuration = () => {
       if (!isNaN(audioElement.duration) && isFinite(audioElement.duration)) {
         setDuration(audioElement.duration);
@@ -605,6 +661,9 @@ export const AudioProvider = ({ children }) => {
     shouldPlayRef,
     progress,
     duration,
+    isGated,
+    gateTriggered,
+    previewTimeLimit: PREVIEW_TIME_LIMIT,
   }), [
     currentAudio,
     isPlaying,
@@ -621,6 +680,8 @@ export const AudioProvider = ({ children }) => {
     preloadAudio,
     progress,
     duration,
+    isGated,
+    gateTriggered,
   ]);
 
   return (

@@ -1,12 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAudio } from '../contexts/AudioContext';
-import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle, FiList, FiMusic } from 'react-icons/fi';
+import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle, FiList, FiMusic, FiLock } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { Listbox } from '@headlessui/react';
 import { FiCheck } from 'react-icons/fi';
+import GateModal from './GateModal';
 
 const MiniPlayer = () => {
-  const { currentAudio, isPlaying, isLoading, playAudio, pauseAudio, togglePlay, audioElementRef, nextTrack, prevTrack, shuffleTrack, shouldPlayRef } = useAudio();
+  const { currentAudio, isPlaying, isLoading, playAudio, pauseAudio, togglePlay, audioElementRef, nextTrack, prevTrack, shuffleTrack, shouldPlayRef, isGated, gateTriggered, previewTimeLimit } = useAudio();
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -14,6 +15,7 @@ const MiniPlayer = () => {
   const [imgError, setImgError] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isHidden, setIsHidden] = useState(false);
+  const [showGateModal, setShowGateModal] = useState(false);
   const { currentUser } = useAuth();
 
 
@@ -31,6 +33,13 @@ const MiniPlayer = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Show gate modal when audio is gated
+  useEffect(() => {
+    if (gateTriggered && !currentUser) {
+      setShowGateModal(true);
+    }
+  }, [gateTriggered, currentUser]);
 
   useEffect(() => {
     const audioElement = audioElementRef.current;
@@ -232,7 +241,7 @@ const MiniPlayer = () => {
         onLoadedMetadata={() => console.log('🎵 Audio metadata loaded')}
         onError={(e) => console.error('🎵 Audio error:', e)}
       />
-      {currentUser && currentAudio && !isHidden && (
+      {currentAudio && !isHidden && (
         isMobile ? (
           <div className="miniplayer-mobile-spotify">
             <img src={albumArt} alt={audioTitle} className="miniplayer-mobile-spotify-art" />
@@ -420,7 +429,7 @@ const MiniPlayer = () => {
       )}
       
       {/* Show Mini Player Button (when hidden) */}
-      {currentUser && currentAudio && isHidden && (
+      {currentAudio && isHidden && (
         <button
           onClick={() => setIsHidden(false)}
           className="fixed bottom-4 right-4 z-[9999] bg-[#b266ff] hover:bg-[#9644e8] text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105"
@@ -431,6 +440,13 @@ const MiniPlayer = () => {
           </svg>
         </button>
       )}
+
+      {/* Gate Modal */}
+      <GateModal 
+        isOpen={showGateModal} 
+        onClose={() => setShowGateModal(false)} 
+        type="audio"
+      />
     </>
   );
 };

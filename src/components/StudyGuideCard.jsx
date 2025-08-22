@@ -4,6 +4,8 @@ import { formatCourseCode } from "../utils/courseUtils";
 import placeholderImages from '../utils/placeholders';
 import { FiHeart, FiTrash2 } from 'react-icons/fi';
 import OptimizedImage from './OptimizedImage';
+import ContentGate from './ContentGate';
+import { useAuth } from '../contexts/AuthContext';
 
 const StudyGuideCard = ({
   courseCode,
@@ -23,6 +25,7 @@ const StudyGuideCard = ({
   showAddToNotes = false, // NEW PROP
   ...props
 }) => {
+  const { currentUser } = useAuth();
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   // Pick a random placeholder for fallback
@@ -79,8 +82,8 @@ const StudyGuideCard = ({
           }}
           onError={() => setImgError(true)}
         />
-        {/* Like button - only show when likes are meaningful (dashboard/browse, not album pages) */}
-        {!minimal && onLike && (
+        {/* Like button - only show for authenticated users */}
+        {!minimal && onLike && currentUser && (
           <div className="absolute top-2 left-2">
             <motion.button
               type="button"
@@ -183,20 +186,22 @@ const StudyGuideCard = ({
           </>
         ) : (
           showAddToNotes && (
-            <button
-              onClick={e => { e.stopPropagation(); onAddToMyNotes(); }}
-              className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
-                addNoteStatus === 'added'
-                  ? "bg-green-200 text-green-800 cursor-not-allowed"
-                  : addNoteStatus === 'adding'
-                  ? "bg-yellow-200 text-yellow-800 cursor-wait"
-                  : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
-              }`}
-              disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
-            >
-              {addNoteStatus === 'added' ? "Added to My Notes" : 
-                addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
-            </button>
+            <ContentGate type="feature" gateType="feature">
+              <button
+                onClick={e => { e.stopPropagation(); onAddToMyNotes(); }}
+                className={`w-full py-2 mt-2 rounded-lg font-bold text-sm transition-colors ${
+                  addNoteStatus === 'added'
+                    ? "bg-green-200 text-green-800 cursor-not-allowed"
+                    : addNoteStatus === 'adding'
+                    ? "bg-yellow-200 text-yellow-800 cursor-wait"
+                    : "bg-[#e3b8f9] text-[#5E2A84] hover:bg-[#d8b0f2]"
+                }`}
+                disabled={addNoteStatus === 'added' || addNoteStatus === 'adding'}
+              >
+                {addNoteStatus === 'added' ? "Added to My Notes" : 
+                  addNoteStatus === 'adding' ? "Adding..." : "Add to My Notes"}
+              </button>
+            </ContentGate>
           )
         )}
       </div>

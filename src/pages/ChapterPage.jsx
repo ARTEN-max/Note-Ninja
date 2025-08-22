@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import BackToPrevious from '../components/BackToPrevious';
+import ContentGate from '../components/ContentGate';
 
 const StudyCard = ({ section, isFlipped, onFlip }) => {
   return (
@@ -69,8 +70,6 @@ const ChapterPage = () => {
 
   useEffect(() => {
     const fetchChapter = async () => {
-      if (!currentUser) return;
-
       try {
         // Fetch chapter details
         const chapterDoc = await getDoc(doc(db, "studyGuides", guideId, "chapters", chapterId));
@@ -102,7 +101,7 @@ const ChapterPage = () => {
     };
 
     fetchChapter();
-  }, [currentUser, guideId, chapterId]);
+  }, [guideId, chapterId]);
 
   const handleCardFlip = (sectionId) => {
     setFlippedCards(prev => ({
@@ -150,7 +149,12 @@ const ChapterPage = () => {
           </div>
 
           {/* Study Cards */}
-          <div className="space-y-8">
+          <ContentGate 
+            type="content" 
+            threshold={0.35} 
+            gateType="guide"
+            className="space-y-8"
+          >
             {sections.map((section, index) => (
               <motion.div
                 key={section.id}
@@ -165,7 +169,7 @@ const ChapterPage = () => {
                 />
               </motion.div>
             ))}
-          </div>
+          </ContentGate>
 
           {/* Empty State */}
           {sections.length === 0 && (

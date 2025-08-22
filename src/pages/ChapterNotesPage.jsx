@@ -8,6 +8,7 @@ import studyGuides from '../data/studyGuides';
 import { formatCourseCode } from "../utils/courseUtils";
 import BackToPrevious from '../components/BackToPrevious';
 import placeholderImages from '../utils/placeholders';
+import ContentGate from '../components/ContentGate';
 
 const ADMIN_EMAILS = ["abdul.rahman78113@gmail.com", "kingbronfan23@gmail.com"]; // <-- Add more admin emails here
 

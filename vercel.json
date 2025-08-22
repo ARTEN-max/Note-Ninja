@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/src/(.*)", "destination": "/src/$1" },
+    { "source": "/placeholders/(.*)", "destination": "/placeholders/$1" },
+    { "source": "/sw.js", "destination": "/sw.js" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "buildCommand": "npm run build",

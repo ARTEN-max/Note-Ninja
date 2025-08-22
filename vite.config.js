@@ -10,31 +10,10 @@ export default defineConfig({
     splitVendorChunkPlugin()
   ],
   build: {
-    // Reduce chunk size limit warnings
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        // Manual chunking for better caching
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-          ui: ['framer-motion', '@headlessui/react', '@heroicons/react'],
-          audio: ['react-icons/fi']
-        }
-      }
-    },
-    // Enable source maps for better debugging
+    outDir: 'dist',
+    assetsDir: 'assets',
     sourcemap: false,
-    // Optimize CSS
-    cssCodeSplit: true,
-    // Compress assets
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    minify: 'terser'
   },
   server: {
     // Enable compression
@@ -44,18 +23,8 @@ export default defineConfig({
       overlay: false
     }
   },
-  // Optimize dependencies
   optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      'firebase/app',
-      'firebase/auth',
-      'firebase/firestore',
-      'firebase/storage',
-      'framer-motion'
-    ]
+    include: ['react', 'react-dom', 'react-router-dom']
   },
   // Enable legacy browser support if needed
   define: {

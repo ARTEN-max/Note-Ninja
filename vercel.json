@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!assets\/|placeholders\/|sw\\.js|favicon\\.ico|.*\\..*).*)",
+      "source": "/((?!assets/|placeholders/|sw\\.js|favicon\\.ico|goose-radio\\.png|.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/index.html"
     }
   ],

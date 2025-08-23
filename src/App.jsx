@@ -318,7 +318,7 @@ function AppContent() {
           <SpeedInsights />
         </div>
       </div>
-      {currentUser && showSidebar && <MobileNav />}
+      {showSidebar && <MobileNav />}
     </div>
   );
 }

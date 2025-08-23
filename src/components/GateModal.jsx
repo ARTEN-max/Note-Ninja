@@ -63,7 +63,7 @@ const GateModal = ({ isOpen, onClose, type = 'general' }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black bg-opacity-50 z-[1000] flex items-center justify-center p-4"
           >
             {/* Modal */}
             <motion.div
@@ -71,7 +71,7 @@ const GateModal = ({ isOpen, onClose, type = 'general' }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden"
+              className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden z-[1001]"
             >
               {/* Close button */}
               <button

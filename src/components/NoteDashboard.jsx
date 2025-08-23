@@ -189,22 +189,20 @@ const NoteDashboard = () => {
     hidden: {},
     show: {
       transition: {
-        staggerChildren: 0.32,
+        staggerChildren: 0.12,
       },
     },
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 48 },
+    hidden: { opacity: 0, y: 24 },
     show: {
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
-        stiffness: 80,
-        damping: 18,
-        mass: 0.8,
-        duration: 0.85,
+        type: "tween",
+        ease: "easeOut",
+        duration: 0.35,
       },
     },
   };

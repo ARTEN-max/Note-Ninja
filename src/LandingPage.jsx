@@ -147,7 +147,7 @@ export default function LandingPage() {
               </motion.div>
             </motion.h1>
             <p className="mt-3 text-white">Waterloo's Smartest Study Tool.</p>
-            <p className="mt-3 text-zinc-200 max-w-xl">Waterloo-specific guides and audio notes, wherever you are</p>
+            <p className="mt-3 text-zinc-200 max-w-xl">Waterloo-specific guides and audio notes, wherever you are.</p>
             <div className="mt-6 flex flex-col sm:flex-row gap-2 w-full sm:w-auto max-w-sm">
               <button 
                 onClick={() => navigate('/dashboard')} 

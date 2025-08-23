@@ -68,13 +68,13 @@ const StudyGuideCard = ({
           src={imgError ? fallbackPlaceholder : imageUrl}
           alt={`${courseCode} study guide`}
           className="object-cover w-full"
-          width={400}
-          height={232}
+          width={384}
+          height={216}
           fallbackSrc={fallbackPlaceholder}
-          priority={true}
+          priority={false}
           style={{
             width: '100%',
-            height: '14.5rem', // fixed height for all cards
+            height: '14.5rem',
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             display: 'block',

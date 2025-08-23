@@ -11,8 +11,14 @@ export default defineConfig({
   build: {
     // Reduce chunk size limit warnings
     chunkSizeWarningLimit: 1000,
+    // Ensure proper asset directory structure
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
+        // Ensure JS files have proper extensions
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         // Manual chunking for better caching
         manualChunks: {
           vendor: ['react', 'react-dom'],

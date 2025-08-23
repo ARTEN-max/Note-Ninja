@@ -1,6 +1,1 @@
-/assets/*  /assets/:splat  200
-/placeholders/*  /placeholders/:splat  200
-/sw.js  /sw.js  200
-/favicon.ico  /favicon.ico  200
-/goose-radio.png  /goose-radio.png  200
 /*  /index.html  200

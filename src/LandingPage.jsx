@@ -218,7 +218,7 @@ export default function LandingPage() {
                     src="/goose-radio.png" 
                     alt="Note Ninja Radio" 
                     className="w-16 h-16 rounded-lg object-cover" 
-                    loading="lazy"
+                    loading="eager"
                     decoding="async"
                   />
                   <div>

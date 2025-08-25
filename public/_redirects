@@ -1,1 +1,7 @@
+# Handle JavaScript modules properly
+/assets/*.js    /assets/:splat.js    200
+/assets/*.mjs   /assets/:splat.mjs   200
+/assets/*.wasm  /assets/:splat.wasm  200
+
+# Handle SPA routing
 /*  /index.html  200

@@ -26,7 +26,8 @@
     
     <!-- Preload critical assets that are actually used immediately -->
     <link rel="preload" href="/goose-radio.png" as="image" />
-    <link rel="preload" href="/placeholders/landing-video.mp4" as="video" type="video/mp4" />
+    <!-- Remove video preload to avoid network errors and cache issues -->
+    <!-- <link rel="preload" href="/placeholders/landing-video.mp4" as="video" type="video/mp4" /> -->
     
     <!-- Meta tags for performance -->
     <meta name="description" content="Note Ninja - Your AI-powered study companion" />

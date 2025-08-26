@@ -23,6 +23,16 @@ function isHtmlRequest(request) {
          (request.mode === 'navigate');
 }
 
+// Helper function to determine if URL is a media file that shouldn't be cached
+function isMediaFile(url) {
+  return url.pathname.match(/\.(mp4|webm|ogg|mp3|wav|flac|aac|mov|avi|mkv)$/i);
+}
+
+// Helper function to check if request is a range request
+function isRangeRequest(request) {
+  return request.headers.has('range');
+}
+
 // Install event - cache static resources only
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -57,6 +67,12 @@ self.addEventListener('fetch', event => {
     return;
   }
   
+  // Skip caching for media files and range requests to avoid partial content errors
+  if (isMediaFile(url) || isRangeRequest(event.request)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   // Cache-first strategy for hashed assets (they never change)
   if (isHashedAsset(url)) {
     event.respondWith(
@@ -66,9 +82,18 @@ self.addEventListener('fetch', event => {
             return response;
           }
           return fetch(event.request).then(networkResponse => {
-            // Cache the response for future use
-            cache.put(event.request, networkResponse.clone());
+            // Only cache successful responses (200-299) and avoid range requests
+            if (networkResponse.status >= 200 && networkResponse.status < 300 && !isRangeRequest(event.request)) {
+              try {
+                cache.put(event.request, networkResponse.clone());
+              } catch (error) {
+                console.warn('Failed to cache asset:', event.request.url, error);
+              }
+            }
             return networkResponse;
+          }).catch(error => {
+            console.warn('Failed to fetch asset:', event.request.url, error);
+            throw error;
           });
         });
       })
@@ -81,10 +106,22 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.match(event.request).then(response => {
         return response || fetch(event.request).then(networkResponse => {
-          return caches.open(STATIC_CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
+          // Only cache successful responses and avoid range requests
+          if (networkResponse.status >= 200 && networkResponse.status < 300 && !isRangeRequest(event.request)) {
+            return caches.open(STATIC_CACHE_NAME).then(cache => {
+              try {
+                cache.put(event.request, networkResponse.clone());
+              } catch (error) {
+                console.warn('Failed to cache static asset:', event.request.url, error);
+              }
+              return networkResponse;
+            });
+          }
+          return networkResponse;
+        }).catch(error => {
+          console.warn('Failed to fetch static asset:', event.request.url, error);
+          // Return a fallback or rethrow
+          throw error;
         });
       })
     );

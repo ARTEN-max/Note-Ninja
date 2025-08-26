@@ -87,11 +87,25 @@ function RedirectToAccountProfile() {
 
 function AppContent() {
   const location = useLocation();
-  const { currentAudio } = useAudio();
+  const { currentAudio, resetAudio } = useAudio();
   const { currentUser } = useAuth();
   const showSidebar = !['/signin', '/register', '/student-info', '/', '/about'].includes(location.pathname);
   const showMinimize = location.pathname !== "/";
   const isLanding = location.pathname === '/';
+
+  // Reset audio when navigating to auth pages or landing page without authentication
+  useEffect(() => {
+    const authPages = ['/signin', '/register', '/forgot-password', '/', '/about'];
+    const isOnAuthPage = authPages.includes(location.pathname);
+    
+    // If user is not authenticated and navigating to auth pages, reset audio
+    if (!currentUser && isOnAuthPage && currentAudio) {
+      console.log('🚪 Navigating to auth page without authentication, resetting audio');
+      console.log('🚪 Current path:', location.pathname);
+      console.log('🚪 Current audio:', currentAudio?.title);
+      resetAudio();
+    }
+  }, [location.pathname, currentUser, currentAudio, resetAudio]);
 
   // Removed: allow signed-in users to view the landing page without redirecting
 

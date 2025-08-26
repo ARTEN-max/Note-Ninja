@@ -15,21 +15,23 @@ export default defineConfig({
     assetsDir: 'assets',
     // Enable proper format detection
     target: 'es2015',
+    // Ensure long cache-busting hashes for assets
+    assetsInlineLimit: 0, // Don't inline any assets to ensure they get hashes
     rollupOptions: {
       output: {
-        // Ensure JS files have proper extensions
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
+        // Ensure JS files have proper extensions with longer hashes
+        entryFileNames: 'assets/[name]-[hash:12].js',
+        chunkFileNames: 'assets/[name]-[hash:12].js',
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('.');
           const extType = info[info.length - 1];
           if (/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/i.test(assetInfo.name)) {
-            return `assets/media/[name]-[hash].${extType}`;
+            return `assets/media/[name]-[hash:12].${extType}`;
           }
           if (/\.(png|jpe?g|gif|svg|ico|webp)(\?.*)?$/i.test(assetInfo.name)) {
-            return `assets/images/[name]-[hash].${extType}`;
+            return `assets/images/[name]-[hash:12].${extType}`;
           }
-          return `assets/[name]-[hash].${extType}`;
+          return `assets/[name]-[hash:12].${extType}`;
         },
         // Manual chunking for better caching
         manualChunks: {

@@ -1,0 +1,23 @@
+{
+  "name": "Note Ninja",
+  "short_name": "NoteNinja",
+  "description": "Your AI-powered study companion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#5E2A84",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/goose-radio.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "cache_policy": {
+    "html": "no-cache",
+    "assets": "immutable"
+  }
+}

@@ -8,7 +8,7 @@ import { canAccessAudio, trackAudioUsage } from '../utils/meterUtils';
 const AudioContext = createContext();
 
 export const AudioProvider = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
   const [currentAudio, setCurrentAudio] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioNotes, setAudioNotes] = useState([]);
@@ -30,6 +30,63 @@ export const AudioProvider = ({ children }) => {
   const PREVIEW_TIME_LIMIT = 60; // 60 seconds for anonymous users
 
   const normalizeUrl = useCallback((url) => url || '', []);
+
+  // Session storage helpers
+  const saveAudioStateToSession = useCallback((audioData, index, notes) => {
+    try {
+      const audioState = {
+        currentAudio: audioData,
+        currentIndex: index,
+        audioNotes: notes,
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem('noteNinjaAudioState', JSON.stringify(audioState));
+      console.log('💾 Saved audio state to session:', audioData.title);
+    } catch (error) {
+      console.warn('Failed to save audio state to session:', error);
+    }
+  }, []);
+
+  const restoreAudioStateFromSession = useCallback(() => {
+    try {
+      console.log('🔍 Checking for saved audio state in session storage...');
+      const savedState = sessionStorage.getItem('noteNinjaAudioState');
+      console.log('🔍 Raw saved state:', savedState);
+      
+      if (savedState) {
+        const audioState = JSON.parse(savedState);
+        console.log('🔍 Parsed audio state:', audioState);
+        
+        // Only restore if the session is less than 24 hours old
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        const age = Date.now() - audioState.timestamp;
+        console.log('🔍 Session age (hours):', age / (1000 * 60 * 60));
+        
+        if (age < maxAge) {
+          console.log('✅ Session is valid, returning audio state');
+          return audioState;
+        } else {
+          console.log('❌ Session is too old, clearing');
+          sessionStorage.removeItem('noteNinjaAudioState');
+        }
+      } else {
+        console.log('❌ No saved state found in session storage');
+      }
+    } catch (error) {
+      console.warn('Failed to restore audio state from session:', error);
+      sessionStorage.removeItem('noteNinjaAudioState');
+    }
+    return null;
+  }, []);
+
+  const clearAudioSession = useCallback(() => {
+    try {
+      sessionStorage.removeItem('noteNinjaAudioState');
+      console.log('🗑️ Cleared audio session storage');
+    } catch (error) {
+      console.warn('Failed to clear audio session:', error);
+    }
+  }, []);
 
   // Attempt to derive a fresh, valid download URL from a possibly stale URL
   const resolveFreshDownloadUrl = useCallback(async (inputUrl) => {
@@ -253,12 +310,11 @@ export const AudioProvider = ({ children }) => {
     }, timeoutDuration);
     // Immediately update UI state for instant feedback
     setCurrentAudio(audioNote);
-    if (index !== null) {
-      setCurrentIndex(index);
-    } else {
-      const idx = audioNotes.findIndex(n => n.id === audioNote.id);
-      setCurrentIndex(idx);
-    }
+    const finalIndex = index !== null ? index : audioNotes.findIndex(n => n.id === audioNote.id);
+    setCurrentIndex(finalIndex);
+    
+    // Save to session storage for persistence across refreshes
+    saveAudioStateToSession(audioNote, finalIndex, audioNotes);
     
     try {
       // Check if we have cached metadata
@@ -508,7 +564,9 @@ export const AudioProvider = ({ children }) => {
       audioElementRef.current.pause();
       audioElementRef.current.currentTime = 0;
     }
-  }, []);
+    // Clear session storage when resetting audio
+    clearAudioSession();
+  }, [clearAudioSession]);
 
   const setAudioNotesWithPreload = useCallback((notes) => {
     setAudioNotes(notes);
@@ -530,6 +588,80 @@ export const AudioProvider = ({ children }) => {
       }
     }
   }, []);
+
+  // Restore audio state from session storage on app load (only once)
+  const hasRestoredRef = useRef(false);
+  
+  useEffect(() => {
+    // Only restore after auth state is determined (not loading) and only run once
+    if (!loading && !hasRestoredRef.current) {
+      console.log('🔄 Auth state determined, attempting session restore. User:', currentUser ? 'authenticated' : 'anonymous');
+      
+      const savedState = restoreAudioStateFromSession();
+      if (savedState && savedState.currentAudio) {
+        console.log('🔄 Restoring audio state from session:', savedState.currentAudio.title);
+        console.log('🔄 Current user during restore:', currentUser ? 'authenticated' : 'anonymous');
+        // Restore the audio notes first
+        setAudioNotes(savedState.audioNotes || []);
+        // Then restore the current audio and index (but don't auto-play)
+        setCurrentAudio(savedState.currentAudio);
+        setCurrentIndex(savedState.currentIndex || -1);
+        // Don't auto-play on restore - user can manually play if they want
+        setIsPlaying(false);
+        setIsLoading(false);
+      } else {
+        console.log('🔄 No saved audio state found');
+      }
+      
+      hasRestoredRef.current = true;
+    }
+  }, [loading, currentUser, restoreAudioStateFromSession]);
+
+  // Reset audio state when user logs out
+  const previousUserRef = useRef(currentUser);
+  
+  useEffect(() => {
+    // Only reset when user actually logs out (was authenticated, now null)
+    // Don't reset when user was already null (page refresh for anonymous user)
+    if (previousUserRef.current && currentUser === null) {
+      console.log('🚪 User logged out (was authenticated, now null), resetting audio state');
+      resetAudio();
+      // Reset gating state as well
+      setIsGated(false);
+      setGateTriggered(false);
+      startTimeRef.current = null;
+      playTimeRef.current = 0;
+    } else if (currentUser === null && !previousUserRef.current) {
+      console.log('🔄 Anonymous user (no change), keeping audio state');
+    } else if (currentUser) {
+      console.log('🔄 User authenticated:', currentUser.email || 'email hidden');
+    }
+    
+    // Update the previous user reference
+    previousUserRef.current = currentUser;
+  }, [currentUser, resetAudio]);
+
+  // Debug function for checking session storage (accessible via window.debugAudioSession)
+  useEffect(() => {
+    window.debugAudioSession = () => {
+      const saved = sessionStorage.getItem('noteNinjaAudioState');
+      console.log('🔧 Debug - Session storage contents:', saved);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          console.log('🔧 Debug - Parsed state:', parsed);
+          console.log('🔧 Debug - Current audio in state:', currentAudio?.title || 'none');
+          console.log('🔧 Debug - Current user:', currentUser ? 'authenticated' : 'anonymous');
+        } catch (e) {
+          console.log('🔧 Debug - Error parsing:', e);
+        }
+      }
+    };
+    
+    return () => {
+      delete window.debugAudioSession;
+    };
+  }, [currentAudio, currentUser]);
 
   // Cleanup cache periodically
   useEffect(() => {
@@ -587,6 +719,8 @@ export const AudioProvider = ({ children }) => {
     const updateProgress = () => {
       const currentTime = audioElement.currentTime;
       setProgress(currentTime);
+      
+
       
       // Check gating for anonymous users
       if (!currentUser && startTimeRef.current && !isGated) {

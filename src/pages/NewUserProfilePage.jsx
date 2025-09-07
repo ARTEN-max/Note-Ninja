@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
-import { doc, getDoc, collection, query, where, onSnapshot, getDocs, setDoc } from 'firebase/firestore';
+import { db, storage } from '../firebase';
+import { doc, getDoc, collection, query, where, onSnapshot, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './NewUserProfilePage.css';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
@@ -47,6 +48,9 @@ const NewUserProfilePage = () => {
   const location = useLocation();
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [playlistAudios, setPlaylistAudios] = useState({});
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
 
   // Fetch current user's username from Firestore
   useEffect(() => {
@@ -238,6 +242,52 @@ const NewUserProfilePage = () => {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image size must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setUploadError('');
+      setUploadSuccess('');
+
+      // Upload image to Firebase Storage
+      const imageRef = ref(storage, `profile-images/${currentUser.uid}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(imageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Update user document with new image URL
+      await updateDoc(doc(db, 'students', currentUser.uid), {
+        profileImageUrl: downloadURL,
+        updatedAt: new Date().toISOString()
+      });
+
+      // Update local state
+      setUser(prev => ({ ...prev, profileImageUrl: downloadURL }));
+      setUploadSuccess('Profile picture updated successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setUploadSuccess(''), 3000);
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      setUploadError('Failed to upload profile picture');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="profile-container min-h-screen p-8">
@@ -295,16 +345,22 @@ const NewUserProfilePage = () => {
               ref={fileInputRef}
               className="hidden"
               onClick={e => e.stopPropagation()}
-              onChange={() => {}}
+              onChange={handleImageUpload}
             />
             <div
               className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               style={{ pointerEvents: 'none' }}
             >
               <span style={{ pointerEvents: 'auto' }}>
-                <FiEdit2 size={36} color="#fff" />
+                {uploadingImage ? (
+                  <div className="w-9 h-9 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <FiEdit2 size={36} color="#fff" />
+                )}
               </span>
-              <span className="text-white font-semibold mt-2" style={{ pointerEvents: 'auto' }}>Choose photo</span>
+              <span className="text-white font-semibold mt-2" style={{ pointerEvents: 'auto' }}>
+                {uploadingImage ? 'Uploading...' : 'Choose photo'}
+              </span>
             </div>
           </>
         )}
@@ -380,6 +436,26 @@ const NewUserProfilePage = () => {
             </div>
           </div>
         </header>
+
+        {/* Upload feedback messages */}
+        {uploadError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-8 mt-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400"
+          >
+            {uploadError}
+          </motion.div>
+        )}
+        {uploadSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-8 mt-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400"
+          >
+            {uploadSuccess}
+          </motion.div>
+        )}
 
         <main className="p-8">
           <section>
